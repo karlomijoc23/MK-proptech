@@ -194,7 +194,7 @@ async def get_users():
     return [User(**parse_from_mongo(user)) for user in users]
 
 # Properties
-@api_router.post("/properties", response_model=Property)
+@api_router.post("/properties", response_model=Property, status_code=201)
 async def create_property(property_data: PropertyCreate):
     property_dict = prepare_for_mongo(property_data.dict())
     property_obj = Property(**property_dict)
