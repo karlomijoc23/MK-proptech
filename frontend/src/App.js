@@ -1748,10 +1748,12 @@ const Dokumenti = () => {
                   <p className="text-sm text-gray-600">{dokument.opis}</p>
                 )}
                 <div className="pt-2">
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Pregled
-                  </Button>
+                  <div className="flex space-x-1">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="w-4 h-4 mr-1" />
+                      Pregled
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
