@@ -291,10 +291,13 @@ const Properties = () => {
 
       {/* Create Property Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
+        <DialogContent aria-describedby="property-form-description">
           <DialogHeader>
             <DialogTitle>Dodaj Novu Nekretninu</DialogTitle>
           </DialogHeader>
+          <div id="property-form-description" className="sr-only">
+            Forma za kreiranje nove nekretnine sa osnovnim informacijama
+          </div>
           <PropertyForm 
             onSubmit={handleCreateProperty}
             onCancel={() => setShowCreateForm(false)}
