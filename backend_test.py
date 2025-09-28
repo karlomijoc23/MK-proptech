@@ -9,354 +9,468 @@ class CroatianRealEstateAPITester:
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
-        self.test_results = []
-        
-        # Store created entities for cleanup and reference
         self.created_entities = {
-            'properties': [],
-            'tenants': [],
-            'rentals': [],
-            'payments': [],
-            'documents': []
+            'nekretnine': [],
+            'zakupnici': [],
+            'ugovori': [],
+            'dokumenti': []
         }
 
-    def log_test(self, name, success, details=""):
-        """Log test result"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-            print(f"✅ {name}")
-        else:
-            print(f"❌ {name} - {details}")
-        
-        self.test_results.append({
-            'name': name,
-            'success': success,
-            'details': details
-        })
-
-    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
-        if headers is None:
-            headers = {'Content-Type': 'application/json'}
+        headers = {'Content-Type': 'application/json'}
 
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
+                response = requests.get(url, headers=headers, params=params)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=10)
+                response = requests.post(url, json=data, headers=headers)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers, timeout=10)
+                response = requests.put(url, json=data, headers=headers)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=10)
+                response = requests.delete(url, headers=headers)
 
             success = response.status_code == expected_status
-            
             if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
                 try:
-                    response_data = response.json()
-                    self.log_test(name, True)
-                    return True, response_data
+                    return True, response.json()
                 except:
-                    self.log_test(name, True)
                     return True, {}
             else:
-                self.log_test(name, False, f"Expected {expected_status}, got {response.status_code}")
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
                 try:
-                    error_data = response.json()
-                    print(f"   Error details: {error_data}")
+                    print(f"Response: {response.text}")
                 except:
-                    print(f"   Response text: {response.text}")
+                    pass
                 return False, {}
 
         except Exception as e:
-            self.log_test(name, False, f"Exception: {str(e)}")
+            print(f"❌ Failed - Error: {str(e)}")
             return False, {}
 
     def test_root_endpoint(self):
-        """Test root API endpoint"""
-        return self.run_test("Root API endpoint", "GET", "", 200)
+        """Test API root endpoint"""
+        success, response = self.run_test(
+            "API Root Endpoint",
+            "GET",
+            "",
+            200
+        )
+        if success and 'message' in response:
+            print(f"   Message: {response['message']}")
+        return success
 
-    def test_analytics_dashboard(self):
-        """Test dashboard analytics endpoint"""
-        return self.run_test("Dashboard analytics", "GET", "analytics/dashboard", 200)
+    def test_dashboard(self):
+        """Test dashboard endpoint with Croatian metrics"""
+        success, response = self.run_test(
+            "Dashboard Croatian Metrics",
+            "GET",
+            "dashboard",
+            200
+        )
+        if success:
+            expected_fields = ['ukupno_nekretnina', 'aktivni_ugovori', 'ugovori_na_isteku', 'aktivni_podsjetnici', 'mjesecni_prihod']
+            for field in expected_fields:
+                if field in response:
+                    print(f"   ✅ {field}: {response[field]}")
+                else:
+                    print(f"   ❌ Missing field: {field}")
+                    return False
+        return success
 
-    def test_analytics_revenue(self):
-        """Test revenue analytics endpoint"""
-        return self.run_test("Revenue analytics", "GET", "analytics/revenue", 200)
-
-    def test_create_property(self):
-        """Test property creation"""
-        property_data = {
-            "title": "Test Property",
-            "address": "123 Test Street, Test City",
-            "property_type": "residential",
-            "area": 100.5,
-            "bedrooms": 3,
-            "bathrooms": 2,
-            "description": "A beautiful test property",
-            "monthly_rent": 50000
+    def test_create_nekretnina(self):
+        """Test creating a Croatian property"""
+        nekretnina_data = {
+            "naziv": "Testna nekretnina Zagreb",
+            "adresa": "Ilica 1, Zagreb",
+            "katastarska_opcina": "Zagreb-Centar",
+            "broj_kat_cestice": "1234/5",
+            "vrsta": "stan",
+            "povrsina": 85.5,
+            "godina_izgradnje": 2010,
+            "vlasnik": "Marko Marković",
+            "udio_vlasnistva": "1/1",
+            "nabavna_cijena": 150000.0,
+            "trzisna_vrijednost": 180000.0,
+            "prosllogodisnji_prihodi": 12000.0,
+            "prosllogodisnji_rashodi": 3000.0,
+            "amortizacija": 5000.0,
+            "neto_prihod": 9000.0,
+            "zadnja_obnova": "2020-05-15",
+            "potrebna_ulaganja": "Potrebno obnoviti kupaonicu",
+            "troskovi_odrzavanja": 2000.0,
+            "osiguranje": "Croatia osiguranje",
+            "sudski_sporovi": "Nema aktivnih sporova",
+            "hipoteke": "Nema hipoteka",
+            "napomene": "Odličan stan u centru grada"
         }
         
-        success, response = self.run_test("Create property", "POST", "properties", 201, property_data)
+        success, response = self.run_test(
+            "Create Croatian Property (Nekretnina)",
+            "POST",
+            "nekretnine",
+            201,
+            nekretnina_data
+        )
+        
         if success and 'id' in response:
-            self.created_entities['properties'].append(response['id'])
-            return True, response
-        return False, {}
+            self.created_entities['nekretnine'].append(response['id'])
+            print(f"   Created nekretnina ID: {response['id']}")
+            # Verify Croatian fields
+            croatian_fields = ['katastarska_opcina', 'broj_kat_cestice', 'vlasnik', 'udio_vlasnistva']
+            for field in croatian_fields:
+                if field in response:
+                    print(f"   ✅ Croatian field {field}: {response[field]}")
+        
+        return success
 
-    def test_get_properties(self):
+    def test_get_nekretnine(self):
         """Test getting all properties"""
-        return self.run_test("Get all properties", "GET", "properties", 200)
+        success, response = self.run_test(
+            "Get All Properties (Nekretnine)",
+            "GET",
+            "nekretnine",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} nekretnine")
+            if len(response) > 0:
+                # Check Croatian fields in first property
+                first_property = response[0]
+                croatian_fields = ['katastarska_opcina', 'broj_kat_cestice', 'vlasnik', 'udio_vlasnistva']
+                for field in croatian_fields:
+                    if field in first_property:
+                        print(f"   ✅ Croatian field {field}: {first_property[field]}")
+        
+        return success
 
-    def test_get_property_by_id(self, property_id):
-        """Test getting a specific property"""
-        return self.run_test(f"Get property {property_id[:8]}", "GET", f"properties/{property_id}", 200)
-
-    def test_update_property(self, property_id):
-        """Test updating a property"""
-        update_data = {
-            "title": "Updated Test Property",
-            "address": "456 Updated Street, Test City",
-            "property_type": "commercial",
-            "area": 150.0,
-            "bedrooms": 4,
-            "bathrooms": 3,
-            "description": "An updated test property",
-            "monthly_rent": 75000
+    def test_create_zakupnik(self):
+        """Test creating a Croatian tenant"""
+        zakupnik_data = {
+            "naziv_firme": "Test d.o.o.",
+            "ime_prezime": None,
+            "oib": "12345678901",
+            "sjediste": "Trg bana Jelačića 1, Zagreb",
+            "kontakt_ime": "Ana Anić",
+            "kontakt_email": "ana.anic@test.hr",
+            "kontakt_telefon": "+385 1 234 5678",
+            "iban": "HR1234567890123456789"
         }
         
-        return self.run_test(f"Update property {property_id[:8]}", "PUT", f"properties/{property_id}", 200, update_data)
-
-    def test_create_tenant(self):
-        """Test tenant creation"""
-        tenant_data = {
-            "name": "John Doe",
-            "email": "john.doe@test.com",
-            "phone": "+381601234567",
-            "id_number": "1234567890123"
-        }
+        success, response = self.run_test(
+            "Create Croatian Tenant (Zakupnik)",
+            "POST",
+            "zakupnici",
+            201,
+            zakupnik_data
+        )
         
-        success, response = self.run_test("Create tenant", "POST", "tenants", 201, tenant_data)
         if success and 'id' in response:
-            self.created_entities['tenants'].append(response['id'])
-            return True, response
-        return False, {}
+            self.created_entities['zakupnici'].append(response['id'])
+            print(f"   Created zakupnik ID: {response['id']}")
+            # Verify Croatian fields
+            croatian_fields = ['oib', 'sjediste', 'kontakt_ime', 'iban']
+            for field in croatian_fields:
+                if field in response:
+                    print(f"   ✅ Croatian field {field}: {response[field]}")
+        
+        return success
 
-    def test_get_tenants(self):
+    def test_get_zakupnici(self):
         """Test getting all tenants"""
-        return self.run_test("Get all tenants", "GET", "tenants", 200)
+        success, response = self.run_test(
+            "Get All Tenants (Zakupnici)",
+            "GET",
+            "zakupnici",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} zakupnici")
+            if len(response) > 0:
+                # Check Croatian fields in first tenant
+                first_tenant = response[0]
+                croatian_fields = ['oib', 'sjediste', 'kontakt_ime']
+                for field in croatian_fields:
+                    if field in first_tenant:
+                        print(f"   ✅ Croatian field {field}: {first_tenant[field]}")
+        
+        return success
 
-    def test_create_rental(self, property_id, tenant_id):
-        """Test rental creation"""
-        start_date = date.today()
-        end_date = start_date + timedelta(days=365)
-        
-        rental_data = {
-            "property_id": property_id,
-            "tenant_id": tenant_id,
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
-            "monthly_rent": 50000,
-            "security_deposit": 100000
-        }
-        
-        success, response = self.run_test("Create rental", "POST", "rentals", 201, rental_data)
-        if success and 'id' in response:
-            self.created_entities['rentals'].append(response['id'])
-            return True, response
-        return False, {}
-
-    def test_get_rentals(self):
-        """Test getting all rentals"""
-        return self.run_test("Get all rentals", "GET", "rentals", 200)
-
-    def test_get_rental_by_id(self, rental_id):
-        """Test getting a specific rental"""
-        return self.run_test(f"Get rental {rental_id[:8]}", "GET", f"rentals/{rental_id}", 200)
-
-    def test_create_payment(self, rental_id):
-        """Test payment creation"""
-        due_date = date.today() + timedelta(days=30)
-        
-        payment_data = {
-            "rental_id": rental_id,
-            "amount": 50000,
-            "due_date": due_date.isoformat(),
-            "notes": "Test payment"
-        }
-        
-        success, response = self.run_test("Create payment", "POST", "payments", 201, payment_data)
-        if success and 'id' in response:
-            self.created_entities['payments'].append(response['id'])
-            return True, response
-        return False, {}
-
-    def test_get_payments(self):
-        """Test getting all payments"""
-        return self.run_test("Get all payments", "GET", "payments", 200)
-
-    def test_mark_payment_paid(self, payment_id):
-        """Test marking payment as paid"""
-        return self.run_test(f"Mark payment {payment_id[:8]} as paid", "PUT", f"payments/{payment_id}/pay", 200)
-
-    def test_create_document(self, property_id):
-        """Test document creation"""
-        document_data = {
-            "property_id": property_id,
-            "title": "Test Lease Agreement",
-            "category": "lease_agreement",
-            "uploaded_by": "Test Manager"
-        }
-        
-        success, response = self.run_test("Create document", "POST", "documents", 201, document_data)
-        if success and 'id' in response:
-            self.created_entities['documents'].append(response['id'])
-            return True, response
-        return False, {}
-
-    def test_get_documents(self):
-        """Test getting all documents"""
-        return self.run_test("Get all documents", "GET", "documents", 200)
-
-    def test_get_property_documents(self, property_id):
-        """Test getting documents for a specific property"""
-        return self.run_test(f"Get documents for property {property_id[:8]}", "GET", f"documents/property/{property_id}", 200)
-
-    def test_delete_property(self, property_id):
-        """Test property deletion"""
-        return self.run_test(f"Delete property {property_id[:8]}", "DELETE", f"properties/{property_id}", 200)
-
-    def test_property_status_change(self):
-        """Test that property status changes to 'rented' when rental is created"""
-        # Create a property
-        success, property_data = self.test_create_property()
-        if not success:
-            return False
-        
-        property_id = property_data['id']
-        
-        # Create a tenant
-        success, tenant_data = self.test_create_tenant()
-        if not success:
-            return False
-        
-        tenant_id = tenant_data['id']
-        
-        # Verify property is initially available
-        success, initial_property = self.test_get_property_by_id(property_id)
-        if not success:
-            return False
-        
-        if initial_property.get('status') != 'available':
-            self.log_test("Property initial status check", False, f"Expected 'available', got '{initial_property.get('status')}'")
-            return False
-        
-        # Create rental
-        success, rental_data = self.test_create_rental(property_id, tenant_id)
-        if not success:
-            return False
-        
-        # Verify property status changed to rented
-        success, updated_property = self.test_get_property_by_id(property_id)
-        if not success:
-            return False
-        
-        if updated_property.get('status') == 'rented':
-            self.log_test("Property status change to rented", True)
+    def test_create_ugovor(self):
+        """Test creating a Croatian contract"""
+        if not self.created_entities['nekretnine'] or not self.created_entities['zakupnici']:
+            print("   ⚠️  Skipping contract creation - need nekretnina and zakupnik first")
             return True
-        else:
-            self.log_test("Property status change to rented", False, f"Expected 'rented', got '{updated_property.get('status')}'")
-            return False
+            
+        ugovor_data = {
+            "interna_oznaka": "UG-2024-001",
+            "nekretnina_id": self.created_entities['nekretnine'][0],
+            "zakupnik_id": self.created_entities['zakupnici'][0],
+            "datum_potpisivanja": "2024-01-15",
+            "datum_pocetka": "2024-02-01",
+            "datum_zavrsetka": "2025-01-31",
+            "trajanje_mjeseci": 12,
+            "opcija_produljenja": True,
+            "uvjeti_produljenja": "Automatsko produljenje za 12 mjeseci",
+            "rok_otkaza_dani": 30,
+            "osnovna_zakupnina": 800.0,
+            "zakupnina_po_m2": 9.36,
+            "cam_troskovi": 50.0,
+            "polog_depozit": 1600.0,
+            "garancija": 800.0,
+            "indeksacija": True,
+            "indeks": "Potrošačke cijene",
+            "formula_indeksacije": "Godišnja indeksacija prema HNB",
+            "obveze_odrzavanja": "zakupodavac",
+            "namjena_prostora": "Stanovanje",
+            "rezije_brojila": "Na zakupnika"
+        }
+        
+        success, response = self.run_test(
+            "Create Croatian Contract (Ugovor)",
+            "POST",
+            "ugovori",
+            201,
+            ugovor_data
+        )
+        
+        if success and 'id' in response:
+            self.created_entities['ugovori'].append(response['id'])
+            print(f"   Created ugovor ID: {response['id']}")
+            # Verify Croatian fields
+            croatian_fields = ['interna_oznaka', 'osnovna_zakupnina', 'indeksacija']
+            for field in croatian_fields:
+                if field in response:
+                    print(f"   ✅ Croatian field {field}: {response[field]}")
+        
+        return success
+
+    def test_get_ugovori(self):
+        """Test getting all contracts"""
+        success, response = self.run_test(
+            "Get All Contracts (Ugovori)",
+            "GET",
+            "ugovori",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} ugovori")
+            if len(response) > 0:
+                # Check Croatian fields in first contract
+                first_contract = response[0]
+                croatian_fields = ['interna_oznaka', 'osnovna_zakupnina', 'status']
+                for field in croatian_fields:
+                    if field in first_contract:
+                        print(f"   ✅ Croatian field {field}: {first_contract[field]}")
+        
+        return success
+
+    def test_create_dokument(self):
+        """Test creating a Croatian document"""
+        if not self.created_entities['nekretnine']:
+            print("   ⚠️  Skipping document creation - need nekretnina first")
+            return True
+            
+        dokument_data = {
+            "naziv": "Zemljišnoknjižni izvadak",
+            "tip": "zemljisnoknjizni_izvadak",
+            "opis": "Izvadak iz zemljišnih knjiga za nekretninu",
+            "verzija": "1.0",
+            "nekretnina_id": self.created_entities['nekretnine'][0],
+            "uploadao": "Administrator"
+        }
+        
+        success, response = self.run_test(
+            "Create Croatian Document (Dokument)",
+            "POST",
+            "dokumenti",
+            201,
+            dokument_data
+        )
+        
+        if success and 'id' in response:
+            self.created_entities['dokumenti'].append(response['id'])
+            print(f"   Created dokument ID: {response['id']}")
+            # Verify Croatian fields
+            if 'tip' in response:
+                print(f"   ✅ Croatian document type: {response['tip']}")
+        
+        return success
+
+    def test_get_dokumenti(self):
+        """Test getting all documents"""
+        success, response = self.run_test(
+            "Get All Documents (Dokumenti)",
+            "GET",
+            "dokumenti",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} dokumenti")
+        
+        return success
+
+    def test_get_podsjetnici(self):
+        """Test getting reminders"""
+        success, response = self.run_test(
+            "Get Reminders (Podsjećanja)",
+            "GET",
+            "podsjetnici",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} podsjećanja")
+        
+        return success
+
+    def test_get_aktivni_podsjetnici(self):
+        """Test getting active reminders"""
+        success, response = self.run_test(
+            "Get Active Reminders (Aktivna podsjećanja)",
+            "GET",
+            "podsjetnici/aktivni",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            print(f"   Found {len(response)} aktivna podsjećanja")
+        
+        return success
+
+    def test_pretraga(self):
+        """Test Croatian search functionality"""
+        success, response = self.run_test(
+            "Search Functionality (Pretraga)",
+            "GET",
+            "pretraga",
+            200,
+            params={"q": "Zagreb"}
+        )
+        
+        if success and isinstance(response, dict):
+            search_categories = ['nekretnine', 'zakupnici', 'ugovori']
+            for category in search_categories:
+                if category in response:
+                    count = len(response[category]) if isinstance(response[category], list) else 0
+                    print(f"   ✅ Found {count} results in {category}")
+                else:
+                    print(f"   ❌ Missing search category: {category}")
+        
+        return success
+
+    def test_update_nekretnina(self):
+        """Test updating a property"""
+        if not self.created_entities['nekretnine']:
+            print("   ⚠️  Skipping update test - no nekretnina to update")
+            return True
+            
+        nekretnina_id = self.created_entities['nekretnine'][0]
+        update_data = {
+            "naziv": "Ažurirana testna nekretnina Zagreb",
+            "adresa": "Ilica 1, Zagreb",
+            "katastarska_opcina": "Zagreb-Centar",
+            "broj_kat_cestice": "1234/5",
+            "vrsta": "stan",
+            "povrsina": 85.5,
+            "godina_izgradnje": 2010,
+            "vlasnik": "Marko Marković",
+            "udio_vlasnistva": "1/1",
+            "trzisna_vrijednost": 190000.0  # Updated value
+        }
+        
+        success, response = self.run_test(
+            "Update Property (Ažuriraj nekretninu)",
+            "PUT",
+            f"nekretnine/{nekretnina_id}",
+            200,
+            update_data
+        )
+        
+        if success and 'naziv' in response:
+            print(f"   ✅ Updated naziv: {response['naziv']}")
+        
+        return success
+
+    def test_delete_nekretnina(self):
+        """Test deleting a property"""
+        if not self.created_entities['nekretnine']:
+            print("   ⚠️  Skipping delete test - no nekretnina to delete")
+            return True
+            
+        nekretnina_id = self.created_entities['nekretnine'][0]
+        
+        success, response = self.run_test(
+            "Delete Property (Obriši nekretninu)",
+            "DELETE",
+            f"nekretnine/{nekretnina_id}",
+            200
+        )
+        
+        if success and 'poruka' in response:
+            print(f"   ✅ Delete message: {response['poruka']}")
+            # Remove from our tracking
+            self.created_entities['nekretnine'].remove(nekretnina_id)
+        
+        return success
 
 def main():
-    print("🏠 Starting Real Estate Management API Tests")
-    print("=" * 50)
+    print("🏢 Croatian Real Estate Management System API Testing")
+    print("=" * 60)
     
-    tester = RealEstateAPITester()
+    tester = CroatianRealEstateAPITester()
     
-    # Test basic endpoints
-    print("\n📊 Testing Basic Endpoints...")
-    tester.test_root_endpoint()
-    tester.test_analytics_dashboard()
-    tester.test_analytics_revenue()
+    # Test sequence
+    tests = [
+        tester.test_root_endpoint,
+        tester.test_dashboard,
+        tester.test_create_nekretnina,
+        tester.test_get_nekretnine,
+        tester.test_create_zakupnik,
+        tester.test_get_zakupnici,
+        tester.test_create_ugovor,
+        tester.test_get_ugovori,
+        tester.test_create_dokument,
+        tester.test_get_dokumenti,
+        tester.test_get_podsjetnici,
+        tester.test_get_aktivni_podsjetnici,
+        tester.test_pretraga,
+        tester.test_update_nekretnina,
+        tester.test_delete_nekretnina
+    ]
     
-    # Test property management
-    print("\n🏢 Testing Property Management...")
-    tester.test_get_properties()
-    success, property_data = tester.test_create_property()
-    
-    if success and property_data:
-        property_id = property_data['id']
-        tester.test_get_property_by_id(property_id)
-        tester.test_update_property(property_id)
-    
-    # Test tenant management
-    print("\n👥 Testing Tenant Management...")
-    tester.test_get_tenants()
-    success, tenant_data = tester.test_create_tenant()
-    
-    # Test rental management
-    print("\n📋 Testing Rental Management...")
-    tester.test_get_rentals()
-    
-    if (success and tenant_data and 
-        tester.created_entities['properties'] and 
-        tester.created_entities['tenants']):
-        
-        property_id = tester.created_entities['properties'][0]
-        tenant_id = tester.created_entities['tenants'][0]
-        
-        success, rental_data = tester.test_create_rental(property_id, tenant_id)
-        if success and rental_data:
-            rental_id = rental_data['id']
-            tester.test_get_rental_by_id(rental_id)
-    
-    # Test payment management
-    print("\n💰 Testing Payment Management...")
-    tester.test_get_payments()
-    
-    if tester.created_entities['rentals']:
-        rental_id = tester.created_entities['rentals'][0]
-        success, payment_data = tester.test_create_payment(rental_id)
-        if success and payment_data:
-            payment_id = payment_data['id']
-            tester.test_mark_payment_paid(payment_id)
-    
-    # Test document management
-    print("\n📄 Testing Document Management...")
-    tester.test_get_documents()
-    
-    if tester.created_entities['properties']:
-        property_id = tester.created_entities['properties'][0]
-        tester.test_create_document(property_id)
-        tester.test_get_property_documents(property_id)
-    
-    # Test business logic
-    print("\n🔄 Testing Business Logic...")
-    tester.test_property_status_change()
-    
-    # Clean up - delete created property (this should be done last)
-    print("\n🧹 Testing Cleanup...")
-    if tester.created_entities['properties']:
-        # Only delete the first property to test deletion functionality
-        property_id = tester.created_entities['properties'][0]
-        tester.test_delete_property(property_id)
+    # Run all tests
+    for test in tests:
+        try:
+            test()
+        except Exception as e:
+            print(f"❌ Test failed with exception: {str(e)}")
+            tester.tests_run += 1
     
     # Print results
-    print("\n" + "=" * 50)
-    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} passed")
+    print("\n" + "=" * 60)
+    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
+    print(f"📈 Success Rate: {success_rate:.1f}%")
     
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
-        return 0
+    if success_rate >= 90:
+        print("🎉 Croatian Real Estate API is working excellently!")
+    elif success_rate >= 70:
+        print("✅ Croatian Real Estate API is working well with minor issues")
     else:
-        print("❌ Some tests failed!")
-        failed_tests = [test for test in tester.test_results if not test['success']]
-        print("\nFailed tests:")
-        for test in failed_tests:
-            print(f"  - {test['name']}: {test['details']}")
-        return 1
+        print("⚠️  Croatian Real Estate API has significant issues")
+    
+    return 0 if tester.tests_passed == tester.tests_run else 1
 
 if __name__ == "__main__":
     sys.exit(main())
