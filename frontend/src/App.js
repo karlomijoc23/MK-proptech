@@ -1001,27 +1001,1126 @@ const ZakupnikForm = ({ onSubmit, onCancel }) => {
   );
 };
 
-// Simple placeholder components for now
-const Ugovori = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-gray-900">Ugovori</h1>
-    <p className="mt-4 text-gray-600">Ugovori o zakupu - u razvoju</p>
-  </div>
-);
+// Ugovori Component
+const Ugovori = () => {
+  const [ugovori, setUgovori] = useState([]);
+  const [nekretnine, setNekretnine] = useState([]);
+  const [zakupnici, setZakupnici] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('svi');
 
-const Dokumenti = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-gray-900">Dokumenti</h1>
-    <p className="mt-4 text-gray-600">Sustav dokumenata - u razvoju</p>
-  </div>
-);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-const Podsjetnici = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold text-gray-900">Podsjećanja</h1>
-    <p className="mt-4 text-gray-600">Sustav podsjećanja - u razvoju</p>
-  </div>
-);
+  const fetchData = async () => {
+    try {
+      const [ugovoriRes, nekretnineRes, zakupniciRes] = await Promise.all([
+        api.getUgovori(),
+        api.getNekretnine(),
+        api.getZakupnici()
+      ]);
+      setUgovori(ugovoriRes.data);
+      setNekretnine(nekretnineRes.data);
+      setZakupnici(zakupniciRes.data);
+    } catch (error) {
+      console.error('Greška pri dohvaćanju podataka:', error);
+      toast.error('Greška pri učitavanju podataka');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateUgovor = async (formData) => {
+    try {
+      await api.createUgovor(formData);
+      toast.success('Ugovor je uspješno kreiran');
+      fetchData();
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error('Greška pri kreiranju ugovora:', error);
+      toast.error('Greška pri kreiranju ugovora');
+    }
+  };
+
+  const handleStatusChange = async (ugovorId, noviStatus) => {
+    try {
+      await api.updateStatusUgovora(ugovorId, noviStatus);
+      toast.success('Status ugovora je ažuriran');
+      fetchData();
+    } catch (error) {
+      console.error('Greška pri ažuriranju statusa:', error);
+      toast.error('Greška pri ažuriranju statusa');
+    }
+  };
+
+  const getNekretnina = (nekretnina_id) => {
+    return nekretnine.find(n => n.id === nekretnina_id);
+  };
+
+  const getZakupnik = (zakupnik_id) => {
+    return zakupnici.find(z => z.id === zakupnik_id);
+  };
+
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      'aktivno': { label: 'Aktivno', variant: 'default' },
+      'na_isteku': { label: 'Na isteku', variant: 'secondary' },
+      'raskinuto': { label: 'Raskinuto', variant: 'destructive' },
+      'arhivirano': { label: 'Arhivirano', variant: 'outline' }
+    };
+    
+    const statusInfo = statusMap[status] || { label: status, variant: 'outline' };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+  };
+
+  const isUgovorNaIsteku = (ugovor) => {
+    const danas = new Date();
+    const datumZavrsetka = new Date(ugovor.datum_zavrsetka);
+    const daniDo = Math.ceil((datumZavrsetka - danas) / (1000 * 60 * 60 * 24));
+    return daniDo <= 90 && daniDo > 0; // Ugovori koji ističu u sljedećih 90 dana
+  };
+
+  const filteredUgovori = ugovori.filter(ugovor => {
+    if (filterStatus === 'svi') return true;
+    if (filterStatus === 'na_isteku') return isUgovorNaIsteku(ugovor);
+    return ugovor.status === filterStatus;
+  });
+
+  if (loading) {
+    return <div className="p-8">Učitava ugovore...</div>;
+  }
+
+  return (
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Ugovori o zakupu</h1>
+        <Button 
+          onClick={() => setShowCreateForm(true)}
+          data-testid="dodaj-ugovor-btn"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Dodaj ugovor
+        </Button>
+      </div>
+
+      {/* Filter buttons */}
+      <div className="flex space-x-2">
+        <Button 
+          variant={filterStatus === 'svi' ? 'default' : 'outline'}
+          onClick={() => setFilterStatus('svi')}
+          size="sm"
+        >
+          Svi ({ugovori.length})
+        </Button>
+        <Button 
+          variant={filterStatus === 'aktivno' ? 'default' : 'outline'}
+          onClick={() => setFilterStatus('aktivno')}
+          size="sm"
+        >
+          Aktivni ({ugovori.filter(u => u.status === 'aktivno').length})
+        </Button>
+        <Button 
+          variant={filterStatus === 'na_isteku' ? 'default' : 'outline'}
+          onClick={() => setFilterStatus('na_isteku')}
+          size="sm"
+          className="bg-orange-100 text-orange-700 hover:bg-orange-200"
+        >
+          <Bell className="w-4 h-4 mr-1" />
+          Na isteku ({ugovori.filter(u => isUgovorNaIsteku(u)).length})
+        </Button>
+        <Button 
+          variant={filterStatus === 'raskinuto' ? 'default' : 'outline'}
+          onClick={() => setFilterStatus('raskinuto')}
+          size="sm"
+        >
+          Raskinuti ({ugovori.filter(u => u.status === 'raskinuto').length})
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredUgovori.map((ugovor) => {
+          const nekretnina = getNekretnina(ugovor.nekretnina_id);
+          const zakupnik = getZakupnik(ugovor.zakupnik_id);
+          const naIsteku = isUgovorNaIsteku(ugovor);
+          
+          return (
+            <Card key={ugovor.id} className={naIsteku ? 'border-orange-200 bg-orange-50' : ''} data-testid={`ugovor-card-${ugovor.id}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {ugovor.interna_oznaka}
+                  <div className="flex space-x-2">
+                    {naIsteku && <Badge variant="secondary" className="bg-orange-200 text-orange-800">⚠️ Ističe uskoro</Badge>}
+                    {getStatusBadge(ugovor.status)}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="font-medium text-blue-600">{nekretnina?.naziv}</p>
+                  <p className="text-sm text-gray-600">{nekretnina?.adresa}</p>
+                </div>
+                <div>
+                  <p className="font-medium">{zakupnik?.naziv_firme || zakupnik?.ime_prezime}</p>
+                  <p className="text-sm text-gray-600">OIB: {zakupnik?.oib}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Početak:</span> {new Date(ugovor.datum_pocetka).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Završetak:</span> {new Date(ugovor.datum_zavrsetka).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Trajanje:</span> {ugovor.trajanje_mjeseci} mj.
+                  </div>
+                  <div>
+                    <span className="font-medium">Otkaz:</span> {ugovor.rok_otkaza_dani} dana
+                  </div>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="text-lg font-bold text-green-600">
+                    {ugovor.osnovna_zakupnina.toLocaleString()} €/mjesec
+                  </p>
+                  {ugovor.zakupnina_po_m2 && (
+                    <p className="text-sm text-gray-600">
+                      {ugovor.zakupnina_po_m2.toLocaleString()} €/m²
+                    </p>
+                  )}
+                  {ugovor.polog_depozit && (
+                    <p className="text-sm text-gray-600">
+                      Polog: {ugovor.polog_depozit.toLocaleString()} €
+                    </p>
+                  )}
+                </div>
+                
+                {/* Status change dropdown */}
+                <div className="flex items-center space-x-2 pt-2">
+                  <Select 
+                    value={ugovor.status} 
+                    onValueChange={(value) => handleStatusChange(ugovor.id, value)}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aktivno">Aktivno</SelectItem>
+                      <SelectItem value="na_isteku">Na isteku</SelectItem>
+                      <SelectItem value="raskinuto">Raskinuto</SelectItem>
+                      <SelectItem value="arhivirano">Arhivirano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {ugovor.opcija_produljenja && (
+                    <Badge variant="outline" className="text-xs">
+                      Opcija produljenja
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Create Contract Dialog */}
+      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="ugovor-form-description">
+          <DialogHeader>
+            <DialogTitle>Dodaj novi ugovor</DialogTitle>
+          </DialogHeader>
+          <div id="ugovor-form-description" className="sr-only">
+            Forma za kreiranje novog ugovora o zakupu
+          </div>
+          <UgovorForm 
+            nekretnine={nekretnine.filter(n => !ugovori.some(u => u.nekretnina_id === n.id && u.status === 'aktivno'))}
+            zakupnici={zakupnici}
+            onSubmit={handleCreateUgovor}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Ugovor Form Component
+const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    interna_oznaka: '',
+    nekretnina_id: '',
+    zakupnik_id: '',
+    datum_potpisivanja: '',
+    datum_pocetka: '',
+    datum_zavrsetka: '',
+    trajanje_mjeseci: '',
+    opcija_produljenja: false,
+    uvjeti_produljenja: '',
+    rok_otkaza_dani: 30,
+    osnovna_zakupnina: '',
+    zakupnina_po_m2: '',
+    cam_troskovi: '',
+    polog_depozit: '',
+    garancija: '',
+    indeksacija: false,
+    indeks: '',
+    formula_indeksacije: '',
+    obveze_odrzavanja: '',
+    namjena_prostora: '',
+    rezije_brojila: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = {
+      ...formData,
+      trajanje_mjeseci: parseInt(formData.trajanje_mjeseci),
+      rok_otkaza_dani: parseInt(formData.rok_otkaza_dani),
+      osnovna_zakupnina: parseFloat(formData.osnovna_zakupnina),
+      zakupnina_po_m2: formData.zakupnina_po_m2 ? parseFloat(formData.zakupnina_po_m2) : null,
+      cam_troskovi: formData.cam_troskovi ? parseFloat(formData.cam_troskovi) : null,
+      polog_depozit: formData.polog_depozit ? parseFloat(formData.polog_depozit) : null,
+      garancija: formData.garancija ? parseFloat(formData.garancija) : null
+    };
+    onSubmit(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="ugovor-form">
+      <Tabs defaultValue="osnovni" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="osnovni">Osnovni podaci</TabsTrigger>
+          <TabsTrigger value="financije">Financije</TabsTrigger>
+          <TabsTrigger value="uvjeti">Uvjeti</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="osnovni" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="interna_oznaka">Interna oznaka ugovora *</Label>
+              <Input
+                id="interna_oznaka"
+                value={formData.interna_oznaka}
+                onChange={(e) => setFormData({ ...formData, interna_oznaka: e.target.value })}
+                data-testid="ugovor-oznaka-input"
+                placeholder="npr. UG-2025-001"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="datum_potpisivanja">Datum potpisivanja *</Label>
+              <Input
+                id="datum_potpisivanja"
+                type="date"
+                value={formData.datum_potpisivanja}
+                onChange={(e) => setFormData({ ...formData, datum_potpisivanja: e.target.value })}
+                data-testid="ugovor-potpis-input"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="nekretnina_id">Nekretnina *</Label>
+            <Select value={formData.nekretnina_id} onValueChange={(value) => setFormData({ ...formData, nekretnina_id: value })}>
+              <SelectTrigger data-testid="ugovor-nekretnina-select">
+                <SelectValue placeholder="Izaberite nekretninu" />
+              </SelectTrigger>
+              <SelectContent>
+                {nekretnine.map((nekretnina) => (
+                  <SelectItem key={nekretnina.id} value={nekretnina.id}>
+                    {nekretnina.naziv} - {nekretnina.adresa}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="zakupnik_id">Zakupnik *</Label>
+            <Select value={formData.zakupnik_id} onValueChange={(value) => setFormData({ ...formData, zakupnik_id: value })}>
+              <SelectTrigger data-testid="ugovor-zakupnik-select">
+                <SelectValue placeholder="Izaberite zakupnika" />
+              </SelectTrigger>
+              <SelectContent>
+                {zakupnici.map((zakupnik) => (
+                  <SelectItem key={zakupnik.id} value={zakupnik.id}>
+                    {zakupnik.naziv_firme || zakupnik.ime_prezime} - {zakupnik.oib}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="datum_pocetka">Početak zakupa *</Label>
+              <Input
+                id="datum_pocetka"
+                type="date"
+                value={formData.datum_pocetka}
+                onChange={(e) => setFormData({ ...formData, datum_pocetka: e.target.value })}
+                data-testid="ugovor-pocetak-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="datum_zavrsetka">Završetak zakupa *</Label>
+              <Input
+                id="datum_zavrsetka"
+                type="date"
+                value={formData.datum_zavrsetka}
+                onChange={(e) => setFormData({ ...formData, datum_zavrsetka: e.target.value })}
+                data-testid="ugovor-zavrsetak-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="trajanje_mjeseci">Trajanje (mjeseci) *</Label>
+              <Input
+                id="trajanje_mjeseci"
+                type="number"
+                value={formData.trajanje_mjeseci}
+                onChange={(e) => setFormData({ ...formData, trajanje_mjeseci: e.target.value })}
+                data-testid="ugovor-trajanje-input"
+                required
+              />
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="financije" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="osnovna_zakupnina">Osnovna zakupnina (€/mjesec) *</Label>
+              <Input
+                id="osnovna_zakupnina"
+                type="number"
+                step="0.01"
+                value={formData.osnovna_zakupnina}
+                onChange={(e) => setFormData({ ...formData, osnovna_zakupnina: e.target.value })}
+                data-testid="ugovor-zakupnina-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="zakupnina_po_m2">Zakupnina po m² (€/m²)</Label>
+              <Input
+                id="zakupnina_po_m2"
+                type="number"
+                step="0.01"
+                value={formData.zakupnina_po_m2}
+                onChange={(e) => setFormData({ ...formData, zakupnina_po_m2: e.target.value })}
+                data-testid="ugovor-m2-input"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="cam_troskovi">CAM troškovi (€)</Label>
+              <Input
+                id="cam_troskovi"
+                type="number"
+                step="0.01"
+                value={formData.cam_troskovi}
+                onChange={(e) => setFormData({ ...formData, cam_troskovi: e.target.value })}
+                data-testid="ugovor-cam-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="polog_depozit">Polog/Depozit (€)</Label>
+              <Input
+                id="polog_depozit"
+                type="number"
+                step="0.01"
+                value={formData.polog_depozit}
+                onChange={(e) => setFormData({ ...formData, polog_depozit: e.target.value })}
+                data-testid="ugovor-polog-input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="garancija">Garancija (€)</Label>
+            <Input
+              id="garancija"
+              type="number"
+              step="0.01"
+              value={formData.garancija}
+              onChange={(e) => setFormData({ ...formData, garancija: e.target.value })}
+              data-testid="ugovor-garancija-input"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="indeksacija"
+                checked={formData.indeksacija}
+                onChange={(e) => setFormData({ ...formData, indeksacija: e.target.checked })}
+                data-testid="ugovor-indeksacija-checkbox"
+              />
+              <Label htmlFor="indeksacija">Indeksacija</Label>
+            </div>
+            {formData.indeksacija && (
+              <div className="grid grid-cols-2 gap-4 ml-6">
+                <div>
+                  <Label htmlFor="indeks">Indeks</Label>
+                  <Input
+                    id="indeks"
+                    value={formData.indeks}
+                    onChange={(e) => setFormData({ ...formData, indeks: e.target.value })}
+                    data-testid="ugovor-indeks-input"
+                    placeholder="npr. potrošačke cijene"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="formula_indeksacije">Formula</Label>
+                  <Input
+                    id="formula_indeksacije"
+                    value={formData.formula_indeksacije}
+                    onChange={(e) => setFormData({ ...formData, formula_indeksacije: e.target.value })}
+                    data-testid="ugovor-formula-input"
+                    placeholder="npr. godišnje +3%"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="uvjeti" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="rok_otkaza_dani">Rok otkaza (dani)</Label>
+              <Input
+                id="rok_otkaza_dani"
+                type="number"
+                value={formData.rok_otkaza_dani}
+                onChange={(e) => setFormData({ ...formData, rok_otkaza_dani: e.target.value })}
+                data-testid="ugovor-otkaz-input"
+              />
+            </div>
+            <div className="flex items-center space-x-2 pt-6">
+              <input
+                type="checkbox"
+                id="opcija_produljenja"
+                checked={formData.opcija_produljenja}
+                onChange={(e) => setFormData({ ...formData, opcija_produljenja: e.target.checked })}
+                data-testid="ugovor-produljenje-checkbox"
+              />
+              <Label htmlFor="opcija_produljenja">Opcija produljenja</Label>
+            </div>
+          </div>
+
+          {formData.opcija_produljenja && (
+            <div>
+              <Label htmlFor="uvjeti_produljenja">Uvjeti produljenja</Label>
+              <Textarea
+                id="uvjeti_produljenja"
+                value={formData.uvjeti_produljenja}
+                onChange={(e) => setFormData({ ...formData, uvjeti_produljenja: e.target.value })}
+                data-testid="ugovor-uvjeti-input"
+              />
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="obveze_odrzavanja">Obveze održavanja</Label>
+            <Select value={formData.obveze_odrzavanja} onValueChange={(value) => setFormData({ ...formData, obveze_odrzavanja: value })}>
+              <SelectTrigger data-testid="ugovor-odrzavanje-select">
+                <SelectValue placeholder="Izaberite odgovorno lice" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="zakupodavac">Zakupodavac</SelectItem>
+                <SelectItem value="zakupnik">Zakupnik</SelectItem>
+                <SelectItem value="podijeljeno">Podijeljeno</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="namjena_prostora">Namjena prostora</Label>
+            <Input
+              id="namjena_prostora"
+              value={formData.namjena_prostora}
+              onChange={(e) => setFormData({ ...formData, namjena_prostora: e.target.value })}
+              data-testid="ugovor-namjena-input"
+              placeholder="npr. uredski prostor, trgovina"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="rezije_brojila">Režije i brojila</Label>
+            <Textarea
+              id="rezije_brojila"
+              value={formData.rezije_brojila}
+              onChange={(e) => setFormData({ ...formData, rezije_brojila: e.target.value })}
+              data-testid="ugovor-rezije-input"
+              placeholder="Opišite režijske troškove i brojila"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex space-x-2 pt-4">
+        <Button type="submit" data-testid="potvrdi-ugovor-form">
+          Kreiraj ugovor
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-ugovor-form">
+          Odustani
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// Dokumenti Component
+const Dokumenti = () => {
+  const [dokumenti, setDokumenti] = useState([]);
+  const [nekretnine, setNekretnine] = useState([]);
+  const [zakupnici, setZakupnici] = useState([]);
+  const [ugovori, setUgovori] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('svi');
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [dokumentiRes, nekretnineRes, zakupniciRes, ugovoriRes] = await Promise.all([
+        api.getDokumenti(),
+        api.getNekretnine(),
+        api.getZakupnici(),
+        api.getUgovori()
+      ]);
+      setDokumenti(dokumentiRes.data);
+      setNekretnine(nekretnineRes.data);
+      setZakupnici(zakupniciRes.data);
+      setUgovori(ugovoriRes.data);
+    } catch (error) {
+      console.error('Greška pri dohvaćanju dokumenata:', error);
+      toast.error('Greška pri učitavanju dokumenata');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateDokument = async (formData) => {
+    try {
+      await api.createDokument(formData);
+      toast.success('Dokument je uspješno dodan');
+      fetchData();
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error('Greška pri dodavanju dokumenta:', error);
+      toast.error('Greška pri dodavanju dokumenta');
+    }
+  };
+
+  const getLinkedEntity = (dokument) => {
+    if (dokument.nekretnina_id) {
+      const nekretnina = nekretnine.find(n => n.id === dokument.nekretnina_id);
+      return { tip: 'Nekretnina', naziv: nekretnina?.naziv };
+    } else if (dokument.zakupnik_id) {
+      const zakupnik = zakupnici.find(z => z.id === dokument.zakupnik_id);
+      return { tip: 'Zakupnik', naziv: zakupnik?.naziv_firme || zakupnik?.ime_prezime };
+    } else if (dokument.ugovor_id) {
+      const ugovor = ugovori.find(u => u.id === dokument.ugovor_id);
+      return { tip: 'Ugovor', naziv: ugovor?.interna_oznaka };
+    }
+    return { tip: 'Općenito', naziv: 'Nema povezanost' };
+  };
+
+  const getTipLabel = (tip) => {
+    const tipMap = {
+      'ugovor': 'Ugovor',
+      'aneks': 'Aneks',
+      'certifikat': 'Certifikat',
+      'osiguranje': 'Osiguranje',
+      'zemljisnoknjizni_izvadak': 'Zemljišnoknjižni izvadak',
+      'uporabna_dozvola': 'Uporabna dozvola',
+      'gradevinska_dozvola': 'Građevinska dozvola',
+      'energetski_certifikat': 'Energetski certifikat',
+      'izvadak_iz_registra': 'Izvadak iz registra',
+      'bon_2': 'BON-2',
+      'ostalo': 'Ostalo'
+    };
+    return tipMap[tip] || tip;
+  };
+
+  const filteredDokumenti = dokumenti.filter(dokument => {
+    if (filterCategory === 'svi') return true;
+    return dokument.tip === filterCategory;
+  });
+
+  if (loading) {
+    return <div className="p-8">Učitava dokumente...</div>;
+  }
+
+  return (
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Dokumenti</h1>
+        <Button 
+          onClick={() => setShowCreateForm(true)}
+          data-testid="dodaj-dokument-btn"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Dodaj dokument
+        </Button>
+      </div>
+
+      {/* Filter buttons */}
+      <div className="flex space-x-2 flex-wrap">
+        <Button 
+          variant={filterCategory === 'svi' ? 'default' : 'outline'}
+          onClick={() => setFilterCategory('svi')}
+          size="sm"
+        >
+          Svi ({dokumenti.length})
+        </Button>
+        <Button 
+          variant={filterCategory === 'ugovor' ? 'default' : 'outline'}
+          onClick={() => setFilterCategory('ugovor')}
+          size="sm"
+        >
+          Ugovori
+        </Button>
+        <Button 
+          variant={filterCategory === 'zemljisnoknjizni_izvadak' ? 'default' : 'outline'}
+          onClick={() => setFilterCategory('zemljisnoknjizni_izvadak')}
+          size="sm"
+        >
+          Z.K. izvadci
+        </Button>
+        <Button 
+          variant={filterCategory === 'osiguranje' ? 'default' : 'outline'}
+          onClick={() => setFilterCategory('osiguranje')}
+          size="sm"
+        >
+          Osiguranja
+        </Button>
+        <Button 
+          variant={filterCategory === 'certifikat' ? 'default' : 'outline'}
+          onClick={() => setFilterCategory('certifikat')}
+          size="sm"
+        >
+          Certifikati
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredDokumenti.map((dokument) => {
+          const linkedEntity = getLinkedEntity(dokument);
+          
+          return (
+            <Card key={dokument.id} data-testid={`dokument-card-${dokument.id}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="truncate">{dokument.naziv}</span>
+                  <Badge variant="outline">
+                    {getTipLabel(dokument.tip)}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-medium">Vezano za:</span> {linkedEntity.tip}
+                </p>
+                <p className="text-sm text-blue-600">{linkedEntity.naziv}</p>
+                <p className="text-sm">
+                  <span className="font-medium">Verzija:</span> {dokument.verzija}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Uploadao:</span> {dokument.uploadao}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Datum:</span> {new Date(dokument.kreiran).toLocaleDateString()}
+                </p>
+                {dokument.opis && (
+                  <p className="text-sm text-gray-600">{dokument.opis}</p>
+                )}
+                <div className="pt-2">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Pregled
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Create Document Dialog */}
+      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+        <DialogContent className="max-w-2xl" aria-describedby="dokument-form-description">
+          <DialogHeader>
+            <DialogTitle>Dodaj novi dokument</DialogTitle>
+          </DialogHeader>
+          <div id="dokument-form-description" className="sr-only">
+            Forma za dodavanje novog dokumenta s kategorizacijom
+          </div>
+          <DokumentForm 
+            nekretnine={nekretnine}
+            zakupnici={zakupnici}
+            ugovori={ugovori}
+            onSubmit={handleCreateDokument}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Dokument Form Component
+const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    naziv: '',
+    tip: 'ugovor',
+    opis: '',
+    verzija: '1.0',
+    nekretnina_id: '',
+    zakupnik_id: '',
+    ugovor_id: '',
+    uploadao: ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = {
+      ...formData,
+      nekretnina_id: formData.nekretnina_id || null,
+      zakupnik_id: formData.zakupnik_id || null,
+      ugovor_id: formData.ugovor_id || null
+    };
+    onSubmit(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="dokument-form">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="naziv">Naziv dokumenta *</Label>
+          <Input
+            id="naziv"
+            value={formData.naziv}
+            onChange={(e) => setFormData({ ...formData, naziv: e.target.value })}
+            data-testid="dokument-naziv-input"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="tip">Tip dokumenta *</Label>
+          <Select value={formData.tip} onValueChange={(value) => setFormData({ ...formData, tip: value })}>
+            <SelectTrigger data-testid="dokument-tip-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ugovor">Ugovor</SelectItem>
+              <SelectItem value="aneks">Aneks</SelectItem>
+              <SelectItem value="zemljisnoknjizni_izvadak">Zemljišnoknjižni izvadak</SelectItem>
+              <SelectItem value="uporabna_dozvola">Uporabna dozvola</SelectItem>
+              <SelectItem value="gradevinska_dozvola">Građevinska dozvola</SelectItem>
+              <SelectItem value="energetski_certifikat">Energetski certifikat</SelectItem>
+              <SelectItem value="osiguranje">Osiguranje</SelectItem>
+              <SelectItem value="izvadak_iz_registra">Izvadak iz registra</SelectItem>
+              <SelectItem value="bon_2">BON-2</SelectItem>
+              <SelectItem value="certifikat">Certifikat</SelectItem>
+              <SelectItem value="ostalo">Ostalo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="opis">Opis dokumenta</Label>
+        <Textarea
+          id="opis"
+          value={formData.opis}
+          onChange={(e) => setFormData({ ...formData, opis: e.target.value })}
+          data-testid="dokument-opis-input"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="verzija">Verzija</Label>
+          <Input
+            id="verzija"
+            value={formData.verzija}
+            onChange={(e) => setFormData({ ...formData, verzija: e.target.value })}
+            data-testid="dokument-verzija-input"
+          />
+        </div>
+        <div>
+          <Label htmlFor="uploadao">Uploadao *</Label>
+          <Input
+            id="uploadao"
+            value={formData.uploadao}
+            onChange={(e) => setFormData({ ...formData, uploadao: e.target.value })}
+            data-testid="dokument-uploadao-input"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4 border-t pt-4">
+        <h4 className="font-medium">Poveži s entitetom (opcionalno)</h4>
+        
+        <div>
+          <Label htmlFor="nekretnina_id">Nekretnina</Label>
+          <Select value={formData.nekretnina_id} onValueChange={(value) => setFormData({ ...formData, nekretnina_id: value, zakupnik_id: '', ugovor_id: '' })}>
+            <SelectTrigger data-testid="dokument-nekretnina-select">
+              <SelectValue placeholder="Izaberite nekretninu" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nema veze s nekretninom</SelectItem>
+              {nekretnine.map((nekretnina) => (
+                <SelectItem key={nekretnina.id} value={nekretnina.id}>
+                  {nekretnina.naziv} - {nekretnina.adresa}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="zakupnik_id">Zakupnik</Label>
+          <Select value={formData.zakupnik_id} onValueChange={(value) => setFormData({ ...formData, zakupnik_id: value, nekretnina_id: '', ugovor_id: '' })}>
+            <SelectTrigger data-testid="dokument-zakupnik-select">
+              <SelectValue placeholder="Izaberite zakupnika" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nema veze sa zakupnikom</SelectItem>
+              {zakupnici.map((zakupnik) => (
+                <SelectItem key={zakupnik.id} value={zakupnik.id}>
+                  {zakupnik.naziv_firme || zakupnik.ime_prezime} - {zakupnik.oib}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="ugovor_id">Ugovor</Label>
+          <Select value={formData.ugovor_id} onValueChange={(value) => setFormData({ ...formData, ugovor_id: value, nekretnina_id: '', zakupnik_id: '' })}>
+            <SelectTrigger data-testid="dokument-ugovor-select">
+              <SelectValue placeholder="Izaberite ugovor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nema veze s ugovorom</SelectItem>
+              {ugovori.map((ugovor) => (
+                <SelectItem key={ugovor.id} value={ugovor.id}>
+                  {ugovor.interna_oznaka}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex space-x-2 pt-4">
+        <Button type="submit" data-testid="potvrdi-dokument-form">
+          Dodaj dokument
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-dokument-form">
+          Odustani
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// Podsjećanja Component
+const Podsjetnici = () => {
+  const [podsjetnici, setPodsjetnici] = useState([]);
+  const [ugovori, setUgovori] = useState([]);
+  const [nekretnine, setNekretnine] = useState([]);
+  const [zakupnici, setZakupnici] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [podsjedniciRes, ugovoriRes, nekretnineRes, zakupniciRes] = await Promise.all([
+        api.getPodsjetnici(),
+        api.getUgovori(),
+        api.getNekretnine(),
+        api.getZakupnici()
+      ]);
+      setPodsjetnici(podsjedniciRes.data);
+      setUgovori(ugovoriRes.data);
+      setNekretnine(nekretnineRes.data);
+      setZakupnici(zakupniciRes.data);
+    } catch (error) {
+      console.error('Greška pri dohvaćanju podsjećanja:', error);
+      toast.error('Greška pri učitavanju podsjećanja');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getUgovorInfo = (ugovorId) => {
+    const ugovor = ugovori.find(u => u.id === ugovorId);
+    if (!ugovor) return null;
+
+    const nekretnina = nekretnine.find(n => n.id === ugovor.nekretnina_id);
+    const zakupnik = zakupnici.find(z => z.id === ugovor.zakupnik_id);
+
+    return {
+      ugovor,
+      nekretnina,
+      zakupnik
+    };
+  };
+
+  const getPriorityBadge = (daniPrije) => {
+    if (daniPrije <= 30) return <Badge variant="destructive">Visok prioritet</Badge>;
+    if (daniPrije <= 60) return <Badge variant="secondary">Srednji prioritet</Badge>;
+    return <Badge variant="outline">Nizak prioritet</Badge>;
+  };
+
+  const getTipLabel = (tip) => {
+    const tipMap = {
+      'istek_ugovora': 'Istek ugovora',
+      'obnova_garancije': 'Obnova garancije',
+      'indeksacija': 'Indeksacija'
+    };
+    return tipMap[tip] || tip;
+  };
+
+  if (loading) {
+    return <div className="p-8">Učitava podsjećanja...</div>;
+  }
+
+  const aktivniPodsjetnici = podsjetnici.filter(p => !p.poslan);
+  const poslaniPodsjetnici = podsjetnici.filter(p => p.poslan);
+
+  return (
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-900">Podsjećanja</h1>
+        <Badge variant="secondary" className="text-lg px-3 py-1">
+          {aktivniPodsjetnici.length} aktivnih podsjećanja
+        </Badge>
+      </div>
+
+      {aktivniPodsjetnici.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <CardTitle className="flex items-center text-orange-800">
+              <Bell className="w-5 h-5 mr-2" />
+              Aktivna podsjećanja
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {aktivniPodsjetnici.slice(0, 10).map((podsjetnik) => {
+                const ugovorInfo = getUgovorInfo(podsjetnik.ugovor_id);
+                if (!ugovorInfo) return null;
+
+                return (
+                  <div key={podsjetnik.id} className="flex items-center justify-between p-4 bg-white rounded-lg border">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <h4 className="font-medium">{getTipLabel(podsjetnik.tip)}</h4>
+                        {getPriorityBadge(podsjetnik.dani_prije)}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Ugovor: {ugovorInfo.ugovor.interna_oznaka}
+                      </p>
+                      <p className="text-sm text-blue-600">
+                        {ugovorInfo.nekretnina?.naziv} - {ugovorInfo.zakupnik?.naziv_firme || ugovorInfo.zakupnik?.ime_prezime}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Podsjetnik za: {new Date(podsjetnik.datum_podsjetnika).toLocaleDateString()} ({podsjetnik.dani_prije} dana prije)
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Button variant="outline" size="sm">
+                        Označi kao poslano
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistika podsjećanja</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span>Ukupno podsjećanja:</span>
+                <span className="font-bold">{podsjetnici.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Aktivna:</span>
+                <span className="font-bold text-orange-600">{aktivniPodsjetnici.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Poslana:</span>
+                <span className="font-bold text-green-600">{poslaniPodsjetnici.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Visok prioritet (≤30 dana):</span>
+                <span className="font-bold text-red-600">
+                  {aktivniPodsjetnici.filter(p => p.dani_prije <= 30).length}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Sljedeća podsjećanja</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {aktivniPodsjetnici
+                .sort((a, b) => new Date(a.datum_podsjetnika) - new Date(b.datum_podsjetnika))
+                .slice(0, 5)
+                .map((podsjetnik) => {
+                  const ugovorInfo = getUgovorInfo(podsjetnik.ugovor_id);
+                  if (!ugovorInfo) return null;
+
+                  return (
+                    <div key={podsjetnik.id} className="border-l-4 border-blue-500 pl-3">
+                      <p className="font-medium text-sm">{getTipLabel(podsjetnik.tip)}</p>
+                      <p className="text-xs text-gray-600">{ugovorInfo.ugovor.interna_oznaka}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(podsjetnik.datum_podsjetnika).toLocaleDateString()}
+                      </p>
+                    </div>
+                  );
+                })
+              }
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
 // Main App Component
 function App() {
