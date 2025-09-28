@@ -175,6 +175,11 @@ class DocumentCreate(BaseModel):
 
 # Routes
 
+# Root route
+@api_router.get("/")
+async def root():
+    return {"message": "Real Estate Management API", "status": "active"}
+
 # Authentication & Users
 @api_router.post("/users", response_model=User)
 async def create_user(user: UserCreate):
