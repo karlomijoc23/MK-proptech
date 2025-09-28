@@ -336,9 +336,170 @@ const Nekretnine = () => {
   const generatePropertyReport = async (nekretnina) => {
     try {
       toast.info('Generiranje PDF analize...');
-      // TODO: Implement PDF generation API call
-      // const response = await api.generatePropertyReport(nekretnina.id);
-      // window.open(response.data.pdf_url, '_blank');
+      
+      // Kreiraj novi PDF dokument
+      const doc = new jsPDF();
+      
+      // Dodaj naslov
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ANALIZA NEKRETNINE', 105, 20, { align: 'center' });
+      
+      // Dodaj liniju
+      doc.setLineWidth(0.5);
+      doc.line(20, 25, 190, 25);
+      
+      // Osnovni podaci
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('OSNOVNI PODACI', 20, 40);
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Naziv: ${nekretnina.naziv}`, 20, 50);
+      doc.text(`Adresa: ${nekretnina.adresa}`, 20, 58);
+      doc.text(`Katastarska opcina: ${nekretnina.katastarska_opcina}`, 20, 66);
+      doc.text(`Broj kat. cestice: ${nekretnina.broj_kat_cestice}`, 20, 74);
+      doc.text(`Vrsta: ${nekretnina.vrsta.replace('_', ' ').toUpperCase()}`, 20, 82);
+      doc.text(`Povrsina: ${nekretnina.povrsina} m²`, 20, 90);
+      if (nekretnina.godina_izgradnje) {
+        doc.text(`Godina izgradnje: ${nekretnina.godina_izgradnje}`, 20, 98);
+      }
+      
+      // Vlasništvo
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('VLASNIŠTVO', 20, 115);
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Vlasnik: ${nekretnina.vlasnik}`, 20, 125);
+      doc.text(`Udio vlasništva: ${nekretnina.udio_vlasnistva}`, 20, 133);
+      
+      // Financijska analiza
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FINANCIJSKA ANALIZA', 20, 150);
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      let yPos = 160;
+      
+      if (nekretnina.nabavna_cijena) {
+        doc.text(`Nabavna cijena: ${nekretnina.nabavna_cijena.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+      }
+      
+      if (nekretnina.trzisna_vrijednost) {
+        doc.text(`Tržišna vrijednost: ${nekretnina.trzisna_vrijednost.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+        
+        // Izračunaj odnos tržišne i nabavne cijene
+        if (nekretnina.nabavna_cijena) {
+          const razlika = nekretnina.trzisna_vrijednost - nekretnina.nabavna_cijena;
+          const postotak = ((razlika / nekretnina.nabavna_cijena) * 100).toFixed(2);
+          doc.text(`Promjena vrijednosti: ${razlika.toLocaleString()} EUR (${postotak}%)`, 20, yPos);
+          yPos += 8;
+        }
+      }
+      
+      if (nekretnina.prosllogodisnji_prihodi) {
+        doc.text(`Prošlogodišnji prihodi: ${nekretnina.prosllogodisnji_prihodi.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+      }
+      
+      if (nekretnina.prosllogodisnji_rashodi) {
+        doc.text(`Prošlogodišnji rashodi: ${nekretnina.prosllogodisnji_rashodi.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+      }
+      
+      if (nekretnina.neto_prihod) {
+        doc.text(`Neto prihod: ${nekretnina.neto_prihod.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+        
+        // Izračunaj prinos na investiciju
+        if (nekretnina.nabavna_cijena && nekretnina.nabavna_cijena > 0) {
+          const prinos = ((nekretnina.neto_prihod / nekretnina.nabavna_cijena) * 100).toFixed(2);
+          doc.text(`Prinos na investiciju: ${prinos}%`, 20, yPos);
+          yPos += 8;
+        }
+      }
+      
+      if (nekretnina.amortizacija) {
+        doc.text(`Amortizacija: ${nekretnina.amortizacija.toLocaleString()} EUR`, 20, yPos);
+        yPos += 8;
+      }
+      
+      // Održavanje i rizici
+      if (nekretnina.troskovi_odrzavanja || nekretnina.potrebna_ulaganja || nekretnina.osiguranje) {
+        yPos += 10;
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ODRŽAVANJE', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        
+        if (nekretnina.troskovi_odrzavanja) {
+          doc.text(`Troškovi održavanja: ${nekretnina.troskovi_odrzavanja.toLocaleString()} EUR`, 20, yPos);
+          yPos += 8;
+        }
+        
+        if (nekretnina.zadnja_obnova) {
+          doc.text(`Zadnja obnova: ${new Date(nekretnina.zadnja_obnova).toLocaleDateString()}`, 20, yPos);
+          yPos += 8;
+        }
+        
+        if (nekretnina.potrebna_ulaganja) {
+          doc.text(`Potrebna ulaganja: ${nekretnina.potrebna_ulaganja}`, 20, yPos);
+          yPos += 8;
+        }
+        
+        if (nekretnina.osiguranje) {
+          doc.text(`Osiguranje: ${nekretnina.osiguranje}`, 20, yPos);
+          yPos += 8;
+        }
+      }
+      
+      // Rizici i napomene
+      if (nekretnina.sudski_sporovi || nekretnina.hipoteke || nekretnina.napomene) {
+        yPos += 10;
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RIZICI I NAPOMENE', 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        
+        if (nekretnina.sudski_sporovi) {
+          const lines = doc.splitTextToSize(`Sudski sporovi: ${nekretnina.sudski_sporovi}`, 170);
+          doc.text(lines, 20, yPos);
+          yPos += lines.length * 6 + 2;
+        }
+        
+        if (nekretnina.hipoteke) {
+          const lines = doc.splitTextToSize(`Hipoteke: ${nekretnina.hipoteke}`, 170);
+          doc.text(lines, 20, yPos);
+          yPos += lines.length * 6 + 2;
+        }
+        
+        if (nekretnina.napomene) {
+          const lines = doc.splitTextToSize(`Napomene: ${nekretnina.napomene}`, 170);
+          doc.text(lines, 20, yPos);
+        }
+      }
+      
+      // Dodaj datum generiranja
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text(`Izvješće generirano: ${new Date().toLocaleString()}`, 20, 280);
+      
+      // Spremi PDF
+      const fileName = `Analiza_${nekretnina.naziv.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
       toast.success(`PDF analiza za ${nekretnina.naziv} je uspješno generirana`);
     } catch (error) {
       console.error('Greška pri generiranju PDF analize:', error);
