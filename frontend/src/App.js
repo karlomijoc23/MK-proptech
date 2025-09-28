@@ -11,7 +11,7 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { toast } from 'sonner';
-import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2 } from 'lucide-react';
+import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2, Search, Bell } from 'lucide-react';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -19,53 +19,71 @@ const API = `${BACKEND_URL}/api`;
 
 // API functions
 const api = {
-  // Properties
-  getProperties: () => axios.get(`${API}/properties`),
-  createProperty: (data) => axios.post(`${API}/properties`, data),
-  updateProperty: (id, data) => axios.put(`${API}/properties/${id}`, data),
-  deleteProperty: (id) => axios.delete(`${API}/properties/${id}`),
+  // Nekretnine
+  getNekretnine: () => axios.get(`${API}/nekretnine`),
+  createNekretnina: (data) => axios.post(`${API}/nekretnine`, data),
+  updateNekretnina: (id, data) => axios.put(`${API}/nekretnine/${id}`, data),
+  deleteNekretnina: (id) => axios.delete(`${API}/nekretnine/${id}`),
   
-  // Tenants
-  getTenants: () => axios.get(`${API}/tenants`),
-  createTenant: (data) => axios.post(`${API}/tenants`, data),
+  // Zakupnici
+  getZakupnici: () => axios.get(`${API}/zakupnici`),
+  createZakupnik: (data) => axios.post(`${API}/zakupnici`, data),
   
-  // Rentals
-  getRentals: () => axios.get(`${API}/rentals`),
-  createRental: (data) => axios.post(`${API}/rentals`, data),
+  // Ugovori
+  getUgovori: () => axios.get(`${API}/ugovori`),
+  createUgovor: (data) => axios.post(`${API}/ugovori`, data),
+  updateStatusUgovora: (id, status) => axios.put(`${API}/ugovori/${id}/status`, { novi_status: status }),
   
-  // Payments
-  getPayments: () => axios.get(`${API}/payments`),
-  createPayment: (data) => axios.post(`${API}/payments`, data),
-  markPaymentPaid: (id) => axios.put(`${API}/payments/${id}/pay`),
+  // Dokumenti
+  getDokumenti: () => axios.get(`${API}/dokumenti`),
+  getDokumentiNekretnine: (id) => axios.get(`${API}/dokumenti/nekretnina/${id}`),
+  getDokumentiZakupnika: (id) => axios.get(`${API}/dokumenti/zakupnik/${id}`),
+  getDokumentiUgovora: (id) => axios.get(`${API}/dokumenti/ugovor/${id}`),
+  createDokument: (data) => axios.post(`${API}/dokumenti`, data),
   
-  // Documents
-  getDocuments: () => axios.get(`${API}/documents`),
-  getPropertyDocuments: (propertyId) => axios.get(`${API}/documents/property/${propertyId}`),
-  createDocument: (data) => axios.post(`${API}/documents`, data),
+  // Dashboard i pretraga
+  getDashboard: () => axios.get(`${API}/dashboard`),
+  pretraga: (q) => axios.get(`${API}/pretraga?q=${q}`),
   
-  // Analytics
-  getDashboardAnalytics: () => axios.get(`${API}/analytics/dashboard`),
-  getRevenueAnalytics: () => axios.get(`${API}/analytics/revenue`),
+  // Podsjećanja
+  getPodsjetnici: () => axios.get(`${API}/podsjetnici`),
+  getAktivniPodsjetnici: () => axios.get(`${API}/podsjetnici/aktivni`),
 };
 
 // Navigation Component
 const Navigation = () => {
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
   
   const navItems = [
-    { path: '/', icon: Home, label: 'Pregled' },
-    { path: '/properties', icon: Building, label: 'Nekretnine' },
-    { path: '/rentals', icon: Calendar, label: 'Najmovi' },
-    { path: '/tenants', icon: Users, label: 'Stanari' },
-    { path: '/payments', icon: DollarSign, label: 'Plaćanja' },
-    { path: '/documents', icon: FileText, label: 'Dokumenti' }
+    { path: '/', icon: Home, label: 'Dashboard' },
+    { path: '/nekretnine', icon: Building, label: 'Nekretnine' },
+    { path: '/zakupnici', icon: Users, label: 'Zakupnici' },
+    { path: '/ugovori', icon: Calendar, label: 'Ugovori' },
+    { path: '/dokumenti', icon: FileText, label: 'Dokumenti' },
+    { path: '/podsjetnici', icon: Bell, label: 'Podsjećanja' }
   ];
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      try {
+        const response = await api.pretraga(searchQuery);
+        setSearchResults(response.data);
+        toast.success(`Pronađeno ${Object.values(response.data).flat().length} rezultata`);
+      } catch (error) {
+        console.error('Greška pri pretraživanju:', error);
+        toast.error('Greška pri pretraživanju');
+      }
+    }
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-8">
-          <h1 className="text-xl font-bold text-gray-900">Upravljanje Nekretninama</h1>
+          <h1 className="text-xl font-bold text-gray-900">Upravljanje nekretninama</h1>
           <div className="flex space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -86,144 +104,236 @@ const Navigation = () => {
             })}
           </div>
         </div>
+        
+        <form onSubmit={handleSearch} className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Pretraži nekretnine, zakupnike, ugovore..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-80"
+            data-testid="search-input"
+          />
+          <Button type="submit" variant="outline" size="sm" data-testid="search-button">
+            <Search className="w-4 h-4" />
+          </Button>
+        </form>
       </div>
+      
+      {searchResults && (
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-medium mb-2">Rezultati pretrage:</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <h4 className="font-medium text-sm text-gray-600">Nekretnine ({searchResults.nekretnine?.length || 0})</h4>
+              {searchResults.nekretnine?.map(n => (
+                <p key={n.id} className="text-sm">{n.naziv} - {n.adresa}</p>
+              ))}
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-gray-600">Zakupnici ({searchResults.zakupnici?.length || 0})</h4>
+              {searchResults.zakupnici?.map(z => (
+                <p key={z.id} className="text-sm">{z.naziv_firme || z.ime_prezime} - {z.oib}</p>
+              ))}
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-gray-600">Ugovori ({searchResults.ugovori?.length || 0})</h4>
+              {searchResults.ugovori?.map(u => (
+                <p key={u.id} className="text-sm">{u.interna_oznaka} - {u.status}</p>
+              ))}
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setSearchResults(null)}
+            className="mt-2"
+          >
+            Zatvori
+          </Button>
+        </div>
+      )}
     </nav>
   );
 };
 
 // Dashboard Component
 const Dashboard = () => {
-  const [analytics, setAnalytics] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [podsjetnici, setPodsjetnici] = useState([]);
 
   useEffect(() => {
-    fetchAnalytics();
+    fetchDashboard();
+    fetchPodsjetnici();
   }, []);
 
-  const fetchAnalytics = async () => {
+  const fetchDashboard = async () => {
     try {
-      const response = await api.getDashboardAnalytics();
-      setAnalytics(response.data);
+      const response = await api.getDashboard();
+      setDashboard(response.data);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Greška pri učitavanju analitike');
+      console.error('Greška pri dohvaćanju dashboard podataka:', error);
+      toast.error('Greška pri učitavanju dashboard-a');
     }
   };
 
-  if (!analytics) {
-    return <div className="p-8">Učitavanje...</div>;
+  const fetchPodsjetnici = async () => {
+    try {
+      const response = await api.getAktivniPodsjetnici();
+      setPodsjetnici(response.data);
+    } catch (error) {
+      console.error('Greška pri dohvaćanju podsjećanja:', error);
+    }
+  };
+
+  if (!dashboard) {
+    return <div className="p-8">Učitava...</div>;
   }
 
   return (
     <div className="p-8 space-y-8">
-      <h1 className="text-3xl font-bold text-gray-900">Pregled</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card data-testid="total-properties-card">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <Card data-testid="ukupno-nekretnina-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ukupno Nekretnina</CardTitle>
+            <CardTitle className="text-sm font-medium">Ukupno nekretnina</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.total_properties}</div>
+            <div className="text-2xl font-bold">{dashboard.ukupno_nekretnina}</div>
           </CardContent>
         </Card>
 
-        <Card data-testid="active-rentals-card">
+        <Card data-testid="aktivni-ugovori-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aktivni Najmovi</CardTitle>
+            <CardTitle className="text-sm font-medium">Aktivni ugovori</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.active_rentals}</div>
+            <div className="text-2xl font-bold">{dashboard.aktivni_ugovori}</div>
           </CardContent>
         </Card>
 
-        <Card data-testid="pending-payments-card">
+        <Card data-testid="ugovori-na-isteku-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Plaćanja na čekanju</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Ugovori na isteku</CardTitle>
+            <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.pending_payments}</div>
+            <div className="text-2xl font-bold">{dashboard.ugovori_na_isteku}</div>
           </CardContent>
         </Card>
 
-        <Card data-testid="monthly-revenue-card">
+        <Card data-testid="aktivni-podsjetnici-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mesečni prihod</CardTitle>
+            <CardTitle className="text-sm font-medium">Aktivna podsjećanja</CardTitle>
+            <Bell className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboard.aktivni_podsjetnici}</div>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="mjesecni-prihod-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Mjesečni prihod</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.monthly_revenue.toLocaleString()} RSD</div>
+            <div className="text-2xl font-bold">{dashboard.mjesecni_prihod?.toLocaleString()} €</div>
           </CardContent>
         </Card>
       </div>
+
+      {podsjetnici.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Aktivna podsjećanja</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {podsjetnici.slice(0, 5).map((podsjetnik) => (
+                <div key={podsjetnik.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{podsjetnik.tip.replace('_', ' ').toUpperCase()}</p>
+                    <p className="text-sm text-gray-600">
+                      {podsjetnik.dani_prije} dana prije - {new Date(podsjetnik.datum_podsjetnika).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">Aktivno</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
 
-// Properties Component
-const Properties = () => {
-  const [properties, setProperties] = useState([]);
+// Nekretnine Component
+const Nekretnine = () => {
+  const [nekretnine, setNekretnine] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingProperty, setEditingProperty] = useState(null);
+  const [editingNekretnina, setEditingNekretnina] = useState(null);
 
   useEffect(() => {
-    fetchProperties();
+    fetchNekretnine();
   }, []);
 
-  const fetchProperties = async () => {
+  const fetchNekretnine = async () => {
     try {
-      const response = await api.getProperties();
-      setProperties(response.data);
+      const response = await api.getNekretnine();
+      setNekretnine(response.data);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error('Greška pri dohvaćanju nekretnina:', error);
       toast.error('Greška pri učitavanju nekretnina');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateProperty = async (formData) => {
+  const handleCreateNekretnina = async (formData) => {
     try {
-      await api.createProperty(formData);
-      toast.success('Nekretnina je uspešno kreirana');
-      fetchProperties();
+      await api.createNekretnina(formData);
+      toast.success('Nekretnina je uspješno kreirana');
+      fetchNekretnine();
       setShowCreateForm(false);
     } catch (error) {
-      console.error('Error creating property:', error);
+      console.error('Greška pri kreiranju nekretnine:', error);
       toast.error('Greška pri kreiranju nekretnine');
     }
   };
 
-  const handleUpdateProperty = async (formData) => {
+  const handleUpdateNekretnina = async (formData) => {
     try {
-      await api.updateProperty(editingProperty.id, formData);
-      toast.success('Nekretnina je uspešno ažurirana');
-      fetchProperties();
-      setEditingProperty(null);
+      await api.updateNekretnina(editingNekretnina.id, formData);
+      toast.success('Nekretnina je uspješno ažurirana');
+      fetchNekretnine();
+      setEditingNekretnina(null);
     } catch (error) {
-      console.error('Error updating property:', error);
+      console.error('Greška pri ažuriranju nekretnine:', error);
       toast.error('Greška pri ažuriranju nekretnine');
     }
   };
 
-  const handleDeleteProperty = async (propertyId) => {
-    if (window.confirm('Da li ste sigurni da želite da obrišete ovu nekretninu?')) {
+  const handleDeleteNekretnina = async (nekretnina_id) => {
+    if (window.confirm('Jeste li sigurni da želite obrisati ovu nekretninu?')) {
       try {
-        await api.deleteProperty(propertyId);
-        toast.success('Nekretnina je uspešno obrisana');
-        fetchProperties();
+        await api.deleteNekretnina(nekretnina_id);
+        toast.success('Nekretnina je uspješno obrisana');
+        fetchNekretnine();
       } catch (error) {
-        console.error('Error deleting property:', error);
+        console.error('Greška pri brisanju nekretnine:', error);
         toast.error('Greška pri brisanju nekretnine');
       }
     }
   };
 
   if (loading) {
-    return <div className="p-8">Učitavanje nekretnina...</div>;
+    return <div className="p-8">Učitava nekretnine...</div>;
   }
 
   return (
@@ -232,54 +342,57 @@ const Properties = () => {
         <h1 className="text-3xl font-bold text-gray-900">Nekretnine</h1>
         <Button 
           onClick={() => setShowCreateForm(true)}
-          data-testid="add-property-btn"
+          data-testid="dodaj-nekretninu-btn"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Dodaj Nekretninu
+          Dodaj nekretninu
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {properties.map((property) => (
-          <Card key={property.id} data-testid={`property-card-${property.id}`}>
+        {nekretnine.map((nekretnina) => (
+          <Card key={nekretnina.id} data-testid={`nekretnina-card-${nekretnina.id}`}>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                {property.title}
-                <Badge variant={property.status === 'available' ? 'default' : 'secondary'}>
-                  {property.status === 'available' ? 'Dostupno' : 'Izdato'}
+                {nekretnina.naziv}
+                <Badge variant="outline">
+                  {nekretnina.vrsta.replace('_', ' ').toUpperCase()}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-gray-600">{property.address}</p>
+              <p className="text-sm text-gray-600">{nekretnina.adresa}</p>
               <p className="text-sm">
-                <span className="font-medium">Tip:</span> {property.property_type}
+                <span className="font-medium">K.O.:</span> {nekretnina.katastarska_opcina}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Površina:</span> {property.area}m²
+                <span className="font-medium">Kat. čestica:</span> {nekretnina.broj_kat_cestice}
               </p>
-              {property.bedrooms && (
-                <p className="text-sm">
-                  <span className="font-medium">Spavaće sobe:</span> {property.bedrooms}
+              <p className="text-sm">
+                <span className="font-medium">Površina:</span> {nekretnina.povrsina}m²
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Vlasnik:</span> {nekretnina.vlasnik} ({nekretnina.udio_vlasnistva})
+              </p>
+              {nekretnina.trzisna_vrijednost && (
+                <p className="text-lg font-bold text-green-600">
+                  Tržišna vrijednost: {nekretnina.trzisna_vrijednost.toLocaleString()} €
                 </p>
               )}
-              <p className="text-lg font-bold text-blue-600">
-                {property.monthly_rent.toLocaleString()} RSD/mesec
-              </p>
               <div className="flex space-x-2 pt-2">
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => setEditingProperty(property)}
-                  data-testid={`edit-property-${property.id}`}
+                  onClick={() => setEditingNekretnina(nekretnina)}
+                  data-testid={`uredi-nekretninu-${nekretnina.id}`}
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => handleDeleteProperty(property.id)}
-                  data-testid={`delete-property-${property.id}`}
+                  onClick={() => handleDeleteNekretnina(nekretnina.id)}
+                  data-testid={`obrisi-nekretninu-${nekretnina.id}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -289,35 +402,35 @@ const Properties = () => {
         ))}
       </div>
 
-      {/* Create Property Dialog */}
+      {/* Create Nekretnina Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent aria-describedby="property-form-description">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="nekretnina-form-description">
           <DialogHeader>
-            <DialogTitle>Dodaj Novu Nekretninu</DialogTitle>
+            <DialogTitle>Dodaj novu nekretninu</DialogTitle>
           </DialogHeader>
-          <div id="property-form-description" className="sr-only">
-            Forma za kreiranje nove nekretnine sa osnovnim informacijama
+          <div id="nekretnina-form-description" className="sr-only">
+            Forma za kreiranje nove nekretnine s osnovnim informacijama
           </div>
-          <PropertyForm 
-            onSubmit={handleCreateProperty}
+          <NekretninarForm 
+            onSubmit={handleCreateNekretnina}
             onCancel={() => setShowCreateForm(false)}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Edit Property Dialog */}
-      <Dialog open={!!editingProperty} onOpenChange={() => setEditingProperty(null)}>
-        <DialogContent aria-describedby="edit-property-form-description">
+      {/* Edit Nekretnina Dialog */}
+      <Dialog open={!!editingNekretnina} onOpenChange={() => setEditingNekretnina(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="uredi-nekretninu-form-description">
           <DialogHeader>
-            <DialogTitle>Uredi Nekretninu</DialogTitle>
+            <DialogTitle>Uredi nekretninu</DialogTitle>
           </DialogHeader>
-          <div id="edit-property-form-description" className="sr-only">
+          <div id="uredi-nekretninu-form-description" className="sr-only">
             Forma za uređivanje postojeće nekretnine
           </div>
-          <PropertyForm 
-            property={editingProperty}
-            onSubmit={handleUpdateProperty}
-            onCancel={() => setEditingProperty(null)}
+          <NekretninarForm 
+            nekretnina={editingNekretnina}
+            onSubmit={handleUpdateNekretnina}
+            onCancel={() => setEditingNekretnina(null)}
           />
         </DialogContent>
       </Dialog>
@@ -325,456 +438,435 @@ const Properties = () => {
   );
 };
 
-// Property Form Component
-const PropertyForm = ({ property, onSubmit, onCancel }) => {
+// Nekretnina Form Component
+const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    title: property?.title || '',
-    address: property?.address || '',
-    property_type: property?.property_type || 'residential',
-    area: property?.area || '',
-    bedrooms: property?.bedrooms || '',
-    bathrooms: property?.bathrooms || '',
-    description: property?.description || '',
-    monthly_rent: property?.monthly_rent || ''
+    naziv: nekretnina?.naziv || '',
+    adresa: nekretnina?.adresa || '',
+    katastarska_opcina: nekretnina?.katastarska_opcina || '',
+    broj_kat_cestice: nekretnina?.broj_kat_cestice || '',
+    vrsta: nekretnina?.vrsta || 'stan',
+    povrsina: nekretnina?.povrsina || '',
+    godina_izgradnje: nekretnina?.godina_izgradnje || '',
+    vlasnik: nekretnina?.vlasnik || '',
+    udio_vlasnistva: nekretnina?.udio_vlasnistva || '',
+    nabavna_cijena: nekretnina?.nabavna_cijena || '',
+    trzisna_vrijednost: nekretnina?.trzisna_vrijednost || '',
+    prosllogodisnji_prihodi: nekretnina?.prosllogodisnji_prihodi || '',
+    prosllogodisnji_rashodi: nekretnina?.prosllogodisnji_rashodi || '',
+    amortizacija: nekretnina?.amortizacija || '',
+    neto_prihod: nekretnina?.neto_prihod || '',
+    zadnja_obnova: nekretnina?.zadnja_obnova || '',
+    potrebna_ulaganja: nekretnina?.potrebna_ulaganja || '',
+    troskovi_odrzavanja: nekretnina?.troskovi_odrzavanja || '',
+    osiguranje: nekretnina?.osiguranje || '',
+    sudski_sporovi: nekretnina?.sudski_sporovi || '',
+    hipoteke: nekretnina?.hipoteke || '',
+    napomene: nekretnina?.napomene || ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
       ...formData,
-      area: parseFloat(formData.area),
-      monthly_rent: parseFloat(formData.monthly_rent),
-      bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-      bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null
+      povrsina: parseFloat(formData.povrsina) || 0,
+      godina_izgradnje: formData.godina_izgradnje ? parseInt(formData.godina_izgradnje) : null,
+      nabavna_cijena: formData.nabavna_cijena ? parseFloat(formData.nabavna_cijena) : null,
+      trzisna_vrijednost: formData.trzisna_vrijednost ? parseFloat(formData.trzisna_vrijednost) : null,
+      prosllogodisnji_prihodi: formData.prosllogodisnji_prihodi ? parseFloat(formData.prosllogodisnji_prihodi) : null,
+      prosllogodisnji_rashodi: formData.prosllogodisnji_rashodi ? parseFloat(formData.prosllogodisnji_rashodi) : null,
+      amortizacija: formData.amortizacija ? parseFloat(formData.amortizacija) : null,
+      neto_prihod: formData.neto_prihod ? parseFloat(formData.neto_prihod) : null,
+      troskovi_odrzavanja: formData.troskovi_odrzavanja ? parseFloat(formData.troskovi_odrzavanja) : null,
+      zadnja_obnova: formData.zadnja_obnova || null
     };
     onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="property-form">
-      <div>
-        <Label htmlFor="title">Naziv</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          data-testid="property-title-input"
-          required
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="nekretnina-form">
+      <Tabs defaultValue="osnovni" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="osnovni">Osnovni podaci</TabsTrigger>
+          <TabsTrigger value="financije">Financije</TabsTrigger>
+          <TabsTrigger value="odrzavanje">Održavanje</TabsTrigger>
+          <TabsTrigger value="rizici">Rizici</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="osnovni" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="naziv">Naziv nekretnine *</Label>
+              <Input
+                id="naziv"
+                value={formData.naziv}
+                onChange={(e) => setFormData({ ...formData, naziv: e.target.value })}
+                data-testid="nekretnina-naziv-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="vrsta">Vrsta nekretnine *</Label>
+              <Select value={formData.vrsta} onValueChange={(value) => setFormData({ ...formData, vrsta: value })}>
+                <SelectTrigger data-testid="nekretnina-vrsta-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="poslovna_zgrada">Poslovna zgrada</SelectItem>
+                  <SelectItem value="stan">Stan</SelectItem>
+                  <SelectItem value="zemljiste">Zemljište</SelectItem>
+                  <SelectItem value="ostalo">Ostalo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      <div>
-        <Label htmlFor="address">Adresa</Label>
-        <Input
-          id="address"
-          value={formData.address}
-          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          data-testid="property-address-input"
-          required
-        />
-      </div>
+          <div>
+            <Label htmlFor="adresa">Adresa *</Label>
+            <Input
+              id="adresa"
+              value={formData.adresa}
+              onChange={(e) => setFormData({ ...formData, adresa: e.target.value })}
+              data-testid="nekretnina-adresa-input"
+              required
+            />
+          </div>
 
-      <div>
-        <Label htmlFor="property_type">Tip Nekretnine</Label>
-        <Select value={formData.property_type} onValueChange={(value) => setFormData({ ...formData, property_type: value })}>
-          <SelectTrigger data-testid="property-type-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="residential">Stambena</SelectItem>
-            <SelectItem value="commercial">Poslovna</SelectItem>
-            <SelectItem value="land">Zemljište</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="katastarska_opcina">Katastarska općina *</Label>
+              <Input
+                id="katastarska_opcina"
+                value={formData.katastarska_opcina}
+                onChange={(e) => setFormData({ ...formData, katastarska_opcina: e.target.value })}
+                data-testid="nekretnina-ko-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="broj_kat_cestice">Broj kat. čestice *</Label>
+              <Input
+                id="broj_kat_cestice"
+                value={formData.broj_kat_cestice}
+                onChange={(e) => setFormData({ ...formData, broj_kat_cestice: e.target.value })}
+                data-testid="nekretnina-cestica-input"
+                required
+              />
+            </div>
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="area">Površina (m²)</Label>
-          <Input
-            id="area"
-            type="number"
-            value={formData.area}
-            onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-            data-testid="property-area-input"
-            required
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="povrsina">Površina (m²) *</Label>
+              <Input
+                id="povrsina"
+                type="number"
+                step="0.01"
+                value={formData.povrsina}
+                onChange={(e) => setFormData({ ...formData, povrsina: e.target.value })}
+                data-testid="nekretnina-povrsina-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="godina_izgradnje">Godina izgradnje</Label>
+              <Input
+                id="godina_izgradnje"
+                type="number"
+                value={formData.godina_izgradnje}
+                onChange={(e) => setFormData({ ...formData, godina_izgradnje: e.target.value })}
+                data-testid="nekretnina-godina-input"
+              />
+            </div>
+          </div>
 
-        <div>
-          <Label htmlFor="monthly_rent">Mesečna Kirija (RSD)</Label>
-          <Input
-            id="monthly_rent"
-            type="number"
-            value={formData.monthly_rent}
-            onChange={(e) => setFormData({ ...formData, monthly_rent: e.target.value })}
-            data-testid="property-rent-input"
-            required
-          />
-        </div>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="vlasnik">Vlasnik *</Label>
+              <Input
+                id="vlasnik"
+                value={formData.vlasnik}
+                onChange={(e) => setFormData({ ...formData, vlasnik: e.target.value })}
+                data-testid="nekretnina-vlasnik-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="udio_vlasnistva">Udio vlasništva *</Label>
+              <Input
+                id="udio_vlasnistva"
+                value={formData.udio_vlasnistva}
+                onChange={(e) => setFormData({ ...formData, udio_vlasnistva: e.target.value })}
+                data-testid="nekretnina-udio-input"
+                placeholder="npr. 1/1, 50%, itd."
+                required
+              />
+            </div>
+          </div>
+        </TabsContent>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="bedrooms">Spavaće Sobe</Label>
-          <Input
-            id="bedrooms"
-            type="number"
-            value={formData.bedrooms}
-            onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-            data-testid="property-bedrooms-input"
-          />
-        </div>
+        <TabsContent value="financije" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="nabavna_cijena">Nabavna cijena (€)</Label>
+              <Input
+                id="nabavna_cijena"
+                type="number"
+                step="0.01"
+                value={formData.nabavna_cijena}
+                onChange={(e) => setFormData({ ...formData, nabavna_cijena: e.target.value })}
+                data-testid="nekretnina-nabavna-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="trzisna_vrijednost">Tržišna vrijednost (€)</Label>
+              <Input
+                id="trzisna_vrijednost"
+                type="number"
+                step="0.01"
+                value={formData.trzisna_vrijednost}
+                onChange={(e) => setFormData({ ...formData, trzisna_vrijednost: e.target.value })}
+                data-testid="nekretnina-trzisna-input"
+              />
+            </div>
+          </div>
 
-        <div>
-          <Label htmlFor="bathrooms">Kupatila</Label>
-          <Input
-            id="bathrooms"
-            type="number"
-            value={formData.bathrooms}
-            onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-            data-testid="property-bathrooms-input"
-          />
-        </div>
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="prosllogodisnji_prihodi">Prošlogodišnji prihodi (€)</Label>
+              <Input
+                id="prosllogodisnji_prihodi"
+                type="number"
+                step="0.01"
+                value={formData.prosllogodisnji_prihodi}
+                onChange={(e) => setFormData({ ...formData, prosllogodisnji_prihodi: e.target.value })}
+                data-testid="nekretnina-prihodi-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="prosllogodisnji_rashodi">Prošlogodišnji rashodi (€)</Label>
+              <Input
+                id="prosllogodisnji_rashodi"
+                type="number"
+                step="0.01"
+                value={formData.prosllogodisnji_rashodi}
+                onChange={(e) => setFormData({ ...formData, prosllogodisnji_rashodi: e.target.value })}
+                data-testid="nekretnina-rashodi-input"
+              />
+            </div>
+          </div>
 
-      <div>
-        <Label htmlFor="description">Opis</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          data-testid="property-description-input"
-        />
-      </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="amortizacija">Amortizacija (€)</Label>
+              <Input
+                id="amortizacija"
+                type="number"
+                step="0.01"
+                value={formData.amortizacija}
+                onChange={(e) => setFormData({ ...formData, amortizacija: e.target.value })}
+                data-testid="nekretnina-amortizacija-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="neto_prihod">Neto prihod (€)</Label>
+              <Input
+                id="neto_prihod"
+                type="number"
+                step="0.01"
+                value={formData.neto_prihod}
+                onChange={(e) => setFormData({ ...formData, neto_prihod: e.target.value })}
+                data-testid="nekretnina-neto-input"
+              />
+            </div>
+          </div>
+        </TabsContent>
 
-      <div className="flex space-x-2">
-        <Button type="submit" data-testid="submit-property-form">
-          {property ? 'Ažuriraj' : 'Kreiraj'}
+        <TabsContent value="odrzavanje" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="zadnja_obnova">Zadnja obnova</Label>
+              <Input
+                id="zadnja_obnova"
+                type="date"
+                value={formData.zadnja_obnova}
+                onChange={(e) => setFormData({ ...formData, zadnja_obnova: e.target.value })}
+                data-testid="nekretnina-obnova-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="troskovi_odrzavanja">Troškovi održavanja (€)</Label>
+              <Input
+                id="troskovi_odrzavanja"
+                type="number"
+                step="0.01"
+                value={formData.troskovi_odrzavanja}
+                onChange={(e) => setFormData({ ...formData, troskovi_odrzavanja: e.target.value })}
+                data-testid="nekretnina-troskovi-input"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="potrebna_ulaganja">Potrebna ulaganja</Label>
+            <Textarea
+              id="potrebna_ulaganja"
+              value={formData.potrebna_ulaganja}
+              onChange={(e) => setFormData({ ...formData, potrebna_ulaganja: e.target.value })}
+              data-testid="nekretnina-ulaganja-input"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="osiguranje">Osiguranje</Label>
+            <Input
+              id="osiguranje"
+              value={formData.osiguranje}
+              onChange={(e) => setFormData({ ...formData, osiguranje: e.target.value })}
+              data-testid="nekretnina-osiguranje-input"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="rizici" className="space-y-4">
+          <div>
+            <Label htmlFor="sudski_sporovi">Sudski sporovi</Label>
+            <Textarea
+              id="sudski_sporovi"
+              value={formData.sudski_sporovi}
+              onChange={(e) => setFormData({ ...formData, sudski_sporovi: e.target.value })}
+              data-testid="nekretnina-sporovi-input"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="hipoteke">Hipoteke</Label>
+            <Textarea
+              id="hipoteke"
+              value={formData.hipoteke}
+              onChange={(e) => setFormData({ ...formData, hipoteke: e.target.value })}
+              data-testid="nekretnina-hipoteke-input"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="napomene">Napomene</Label>
+            <Textarea
+              id="napomene"
+              value={formData.napomene}
+              onChange={(e) => setFormData({ ...formData, napomene: e.target.value })}
+              data-testid="nekretnina-napomene-input"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex space-x-2 pt-4">
+        <Button type="submit" data-testid="potvrdi-nekretninu-form">
+          {nekretnina ? 'Ažuriraj' : 'Kreiraj'}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} data-testid="cancel-property-form">
-          Otkaži
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-nekretninu-form">
+          Odustani
         </Button>
       </div>
     </form>
   );
 };
 
-// Rentals Component
-const Rentals = () => {
-  const [rentals, setRentals] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [tenants, setTenants] = useState([]);
+// Zakupnici Component
+const Zakupnici = () => {
+  const [zakupnici, setZakupnici] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    fetchZakupnici();
   }, []);
 
-  const fetchData = async () => {
+  const fetchZakupnici = async () => {
     try {
-      const [rentalsRes, propertiesRes, tenantsRes] = await Promise.all([
-        api.getRentals(),
-        api.getProperties(),
-        api.getTenants()
-      ]);
-      setRentals(rentalsRes.data);
-      setProperties(propertiesRes.data);
-      setTenants(tenantsRes.data);
+      const response = await api.getZakupnici();
+      setZakupnici(response.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Greška pri učitavanju podataka');
+      console.error('Greška pri dohvaćanju zakupnika:', error);
+      toast.error('Greška pri učitavanju zakupnika');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateRental = async (formData) => {
+  const handleCreateZakupnik = async (formData) => {
     try {
-      await api.createRental(formData);
-      toast.success('Najam je uspešno kreiran');
-      fetchData();
+      await api.createZakupnik(formData);
+      toast.success('Zakupnik je uspješno kreiran');
+      fetchZakupnici();
       setShowCreateForm(false);
     } catch (error) {
-      console.error('Error creating rental:', error);
-      toast.error('Greška pri kreiranju najma');
+      console.error('Greška pri kreiranju zakupnika:', error);
+      toast.error('Greška pri kreiranju zakupnika');
     }
   };
 
-  const getPropertyTitle = (propertyId) => {
-    const property = properties.find(p => p.id === propertyId);
-    return property ? property.title : 'Nepoznato';
-  };
-
-  const getTenantName = (tenantId) => {
-    const tenant = tenants.find(t => t.id === tenantId);
-    return tenant ? tenant.name : 'Nepoznato';
-  };
-
   if (loading) {
-    return <div className="p-8">Učitavanje najmova...</div>;
+    return <div className="p-8">Učitava zakupnike...</div>;
   }
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Najmovi</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Zakupnici</h1>
         <Button 
           onClick={() => setShowCreateForm(true)}
-          data-testid="add-rental-btn"
+          data-testid="dodaj-zakupnika-btn"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Dodaj Najam
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {rentals.map((rental) => (
-          <Card key={rental.id} data-testid={`rental-card-${rental.id}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {getPropertyTitle(rental.property_id)}
-                <Badge variant={rental.status === 'active' ? 'default' : 'secondary'}>
-                  {rental.status === 'active' ? 'Aktivan' : rental.status}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm">
-                <span className="font-medium">Stanar:</span> {getTenantName(rental.tenant_id)}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Period:</span> {new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Mesečna kirija:</span> {rental.monthly_rent.toLocaleString()} RSD
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Depozit:</span> {rental.security_deposit.toLocaleString()} RSD
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Create Rental Dialog */}
-      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Dodaj Novi Najam</DialogTitle>
-          </DialogHeader>
-          <RentalForm 
-            properties={properties.filter(p => p.status === 'available')}
-            tenants={tenants}
-            onSubmit={handleCreateRental}
-            onCancel={() => setShowCreateForm(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-// Rental Form Component
-const RentalForm = ({ properties, tenants, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    property_id: '',
-    tenant_id: '',
-    start_date: '',
-    end_date: '',
-    monthly_rent: '',
-    security_deposit: ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = {
-      ...formData,
-      monthly_rent: parseFloat(formData.monthly_rent),
-      security_deposit: parseFloat(formData.security_deposit)
-    };
-    onSubmit(data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="rental-form">
-      <div>
-        <Label htmlFor="property_id">Nekretnina</Label>
-        <Select value={formData.property_id} onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
-          <SelectTrigger data-testid="rental-property-select">
-            <SelectValue placeholder="Izaberite nekretninu" />
-          </SelectTrigger>
-          <SelectContent>
-            {properties.map((property) => (
-              <SelectItem key={property.id} value={property.id}>
-                {property.title} - {property.address}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="tenant_id">Stanar</Label>
-        <Select value={formData.tenant_id} onValueChange={(value) => setFormData({ ...formData, tenant_id: value })}>
-          <SelectTrigger data-testid="rental-tenant-select">
-            <SelectValue placeholder="Izaberite stanara" />
-          </SelectTrigger>
-          <SelectContent>
-            {tenants.map((tenant) => (
-              <SelectItem key={tenant.id} value={tenant.id}>
-                {tenant.name} - {tenant.email}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="start_date">Datum početka</Label>
-          <Input
-            id="start_date"
-            type="date"
-            value={formData.start_date}
-            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-            data-testid="rental-start-date-input"
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="end_date">Datum završetka</Label>
-          <Input
-            id="end_date"
-            type="date"
-            value={formData.end_date}
-            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-            data-testid="rental-end-date-input"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="monthly_rent">Mesečna Kirija (RSD)</Label>
-          <Input
-            id="monthly_rent"
-            type="number"
-            value={formData.monthly_rent}
-            onChange={(e) => setFormData({ ...formData, monthly_rent: e.target.value })}
-            data-testid="rental-rent-input"
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="security_deposit">Depozit (RSD)</Label>
-          <Input
-            id="security_deposit"
-            type="number"
-            value={formData.security_deposit}
-            onChange={(e) => setFormData({ ...formData, security_deposit: e.target.value })}
-            data-testid="rental-deposit-input"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="flex space-x-2">
-        <Button type="submit" data-testid="submit-rental-form">
-          Kreiraj Najam
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} data-testid="cancel-rental-form">
-          Otkaži
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-// Tenants Component
-const Tenants = () => {
-  const [tenants, setTenants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-
-  useEffect(() => {
-    fetchTenants();
-  }, []);
-
-  const fetchTenants = async () => {
-    try {
-      const response = await api.getTenants();
-      setTenants(response.data);
-    } catch (error) {
-      console.error('Error fetching tenants:', error);
-      toast.error('Greška pri učitavanju stanara');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateTenant = async (formData) => {
-    try {
-      await api.createTenant(formData);
-      toast.success('Stanar je uspešno kreiran');
-      fetchTenants();
-      setShowCreateForm(false);
-    } catch (error) {
-      console.error('Error creating tenant:', error);
-      toast.error('Greška pri kreiranju stanara');
-    }
-  };
-
-  if (loading) {
-    return <div className="p-8">Učitavanje stanara...</div>;
-  }
-
-  return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Stanari</h1>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          data-testid="add-tenant-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Dodaj Stanara
+          Dodaj zakupnika
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tenants.map((tenant) => (
-          <Card key={tenant.id} data-testid={`tenant-card-${tenant.id}`}>
+        {zakupnici.map((zakupnik) => (
+          <Card key={zakupnik.id} data-testid={`zakupnik-card-${zakupnik.id}`}>
             <CardHeader>
-              <CardTitle>{tenant.name}</CardTitle>
+              <CardTitle>{zakupnik.naziv_firme || zakupnik.ime_prezime}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm">
-                <span className="font-medium">Email:</span> {tenant.email}
+                <span className="font-medium">OIB:</span> {zakupnik.oib}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Telefon:</span> {tenant.phone}
+                <span className="font-medium">Sjedište:</span> {zakupnik.sjediste}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Broj ličnog dokumenta:</span> {tenant.id_number}
+                <span className="font-medium">Kontakt:</span> {zakupnik.kontakt_ime}
               </p>
+              <p className="text-sm">
+                <span className="font-medium">Email:</span> {zakupnik.kontakt_email}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Telefon:</span> {zakupnik.kontakt_telefon}
+              </p>
+              {zakupnik.iban && (
+                <p className="text-sm">
+                  <span className="font-medium">IBAN:</span> {zakupnik.iban}
+                </p>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Create Tenant Dialog */}
+      {/* Create Zakupnik Dialog */}
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
+        <DialogContent aria-describedby="zakupnik-form-description">
           <DialogHeader>
-            <DialogTitle>Dodaj Novog Stanara</DialogTitle>
+            <DialogTitle>Dodaj novog zakupnika</DialogTitle>
           </DialogHeader>
-          <TenantForm 
-            onSubmit={handleCreateTenant}
+          <div id="zakupnik-form-description" className="sr-only">
+            Forma za kreiranje novog zakupnika s osnovnim informacijama
+          </div>
+          <ZakupnikForm 
+            onSubmit={handleCreateZakupnik}
             onCancel={() => setShowCreateForm(false)}
           />
         </DialogContent>
@@ -783,484 +875,153 @@ const Tenants = () => {
   );
 };
 
-// Tenant Form Component
-const TenantForm = ({ onSubmit, onCancel }) => {
+// Zakupnik Form Component
+const ZakupnikForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    id_number: ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="tenant-form">
-      <div>
-        <Label htmlFor="name">Ime i Prezime</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          data-testid="tenant-name-input"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          data-testid="tenant-email-input"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="phone">Telefon</Label>
-        <Input
-          id="phone"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          data-testid="tenant-phone-input"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="id_number">Broj Ličnog Dokumenta</Label>
-        <Input
-          id="id_number"
-          value={formData.id_number}
-          onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-          data-testid="tenant-id-input"
-          required
-        />
-      </div>
-
-      <div className="flex space-x-2">
-        <Button type="submit" data-testid="submit-tenant-form">
-          Kreiraj Stanara
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} data-testid="cancel-tenant-form">
-          Otkaži
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-// Payments Component
-const Payments = () => {
-  const [payments, setPayments] = useState([]);
-  const [rentals, setRentals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [paymentsRes, rentalsRes] = await Promise.all([
-        api.getPayments(),
-        api.getRentals()
-      ]);
-      setPayments(paymentsRes.data);
-      setRentals(rentalsRes.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Greška pri učitavanju podataka');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreatePayment = async (formData) => {
-    try {
-      await api.createPayment(formData);
-      toast.success('Plaćanje je uspešno kreirano');
-      fetchData();
-      setShowCreateForm(false);
-    } catch (error) {
-      console.error('Error creating payment:', error);
-      toast.error('Greška pri kreiranju plaćanja');
-    }
-  };
-
-  const handleMarkPaid = async (paymentId) => {
-    try {
-      await api.markPaymentPaid(paymentId);
-      toast.success('Plaćanje je označeno kao plaćeno');
-      fetchData();
-    } catch (error) {
-      console.error('Error marking payment as paid:', error);
-      toast.error('Greška pri označavanju plaćanja');
-    }
-  };
-
-  const getRentalInfo = (rentalId) => {
-    const rental = rentals.find(r => r.id === rentalId);
-    return rental ? `Najam ${rental.id.slice(0, 8)}` : 'Nepoznato';
-  };
-
-  if (loading) {
-    return <div className="p-8">Učitavanje plaćanja...</div>;
-  }
-
-  return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Plaćanja</h1>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          data-testid="add-payment-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Dodaj Plaćanje
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {payments.map((payment) => (
-          <Card key={payment.id} data-testid={`payment-card-${payment.id}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {getRentalInfo(payment.rental_id)}
-                <Badge 
-                  variant={
-                    payment.status === 'paid' ? 'default' : 
-                    payment.status === 'overdue' ? 'destructive' : 'secondary'
-                  }
-                >
-                  {payment.status === 'paid' ? 'Plaćeno' : 
-                   payment.status === 'overdue' ? 'Dospelo' : 'Na čekanju'}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-lg font-bold text-blue-600">
-                {payment.amount.toLocaleString()} RSD
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Datum dospeća:</span> {new Date(payment.due_date).toLocaleDateString()}
-              </p>
-              {payment.payment_date && (
-                <p className="text-sm">
-                  <span className="font-medium">Datum plaćanja:</span> {new Date(payment.payment_date).toLocaleDateString()}
-                </p>
-              )}
-              {payment.notes && (
-                <p className="text-sm">
-                  <span className="font-medium">Napomene:</span> {payment.notes}
-                </p>
-              )}
-              {payment.status !== 'paid' && (
-                <Button 
-                  size="sm" 
-                  onClick={() => handleMarkPaid(payment.id)}
-                  data-testid={`mark-paid-${payment.id}`}
-                  className="mt-2"
-                >
-                  Označi kao plaćeno
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Create Payment Dialog */}
-      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Dodaj Novo Plaćanje</DialogTitle>
-          </DialogHeader>
-          <PaymentForm 
-            rentals={rentals}
-            onSubmit={handleCreatePayment}
-            onCancel={() => setShowCreateForm(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-// Payment Form Component
-const PaymentForm = ({ rentals, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    rental_id: '',
-    amount: '',
-    due_date: '',
-    notes: ''
+    naziv_firme: '',
+    ime_prezime: '',
+    oib: '',
+    sjediste: '',
+    kontakt_ime: '',
+    kontakt_email: '',
+    kontakt_telefon: '',
+    iban: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
       ...formData,
-      amount: parseFloat(formData.amount)
+      naziv_firme: formData.naziv_firme || null,
+      ime_prezime: formData.ime_prezime || null,
+      iban: formData.iban || null
     };
     onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="payment-form">
-      <div>
-        <Label htmlFor="rental_id">Najam</Label>
-        <Select value={formData.rental_id} onValueChange={(value) => setFormData({ ...formData, rental_id: value })}>
-          <SelectTrigger data-testid="payment-rental-select">
-            <SelectValue placeholder="Izaberite najam" />
-          </SelectTrigger>
-          <SelectContent>
-            {rentals.map((rental) => (
-              <SelectItem key={rental.id} value={rental.id}>
-                Najam {rental.id.slice(0, 8)} - {rental.monthly_rent.toLocaleString()} RSD
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="zakupnik-form">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="naziv_firme">Naziv firme</Label>
+          <Input
+            id="naziv_firme"
+            value={formData.naziv_firme}
+            onChange={(e) => setFormData({ ...formData, naziv_firme: e.target.value })}
+            data-testid="zakupnik-naziv-input"
+          />
+        </div>
+        <div>
+          <Label htmlFor="ime_prezime">Ime i prezime</Label>
+          <Input
+            id="ime_prezime"
+            value={formData.ime_prezime}
+            onChange={(e) => setFormData({ ...formData, ime_prezime: e.target.value })}
+            data-testid="zakupnik-ime-input"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="amount">Iznos (RSD)</Label>
+          <Label htmlFor="oib">OIB / VAT ID *</Label>
           <Input
-            id="amount"
-            type="number"
-            value={formData.amount}
-            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-            data-testid="payment-amount-input"
+            id="oib"
+            value={formData.oib}
+            onChange={(e) => setFormData({ ...formData, oib: e.target.value })}
+            data-testid="zakupnik-oib-input"
             required
           />
         </div>
-
         <div>
-          <Label htmlFor="due_date">Datum dospeća</Label>
+          <Label htmlFor="iban">IBAN</Label>
           <Input
-            id="due_date"
-            type="date"
-            value={formData.due_date}
-            onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-            data-testid="payment-due-date-input"
-            required
+            id="iban"
+            value={formData.iban}
+            onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
+            data-testid="zakupnik-iban-input"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="notes">Napomene</Label>
-        <Textarea
-          id="notes"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          data-testid="payment-notes-input"
+        <Label htmlFor="sjediste">Sjedište / adresa *</Label>
+        <Input
+          id="sjediste"
+          value={formData.sjediste}
+          onChange={(e) => setFormData({ ...formData, sjediste: e.target.value })}
+          data-testid="zakupnik-sjediste-input"
+          required
         />
       </div>
 
-      <div className="flex space-x-2">
-        <Button type="submit" data-testid="submit-payment-form">
-          Kreiraj Plaćanje
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} data-testid="cancel-payment-form">
-          Otkaži
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-// Documents Component
-const Documents = () => {
-  const [documents, setDocuments] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [documentsRes, propertiesRes] = await Promise.all([
-        api.getDocuments(),
-        api.getProperties()
-      ]);
-      setDocuments(documentsRes.data);
-      setProperties(propertiesRes.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Greška pri učitavanju podataka');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateDocument = async (formData) => {
-    try {
-      await api.createDocument(formData);
-      toast.success('Dokument je uspešno kreiran');
-      fetchData();
-      setShowCreateForm(false);
-    } catch (error) {
-      console.error('Error creating document:', error);
-      toast.error('Greška pri kreiranju dokumenta');
-    }
-  };
-
-  const getPropertyTitle = (propertyId) => {
-    const property = properties.find(p => p.id === propertyId);
-    return property ? property.title : 'Nepoznato';
-  };
-
-  if (loading) {
-    return <div className="p-8">Učitavanje dokumenata...</div>;
-  }
-
-  return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dokumenti</h1>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          data-testid="add-document-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Dodaj Dokument
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {documents.map((document) => (
-          <Card key={document.id} data-testid={`document-card-${document.id}`}>
-            <CardHeader>
-              <CardTitle>{document.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm">
-                <span className="font-medium">Nekretnina:</span> {getPropertyTitle(document.property_id)}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Kategorija:</span> {document.category}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Otpremio:</span> {document.uploaded_by}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Datum:</span> {new Date(document.created_at).toLocaleDateString()}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Create Document Dialog */}
-      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Dodaj Novi Dokument</DialogTitle>
-          </DialogHeader>
-          <DocumentForm 
-            properties={properties}
-            onSubmit={handleCreateDocument}
-            onCancel={() => setShowCreateForm(false)}
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="kontakt_ime">Kontakt osoba *</Label>
+          <Input
+            id="kontakt_ime"
+            value={formData.kontakt_ime}
+            onChange={(e) => setFormData({ ...formData, kontakt_ime: e.target.value })}
+            data-testid="zakupnik-kontakt-input"
+            required
           />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-// Document Form Component
-const DocumentForm = ({ properties, onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
-    property_id: '',
-    title: '',
-    category: '',
-    uploaded_by: ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="document-form">
-      <div>
-        <Label htmlFor="property_id">Nekretnina</Label>
-        <Select value={formData.property_id} onValueChange={(value) => setFormData({ ...formData, property_id: value })}>
-          <SelectTrigger data-testid="document-property-select">
-            <SelectValue placeholder="Izaberite nekretninu" />
-          </SelectTrigger>
-          <SelectContent>
-            {properties.map((property) => (
-              <SelectItem key={property.id} value={property.id}>
-                {property.title} - {property.address}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="title">Naziv Dokumenta</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          data-testid="document-title-input"
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="category">Kategorija</Label>
-        <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-          <SelectTrigger data-testid="document-category-select">
-            <SelectValue placeholder="Izaberite kategoriju" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="lease_agreement">Ugovor o najmu</SelectItem>
-            <SelectItem value="insurance">Osiguranje</SelectItem>
-            <SelectItem value="maintenance">Održavanje</SelectItem>
-            <SelectItem value="legal">Pravni dokumenti</SelectItem>
-            <SelectItem value="other">Ostalo</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="uploaded_by">Otpremio</Label>
-        <Input
-          id="uploaded_by"
-          value={formData.uploaded_by}
-          onChange={(e) => setFormData({ ...formData, uploaded_by: e.target.value })}
-          data-testid="document-uploader-input"
-          required
-        />
+        </div>
+        <div>
+          <Label htmlFor="kontakt_email">Email *</Label>
+          <Input
+            id="kontakt_email"
+            type="email"
+            value={formData.kontakt_email}
+            onChange={(e) => setFormData({ ...formData, kontakt_email: e.target.value })}
+            data-testid="zakupnik-email-input"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="kontakt_telefon">Telefon *</Label>
+          <Input
+            id="kontakt_telefon"
+            value={formData.kontakt_telefon}
+            onChange={(e) => setFormData({ ...formData, kontakt_telefon: e.target.value })}
+            data-testid="zakupnik-telefon-input"
+            required
+          />
+        </div>
       </div>
 
       <div className="flex space-x-2">
-        <Button type="submit" data-testid="submit-document-form">
-          Kreiraj Dokument
+        <Button type="submit" data-testid="potvrdi-zakupnik-form">
+          Kreiraj zakupnika
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} data-testid="cancel-document-form">
-          Otkaži
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-zakupnik-form">
+          Odustani
         </Button>
       </div>
     </form>
   );
 };
+
+// Simple placeholder components for now
+const Ugovori = () => (
+  <div className="p-8">
+    <h1 className="text-3xl font-bold text-gray-900">Ugovori</h1>
+    <p className="mt-4 text-gray-600">Ugovori o zakupu - u razvoju</p>
+  </div>
+);
+
+const Dokumenti = () => (
+  <div className="p-8">
+    <h1 className="text-3xl font-bold text-gray-900">Dokumenti</h1>
+    <p className="mt-4 text-gray-600">Sustav dokumenata - u razvoju</p>
+  </div>
+);
+
+const Podsjetnici = () => (
+  <div className="p-8">
+    <h1 className="text-3xl font-bold text-gray-900">Podsjećanja</h1>
+    <p className="mt-4 text-gray-600">Sustav podsjećanja - u razvoju</p>
+  </div>
+);
 
 // Main App Component
 function App() {
@@ -1270,11 +1031,11 @@ function App() {
         <Navigation />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/rentals" element={<Rentals />} />
-          <Route path="/tenants" element={<Tenants />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/documents" element={<Documents />} />
+          <Route path="/nekretnine" element={<Nekretnine />} />
+          <Route path="/zakupnici" element={<Zakupnici />} />
+          <Route path="/ugovori" element={<Ugovori />} />
+          <Route path="/dokumenti" element={<Dokumenti />} />
+          <Route path="/podsjetnici" element={<Podsjetnici />} />
         </Routes>
       </BrowserRouter>
     </div>
