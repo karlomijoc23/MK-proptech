@@ -379,7 +379,7 @@ const Nekretnine = () => {
                   Tržišna vrijednost: {nekretnina.trzisna_vrijednost.toLocaleString()} €
                 </p>
               )}
-              <div className="flex space-x-2 pt-2">
+              <div className="flex space-x-1 pt-2">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -395,6 +395,15 @@ const Nekretnine = () => {
                   data-testid={`obrisi-nekretninu-${nekretnina.id}`}
                 >
                   <Trash2 className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => generatePropertyReport(nekretnina)}
+                  data-testid={`pdf-analiza-${nekretnina.id}`}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <FileText className="w-4 h-4" />
                 </Button>
               </div>
             </CardContent>
