@@ -247,7 +247,7 @@ async def get_tenants():
     return [Tenant(**parse_from_mongo(tenant)) for tenant in tenants]
 
 # Rentals
-@api_router.post("/rentals", response_model=Rental)
+@api_router.post("/rentals", response_model=Rental, status_code=201)
 async def create_rental(rental: RentalCreate):
     rental_dict = prepare_for_mongo(rental.dict())
     rental_obj = Rental(**rental_dict)
