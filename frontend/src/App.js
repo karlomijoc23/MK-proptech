@@ -307,10 +307,13 @@ const Properties = () => {
 
       {/* Edit Property Dialog */}
       <Dialog open={!!editingProperty} onOpenChange={() => setEditingProperty(null)}>
-        <DialogContent>
+        <DialogContent aria-describedby="edit-property-form-description">
           <DialogHeader>
             <DialogTitle>Uredi Nekretninu</DialogTitle>
           </DialogHeader>
+          <div id="edit-property-form-description" className="sr-only">
+            Forma za uređivanje postojeće nekretnine
+          </div>
           <PropertyForm 
             property={editingProperty}
             onSubmit={handleUpdateProperty}
