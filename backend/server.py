@@ -297,7 +297,7 @@ async def mark_payment_paid(payment_id: str):
     return {"message": "Payment marked as paid"}
 
 # Documents
-@api_router.post("/documents", response_model=Document)
+@api_router.post("/documents", response_model=Document, status_code=201)
 async def create_document(document: DocumentCreate):
     document_dict = prepare_for_mongo(document.dict())
     document_obj = Document(**document_dict, file_path="", file_size=0)
