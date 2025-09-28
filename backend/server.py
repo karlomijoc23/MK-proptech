@@ -234,7 +234,7 @@ async def delete_property(property_id: str):
     return {"message": "Property deleted successfully"}
 
 # Tenants
-@api_router.post("/tenants", response_model=Tenant)
+@api_router.post("/tenants", response_model=Tenant, status_code=201)
 async def create_tenant(tenant: TenantCreate):
     tenant_dict = prepare_for_mongo(tenant.dict())
     tenant_obj = Tenant(**tenant_dict)
