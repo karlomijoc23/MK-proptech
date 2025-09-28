@@ -181,7 +181,7 @@ async def root():
     return {"message": "Real Estate Management API", "status": "active"}
 
 # Authentication & Users
-@api_router.post("/users", response_model=User)
+@api_router.post("/users", response_model=User, status_code=201)
 async def create_user(user: UserCreate):
     user_dict = prepare_for_mongo(user.dict())
     user_obj = User(**user_dict)
