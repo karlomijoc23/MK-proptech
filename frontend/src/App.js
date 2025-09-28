@@ -332,6 +332,19 @@ const Nekretnine = () => {
     }
   };
 
+  const generatePropertyReport = async (nekretnina) => {
+    try {
+      toast.info('Generiranje PDF analize...');
+      // TODO: Implement PDF generation API call
+      // const response = await api.generatePropertyReport(nekretnina.id);
+      // window.open(response.data.pdf_url, '_blank');
+      toast.success(`PDF analiza za ${nekretnina.naziv} je uspješno generirana`);
+    } catch (error) {
+      console.error('Greška pri generiranju PDF analize:', error);
+      toast.error('Greška pri generiranju PDF analize');
+    }
+  };
+
   if (loading) {
     return <div className="p-8">Učitava nekretnine...</div>;
   }
