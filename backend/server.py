@@ -274,7 +274,7 @@ async def get_rental(rental_id: str):
     return Rental(**parse_from_mongo(rental_data))
 
 # Payments
-@api_router.post("/payments", response_model=Payment)
+@api_router.post("/payments", response_model=Payment, status_code=201)
 async def create_payment(payment: PaymentCreate):
     payment_dict = prepare_for_mongo(payment.dict())
     payment_obj = Payment(**payment_dict)
