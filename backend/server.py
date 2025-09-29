@@ -340,15 +340,18 @@ async def get_ugovor(ugovor_id: str):
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
     return Ugovor(**parse_from_mongo(ugovor))
 
+class StatusUpdate(BaseModel):
+    novi_status: StatusUgovora
+
 @api_router.put("/ugovori/{ugovor_id}/status")
-async def update_status_ugovora(ugovor_id: str, novi_status: StatusUgovora):
+async def update_status_ugovora(ugovor_id: str, status_data: StatusUpdate):
     result = await db.ugovori.update_one(
         {"id": ugovor_id},
-        {"$set": {"status": novi_status}}
+        {"$set": {"status": status_data.novi_status}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
-    return {"poruka": f"Status ugovora ažuriran na {novi_status}"}
+    return {"poruka": f"Status ugovora ažuriran na {status_data.novi_status}"}
 
 # Dokumenti
 @api_router.post("/dokumenti", response_model=Dokument, status_code=201)
