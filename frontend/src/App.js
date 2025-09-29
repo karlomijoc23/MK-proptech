@@ -1782,6 +1782,16 @@ const Ugovori = () => {
                   >
                     📋 Kopiraj
                   </Button>
+                  
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => generateContractPDF(ugovor)}
+                    data-testid={`generate-pdf-${ugovor.id}`}
+                    className="ml-2 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    📄 PDF
+                  </Button>
                 </div>
               </CardContent>
             </Card>
