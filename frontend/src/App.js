@@ -2149,6 +2149,34 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
     rezije_brojila: ''
   });
 
+  useEffect(() => {
+    if (renewalTemplate) {
+      setFormData({
+        interna_oznaka: renewalTemplate.interna_oznaka,
+        nekretnina_id: renewalTemplate.nekretnina_id,
+        zakupnik_id: renewalTemplate.zakupnik_id,
+        datum_potpisivanja: renewalTemplate.datum_potpisivanja,
+        datum_pocetka: renewalTemplate.datum_pocetka,
+        datum_zavrsetka: renewalTemplate.datum_zavrsetka,
+        trajanje_mjeseci: renewalTemplate.trajanje_mjeseci.toString(),
+        opcija_produljenja: renewalTemplate.opcija_produljenja,
+        uvjeti_produljenja: renewalTemplate.uvjeti_produljenja || '',
+        rok_otkaza_dani: renewalTemplate.rok_otkaza_dani,
+        osnovna_zakupnina: renewalTemplate.osnovna_zakupnina.toString(),
+        zakupnina_po_m2: renewalTemplate.zakupnina_po_m2?.toString() || '',
+        cam_troskovi: renewalTemplate.cam_troskovi?.toString() || '',
+        polog_depozit: renewalTemplate.polog_depozit?.toString() || '',
+        garancija: renewalTemplate.garancija?.toString() || '',
+        indeksacija: renewalTemplate.indeksacija,
+        indeks: renewalTemplate.indeks || '',
+        formula_indeksacije: renewalTemplate.formula_indeksacije || '',
+        obveze_odrzavanja: renewalTemplate.obveze_odrzavanja || '',
+        namjena_prostora: renewalTemplate.namjena_prostora || '',
+        rezije_brojila: renewalTemplate.rezije_brojila || ''
+      });
+    }
+  }, [renewalTemplate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
