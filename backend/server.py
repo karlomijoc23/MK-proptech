@@ -11,6 +11,10 @@ import uuid
 from datetime import datetime, timezone, date, timedelta
 from enum import Enum
 import json
+import tempfile
+import shutil
+from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+import uuid as uuid_module
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
