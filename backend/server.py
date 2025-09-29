@@ -77,7 +77,7 @@ def parse_from_mongo(item):
                         item[key] = datetime.fromisoformat(value.replace('Z', '+00:00'))
                     else:
                         item[key] = datetime.fromisoformat(value).date()
-                except:
+                except (ValueError, TypeError):
                     pass
     return item
 
