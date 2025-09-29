@@ -2216,27 +2216,36 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
       const parsedData = response.data.data;
 
       // Popuni formu s podacima iz PDF-a
+      const ugovor = parsedData.ugovor || {};
+      const financije = parsedData.financije || {};
+      const ostalo = parsedData.ostalo || {};
+      
       setFormData(prevData => ({
         ...prevData,
-        interna_oznaka: parsedData.interna_oznaka || prevData.interna_oznaka,
-        datum_potpisivanja: parsedData.datum_potpisivanja || prevData.datum_potpisivanja,
-        datum_pocetka: parsedData.datum_pocetka || prevData.datum_pocetka,
-        datum_zavrsetka: parsedData.datum_zavrsetka || prevData.datum_zavrsetka,
-        trajanje_mjeseci: parsedData.trajanje_mjeseci?.toString() || prevData.trajanje_mjeseci,
-        osnovna_zakupnina: parsedData.osnovna_zakupnina?.toString() || prevData.osnovna_zakupnina,
-        zakupnina_po_m2: parsedData.zakupnina_po_m2?.toString() || prevData.zakupnina_po_m2,
-        cam_troskovi: parsedData.cam_troskovi?.toString() || prevData.cam_troskovi,
-        polog_depozit: parsedData.polog_depozit?.toString() || prevData.polog_depozit,
-        garancija: parsedData.garancija?.toString() || prevData.garancija,
-        rok_otkaza_dani: parsedData.rok_otkaza_dani || prevData.rok_otkaza_dani,
-        opcija_produljenja: parsedData.opcija_produljenja || prevData.opcija_produljenja,
-        uvjeti_produljenja: parsedData.uvjeti_produljenja || prevData.uvjeti_produljenja,
-        indeksacija: parsedData.indeksacija || prevData.indeksacija,
-        indeks: parsedData.indeks || prevData.indeks,
-        formula_indeksacije: parsedData.formula_indeksacije || prevData.formula_indeksacije,
-        obveze_odrzavanja: parsedData.obveze_odrzavanja || prevData.obveze_odrzavanja,
-        namjena_prostora: parsedData.namjena_prostora || prevData.namjena_prostora,
-        rezije_brojila: parsedData.rezije_brojila || prevData.rezije_brojila
+        // Osnovni podaci ugovora
+        interna_oznaka: ugovor.interna_oznaka || prevData.interna_oznaka,
+        datum_potpisivanja: ugovor.datum_potpisivanja || prevData.datum_potpisivanja,
+        datum_pocetka: ugovor.datum_pocetka || prevData.datum_pocetka,
+        datum_zavrsetka: ugovor.datum_zavrsetka || prevData.datum_zavrsetka,
+        trajanje_mjeseci: ugovor.trajanje_mjeseci?.toString() || prevData.trajanje_mjeseci,
+        rok_otkaza_dani: ugovor.rok_otkaza_dani || prevData.rok_otkaza_dani,
+        opcija_produljenja: ugovor.opcija_produljenja !== null ? ugovor.opcija_produljenja : prevData.opcija_produljenja,
+        uvjeti_produljenja: ugovor.uvjeti_produljenja || prevData.uvjeti_produljenja,
+        
+        // Financijski podaci
+        osnovna_zakupnina: financije.osnovna_zakupnina?.toString() || prevData.osnovna_zakupnina,
+        zakupnina_po_m2: financije.zakupnina_po_m2?.toString() || prevData.zakupnina_po_m2,
+        cam_troskovi: financije.cam_troskovi?.toString() || prevData.cam_troskovi,
+        polog_depozit: financije.polog_depozit?.toString() || prevData.polog_depozit,
+        garancija: financije.garancija?.toString() || prevData.garancija,
+        indeksacija: financije.indeksacija !== null ? financije.indeksacija : prevData.indeksacija,
+        indeks: financije.indeks || prevData.indeks,
+        formula_indeksacije: financije.formula_indeksacije || prevData.formula_indeksacije,
+        
+        // Ostali podaci
+        obveze_odrzavanja: ostalo.obveze_odrzavanja || prevData.obveze_odrzavanja,
+        namjena_prostora: parsedData.nekretnina?.namjena_prostora || prevData.namjena_prostora,
+        rezije_brojila: ostalo.rezije_brojila || prevData.rezije_brojila
       }));
 
       toast.success('PDF ugovor je uspješno analiziran i podaci su uneseni u formu!');
