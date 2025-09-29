@@ -426,12 +426,27 @@ async def get_dashboard():
     mjesecni_prihod_result = await db.ugovori.aggregate(mjesecni_prihod_pipeline).to_list(1)
     mjesecni_prihod = mjesecni_prihod_result[0]["ukupno"] if mjesecni_prihod_result else 0
     
+    # Izračunaj ukupnu vrijednost portfelja
+    portfelj_pipeline = [
+        {"$match": {"trzisna_vrijednost": {"$ne": None, "$gt": 0}}},
+        {"$group": {"_id": None, "ukupna_vrijednost": {"$sum": "$trzisna_vrijednost"}}}
+    ]
+    portfelj_result = await db.nekretnine.aggregate(portfelj_pipeline).to_list(1)
+    ukupna_vrijednost_portfelja = portfelj_result[0]["ukupna_vrijednost"] if portfelj_result else 0
+    
+    # Izračunaj godišnji prinos
+    godisnji_prinos = (mjesecni_prihod * 12) if mjesecni_prihod > 0 else 0
+    prinos_postotak = (godisnji_prinos / ukupna_vrijednost_portfelja * 100) if ukupna_vrijednost_portfelja > 0 else 0
+    
     return {
         "ukupno_nekretnina": ukupno_nekretnina,
         "aktivni_ugovori": aktivni_ugovori,
         "ugovori_na_isteku": ugovori_na_isteku,
         "aktivni_podsjetnici": aktivni_podsjetnici,
-        "mjesecni_prihod": mjesecni_prihod
+        "mjesecni_prihod": mjesecni_prihod,
+        "ukupna_vrijednost_portfelja": ukupna_vrijednost_portfelja,
+        "godisnji_prinos": godisnji_prinos,
+        "prinos_postotak": round(prinos_postotak, 2)
     }
 
 @api_router.get("/pretraga")
