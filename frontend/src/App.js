@@ -1467,6 +1467,9 @@ const Ugovori = () => {
   const [filterStatus, setFilterStatus] = useState('svi');
   const [showCopyDialog, setShowCopyDialog] = useState(false);
   const [contractToCopy, setContractToCopy] = useState(null);
+  const [renewalTemplate, setRenewalTemplate] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
     fetchData();
