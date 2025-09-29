@@ -2276,6 +2276,70 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" data-testid="ugovor-form">
+      {/* PDF Upload Section */}
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            📄 AI Analiza PDF Ugovora
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Učitajte postojeći PDF ugovor za automatsko popunjavanje forme
+          </p>
+          
+          {!uploadedFile ? (
+            <div>
+              <input
+                id="pdf-upload"
+                type="file"
+                accept=".pdf"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isParsing}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('pdf-upload').click()}
+                disabled={isParsing}
+                className="mb-2"
+              >
+                {isParsing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    Analiziram PDF...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Odaberite PDF ugovor
+                  </>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center space-x-2">
+              <FileText className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-green-700">
+                {uploadedFile.name}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRemoveFile}
+                disabled={isParsing}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+          
+          <p className="text-xs text-gray-500 mt-2">
+            Podržani format: PDF • AI će pokušati izvući podatke iz ugovora
+          </p>
+        </div>
+      </div>
+
       <Tabs defaultValue="osnovni" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="osnovni">Osnovni podaci</TabsTrigger>
