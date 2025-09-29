@@ -1990,7 +1990,9 @@ const Ugovori = () => {
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="ugovor-form-description">
           <DialogHeader>
-            <DialogTitle>Dodaj novi ugovor</DialogTitle>
+            <DialogTitle>
+              {renewalTemplate ? 'Produžetak ugovora - Nova interna oznaka' : 'Dodaj novi ugovor'}
+            </DialogTitle>
           </DialogHeader>
           <div id="ugovor-form-description" className="sr-only">
             Forma za kreiranje novog ugovora o zakupu
