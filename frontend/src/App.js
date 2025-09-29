@@ -1676,6 +1676,16 @@ const Ugovori = () => {
                       Opcija produljenja
                     </Badge>
                   )}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleCopyContract(ugovor)}
+                    data-testid={`copy-contract-${ugovor.id}`}
+                    className="ml-2"
+                  >
+                    📋 Kopiraj
+                  </Button>
                 </div>
               </CardContent>
             </Card>
