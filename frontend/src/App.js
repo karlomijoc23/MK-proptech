@@ -2890,6 +2890,95 @@ const Dokumenti = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh]" aria-describedby="document-preview-description">
+          <DialogHeader>
+            <DialogTitle>Pregled dokumenta: {previewDocument?.naziv}</DialogTitle>
+          </DialogHeader>
+          <div id="document-preview-description" className="sr-only">
+            Pregled dokumenta u aplikaciji
+          </div>
+          
+          {previewDocument && (
+            <div className="space-y-4">
+              {/* Document info */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Naziv:</span> {previewDocument.naziv}
+                  </div>
+                  <div>
+                    <span className="font-medium">Tip:</span> {getTipLabel(previewDocument.tip)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Verzija:</span> {previewDocument.verzija}
+                  </div>
+                  <div>
+                    <span className="font-medium">Uploadao:</span> {previewDocument.uploadao}
+                  </div>
+                  <div>
+                    <span className="font-medium">Datum:</span> {new Date(previewDocument.kreiran).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Vezano za:</span> {getLinkedEntity(previewDocument).tip}
+                  </div>
+                </div>
+                {previewDocument.opis && (
+                  <div className="mt-3">
+                    <span className="font-medium">Opis:</span>
+                    <p className="mt-1 text-gray-700">{previewDocument.opis}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Document viewer placeholder */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Pregled dokumenta</h3>
+                <p className="text-gray-600 mb-4">
+                  Dokument: {previewDocument.naziv}
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Za potpuni pregled, preuzmite dokument ili otvorite u vanjskom pregledniku
+                </p>
+                
+                <div className="space-y-2">
+                  <Button 
+                    variant="default"
+                    className="w-full"
+                    onClick={() => {
+                      // Simulacija download-a (u stvarnoj implementaciji bi bio pravi file)
+                      toast.success('Preuzimanje dokumenta pokrenuto');
+                    }}
+                    data-testid="download-document"
+                  >
+                    📥 Preuzmi dokument
+                  </Button>
+                  
+                  <div className="text-xs text-gray-400">
+                    Datoteka: {previewDocument.putanja_datoteke || 'document.pdf'} • 
+                    Veličina: {previewDocument.velicina_datoteke > 0 ? 
+                      `${(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB` : 
+                      'Nepoznata veličina'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPreviewDialog(false)}
+                  className="flex-1"
+                >
+                  Zatvori
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
