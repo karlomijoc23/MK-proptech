@@ -1473,7 +1473,18 @@ const Ugovori = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    
+    // Provjeri je li došao renewal request
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('action') === 'renew') {
+      const template = sessionStorage.getItem('renewalTemplate');
+      if (template) {
+        setRenewalTemplate(JSON.parse(template));
+        setShowCreateForm(true);
+        sessionStorage.removeItem('renewalTemplate');
+      }
+    }
+  }, [location]);
 
   const fetchData = async () => {
     try {
