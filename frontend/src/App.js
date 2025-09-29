@@ -250,20 +250,15 @@ const Dashboard = () => {
       {podsjetnici.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Aktivna podsjećanja</CardTitle>
+            <CardTitle>Aktivna podsjećanja - Potrebne akcije</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {podsjetnici.slice(0, 5).map((podsjetnik) => (
-                <div key={podsjetnik.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{podsjetnik.tip.replace('_', ' ').toUpperCase()}</p>
-                    <p className="text-sm text-gray-600">
-                      {podsjetnik.dani_prije} dana prije - {new Date(podsjetnik.datum_podsjetnika).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge variant="secondary">Aktivno</Badge>
-                </div>
+                <ClickableReminder 
+                  key={podsjetnik.id} 
+                  podsjetnik={podsjetnik}
+                />
               ))}
             </div>
           </CardContent>
