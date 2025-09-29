@@ -49,6 +49,17 @@ const api = {
   // Podsjećanja
   getPodsjetnici: () => axios.get(`${API}/podsjetnici`),
   getAktivniPodsjetnici: () => axios.get(`${API}/podsjetnici/aktivni`),
+  
+  // AI PDF parsing
+  parsePdfContract: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return axios.post(`${API}/ai/parse-pdf-contract`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 // Navigation Component
