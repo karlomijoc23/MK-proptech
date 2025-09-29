@@ -1603,9 +1603,31 @@ const Ugovori = () => {
   };
 
   const filteredUgovori = ugovori.filter(ugovor => {
-    if (filterStatus === 'svi') return true;
-    if (filterStatus === 'na_isteku') return isUgovorNaIsteku(ugovor);
-    return ugovor.status === filterStatus;
+    // Prvo filtriraj po statusu
+    let matches = true;
+    if (filterStatus !== 'svi') {
+      if (filterStatus === 'na_isteku') {
+        matches = isUgovorNaIsteku(ugovor);
+      } else {
+        matches = ugovor.status === filterStatus;
+      }
+    }
+    
+    // Zatim filtriraj po pretraživanju
+    if (matches && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const nekretnina = getNekretnina(ugovor.nekretnina_id);
+      const zakupnik = getZakupnik(ugovor.zakupnik_id);
+      
+      matches = ugovor.interna_oznaka.toLowerCase().includes(query) ||
+               nekretnina?.naziv.toLowerCase().includes(query) ||
+               nekretnina?.adresa.toLowerCase().includes(query) ||
+               zakupnik?.naziv_firme?.toLowerCase().includes(query) ||
+               zakupnik?.ime_prezime?.toLowerCase().includes(query) ||
+               zakupnik?.oib.includes(query);
+    }
+    
+    return matches;
   });
 
   if (loading) {
