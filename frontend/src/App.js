@@ -2177,7 +2177,7 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
     }
   }, [renewalTemplate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
       ...formData,
@@ -2189,6 +2189,18 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
       polog_depozit: formData.polog_depozit ? parseFloat(formData.polog_depozit) : null,
       garancija: formData.garancija ? parseFloat(formData.garancija) : null
     };
+    
+    // Ako je renewal, arhiviraj stari ugovor
+    if (renewalTemplate?._isRenewal && renewalTemplate._oldContractId) {
+      try {
+        await api.updateStatusUgovora(renewalTemplate._oldContractId, 'arhivirano');
+        toast.info('Stari ugovor je uspješno arhiviran');
+      } catch (error) {
+        console.error('Greška pri arhiviranju starog ugovora:', error);
+        toast.warning('Novi ugovor je kreiran, ali stari nije arhiviran automatski');
+      }
+    }
+    
     onSubmit(data);
   };
 
