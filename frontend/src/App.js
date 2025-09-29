@@ -2505,6 +2505,7 @@ const Dokumenti = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState('svi');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchData();
