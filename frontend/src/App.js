@@ -1996,10 +1996,14 @@ const Ugovori = () => {
             Forma za kreiranje novog ugovora o zakupu
           </div>
           <UgovorForm 
-            nekretnine={nekretnine.filter(n => !ugovori.some(u => u.nekretnina_id === n.id && u.status === 'aktivno'))}
+            nekretnine={nekretnine}
             zakupnici={zakupnici}
             onSubmit={handleCreateUgovor}
-            onCancel={() => setShowCreateForm(false)}
+            onCancel={() => {
+              setShowCreateForm(false);
+              setRenewalTemplate(null);
+            }}
+            renewalTemplate={renewalTemplate}
           />
         </DialogContent>
       </Dialog>
