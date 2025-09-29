@@ -558,6 +558,32 @@ const Dashboard = () => {
             <div className="text-2xl font-bold">{dashboard.mjesecni_prihod?.toLocaleString()} €</div>
           </CardContent>
         </Card>
+
+        <Card data-testid="vrijednost-portfelja-card" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white">Vrijednost portfelja</CardTitle>
+            <Building className="h-4 w-4 text-white/80" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboard.ukupna_vrijednost_portfelja?.toLocaleString()} €</div>
+            <p className="text-xs text-white/80">
+              Ukupna tržišna vrijednost
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="godisnji-prinos-card" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white">Godišnji prinos</CardTitle>
+            <DollarSign className="h-4 w-4 text-white/80" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboard.godisnji_prinos?.toLocaleString()} €</div>
+            <p className="text-xs text-white/80">
+              {dashboard.prinos_postotak}% ROI
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {podsjetnici.length > 0 && (
