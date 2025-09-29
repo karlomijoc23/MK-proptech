@@ -314,17 +314,39 @@ const ClickableReminder = ({ podsjetnik }) => {
         
         <div className="text-right">
           <div className="text-xs text-gray-500 mb-2">Kliknite za akciju</div>
-          <Button 
-            variant="default" 
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleReminderClick();
-            }}
-          >
-            Riješi →
-          </Button>
+          <div className="space-y-1">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReminderClick();
+              }}
+            >
+              Riješi →
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="w-full text-xs"
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await api.markReminderAsSent(podsjetnik.id);
+                  toast.success('Podsjetnik je označen kao riješen');
+                  // Refresh dashboard
+                  window.location.reload();
+                } catch (error) {
+                  console.error('Greška pri označavanju podsjetnika:', error);
+                  toast.error('Greška pri označavanju podsjetnika');
+                }
+              }}
+              data-testid={`mark-resolved-${podsjetnik.id}`}
+            >
+              ✓ Riješeno
+            </Button>
+          </div>
         </div>
       </div>
 
