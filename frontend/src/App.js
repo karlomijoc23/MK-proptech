@@ -2587,13 +2587,26 @@ const Dokumenti = () => {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Dokumenti</h1>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          data-testid="dodaj-dokument-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Dodaj dokument
-        </Button>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Pretraži dokumente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+              data-testid="search-documents-input"
+            />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
+          <Button 
+            onClick={() => setShowCreateForm(true)}
+            data-testid="dodaj-dokument-btn"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Dodaj dokument
+          </Button>
+        </div>
       </div>
 
       {/* Filter buttons */}
