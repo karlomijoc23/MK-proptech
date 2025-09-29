@@ -2488,7 +2488,7 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
 
       <div className="flex space-x-2 pt-4">
         <Button type="submit" data-testid="potvrdi-ugovor-form">
-          Kreiraj ugovor
+          {renewalTemplate ? 'Kreiraj produžetak' : 'Kreiraj ugovor'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-ugovor-form">
           Odustani
