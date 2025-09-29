@@ -1760,6 +1760,118 @@ const Ugovori = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Copy Contract Dialog */}
+      <Dialog open={showCopyDialog} onOpenChange={setShowCopyDialog}>
+        <DialogContent className="max-w-2xl" aria-describedby="copy-dialog-description">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Kreiraj novi ugovor na osnovu postojećeg
+            </DialogTitle>
+          </DialogHeader>
+          <div id="copy-dialog-description" className="sr-only">
+            Dialog za kreiranje novog ugovora na osnovu postojećeg s opcijama 1, 2 ili 5 godina
+          </div>
+
+          {contractToCopy && (
+            <div className="space-y-6">
+              {/* Original contract details */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-3">Kopira se ugovor:</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Oznaka:</span> {contractToCopy.interna_oznaka}
+                  </div>
+                  <div>
+                    <span className="font-medium">Kirija:</span> {contractToCopy.osnovna_zakupnina?.toLocaleString()} €
+                  </div>
+                  <div>
+                    <span className="font-medium">Početak:</span> {new Date(contractToCopy.datum_pocetka).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Završetak:</span> {new Date(contractToCopy.datum_zavrsetka).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Copy options */}
+              <div>
+                <h3 className="font-medium mb-4">Odaberite trajanje novog ugovora:</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  
+                  <Card 
+                    className="cursor-pointer hover:bg-blue-50 border-2 hover:border-blue-300 transition-all"
+                    onClick={() => handleCreateCopiedContract(1)}
+                    data-testid="copy-option-1-year"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-bold text-lg">1 Godina</h4>
+                          <p className="text-sm text-gray-600">
+                            Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
+                          </p>
+                          <p className="text-xs text-gray-500">Početak: danas, završetak: za godinu dana</p>
+                        </div>
+                        <Badge variant="default">Kratko</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card 
+                    className="cursor-pointer hover:bg-green-50 border-2 hover:border-green-300 transition-all"
+                    onClick={() => handleCreateCopiedContract(2)}
+                    data-testid="copy-option-2-years"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-bold text-lg">2 Godine</h4>
+                          <p className="text-sm text-gray-600">
+                            Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
+                          </p>
+                          <p className="text-xs text-gray-500">Početak: danas, završetak: za 2 godine</p>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-200 text-green-800">Preporučeno</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card 
+                    className="cursor-pointer hover:bg-purple-50 border-2 hover:border-purple-300 transition-all"
+                    onClick={() => handleCreateCopiedContract(5)}
+                    data-testid="copy-option-5-years"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-bold text-lg">5 Godina</h4>
+                          <p className="text-sm text-gray-600">
+                            Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
+                          </p>
+                          <p className="text-xs text-gray-500">Početak: danas, završetak: za 5 godina</p>
+                        </div>
+                        <Badge variant="outline" className="border-purple-300 text-purple-700">Dugoročno</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCopyDialog(false)}
+                  className="flex-1"
+                  data-testid="cancel-copy"
+                >
+                  Otkaži
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
