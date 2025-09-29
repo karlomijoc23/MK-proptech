@@ -2575,8 +2575,25 @@ const Dokumenti = () => {
   };
 
   const filteredDokumenti = dokumenti.filter(dokument => {
-    if (filterCategory === 'svi') return true;
-    return dokument.tip === filterCategory;
+    // Prvo filtriraj po kategoriji
+    let matches = true;
+    if (filterCategory !== 'svi') {
+      matches = dokument.tip === filterCategory;
+    }
+    
+    // Zatim filtriraj po pretraživanju
+    if (matches && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const linkedEntity = getLinkedEntity(dokument);
+      
+      matches = dokument.naziv.toLowerCase().includes(query) ||
+               dokument.opis?.toLowerCase().includes(query) ||
+               dokument.uploadao.toLowerCase().includes(query) ||
+               getTipLabel(dokument.tip).toLowerCase().includes(query) ||
+               linkedEntity.naziv?.toLowerCase().includes(query);
+    }
+    
+    return matches;
   });
 
   if (loading) {
