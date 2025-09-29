@@ -2124,7 +2124,7 @@ const Ugovori = () => {
 };
 
 // Ugovor Form Component
-const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel }) => {
+const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate }) => {
   const [formData, setFormData] = useState({
     interna_oznaka: '',
     nekretnina_id: '',
