@@ -2138,6 +2138,8 @@ const Ugovori = () => {
 
 // Ugovor Form Component
 const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate }) => {
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [isParsing, setIsParsing] = useState(false);
   const [formData, setFormData] = useState({
     interna_oznaka: '',
     nekretnina_id: '',
