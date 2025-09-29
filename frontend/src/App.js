@@ -2207,7 +2207,13 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
     try {
       toast.info('Analiziram PDF ugovor...');
       const response = await api.parsePdfContract(file);
-      const parsedData = response.data;
+      
+      if (!response.data.success) {
+        toast.error(response.data.message || 'Greška pri analizi PDF-a');
+        return;
+      }
+      
+      const parsedData = response.data.data;
 
       // Popuni formu s podacima iz PDF-a
       setFormData(prevData => ({
