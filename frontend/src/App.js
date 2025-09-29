@@ -2725,6 +2725,11 @@ const Dokumenti = () => {
     return tipMap[tip] || tip;
   };
 
+  const handleDocumentPreview = (dokument) => {
+    setPreviewDocument(dokument);
+    setShowPreviewDialog(true);
+  };
+
   const filteredDokumenti = dokumenti.filter(dokument => {
     // Prvo filtriraj po kategoriji
     let matches = true;
