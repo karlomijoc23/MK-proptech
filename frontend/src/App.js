@@ -1543,6 +1543,54 @@ const Ugovori = () => {
     return daniDo <= 90 && daniDo > 0; // Ugovori koji ističu u sljedećih 90 dana
   };
 
+  const handleCopyContract = (ugovor) => {
+    setContractToCopy(ugovor);
+    setShowCopyDialog(true);
+  };
+
+  const handleCreateCopiedContract = async (godina) => {
+    try {
+      if (!contractToCopy) return;
+      
+      const noviDatumPocetka = new Date();
+      const noviDatumZavrsetka = new Date();
+      noviDatumZavrsetka.setFullYear(noviDatumZavrsetka.getFullYear() + godina);
+      
+      const noviUgovor = {
+        interna_oznaka: `${contractToCopy.interna_oznaka}-COPY-${godina}G-${Date.now()}`,
+        nekretnina_id: contractToCopy.nekretnina_id,
+        zakupnik_id: contractToCopy.zakupnik_id,
+        datum_potpisivanja: new Date().toISOString().split('T')[0],
+        datum_pocetka: noviDatumPocetka.toISOString().split('T')[0],
+        datum_zavrsetka: noviDatumZavrsetka.toISOString().split('T')[0],
+        trajanje_mjeseci: godina * 12,
+        opcija_produljenja: contractToCopy.opcija_produljenja,
+        uvjeti_produljenja: contractToCopy.uvjeti_produljenja,
+        rok_otkaza_dani: contractToCopy.rok_otkaza_dani,
+        osnovna_zakupnina: contractToCopy.osnovna_zakupnina,
+        zakupnina_po_m2: contractToCopy.zakupnina_po_m2,
+        cam_troskovi: contractToCopy.cam_troskovi,
+        polog_depozit: contractToCopy.polog_depozit,
+        garancija: contractToCopy.garancija,
+        indeksacija: contractToCopy.indeksacija,
+        indeks: contractToCopy.indeks,
+        formula_indeksacije: contractToCopy.formula_indeksacije,
+        obveze_odrzavanja: contractToCopy.obveze_odrzavanja,
+        namjena_prostora: contractToCopy.namjena_prostora,
+        rezije_brojila: contractToCopy.rezije_brojila
+      };
+
+      await api.createUgovor(noviUgovor);
+      toast.success(`Novi ugovor na ${godina} ${godina === 1 ? 'godinu' : 'godina'} je uspješno kreiran na osnovu postojećeg!`);
+      setShowCopyDialog(false);
+      setContractToCopy(null);
+      fetchData();
+    } catch (error) {
+      console.error('Greška pri kreiranju kopije ugovora:', error);
+      toast.error('Greška pri kreiranju kopije ugovora');
+    }
+  };
+
   const filteredUgovori = ugovori.filter(ugovor => {
     if (filterStatus === 'svi') return true;
     if (filterStatus === 'na_isteku') return isUgovorNaIsteku(ugovor);
