@@ -455,6 +455,141 @@ async def pretraga(q: str):
         "ugovori": [Ugovor(**parse_from_mongo(u)) for u in ugovori]
     }
 
+@api_router.post("/ai/parse-pdf-contract")
+async def parse_pdf_contract(file: UploadFile = File(...)):
+    """AI funkcija za čitanje i izvlačenje podataka iz PDF ugovora"""
+    try:
+        # Provjeri je li PDF datoteka
+        if not file.content_type == "application/pdf":
+            raise HTTPException(status_code=400, detail="Datoteka mora biti PDF format")
+        
+        # Spremi privremenu datoteku
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            shutil.copyfileobj(file.file, tmp_file)
+            tmp_path = tmp_file.name
+        
+        try:
+            # Inicijaliziraj AI chat s Gemini (jedini model koji podržava datoteke)
+            chat = LlmChat(
+                api_key=os.environ.get('EMERGENT_LLM_KEY'),
+                session_id=f"pdf-parse-{uuid_module.uuid4()}",
+                system_message="Ti si ekspert za čitanje i izvlačenje podataka iz ugovora o zakupu nekretnina. Tvoj zadatak je pažljivo analizirati PDF dokument i izvući sve dostupne informacije u strukturiranom JSON formatu."
+            ).with_model("gemini", "gemini-2.0-flash")
+            
+            # Kreiraj file content objekt
+            pdf_file = FileContentWithMimeType(
+                file_path=tmp_path,
+                mime_type="application/pdf"
+            )
+            
+            # Pošalji zahtjev za analizu
+            user_message = UserMessage(
+                text="""Molim te analiziraj ovaj PDF ugovor o zakupu i izvuci sljedeće informacije u JSON formatu:
+
+{
+  "ugovor": {
+    "interna_oznaka": "string ili null",
+    "datum_potpisivanja": "YYYY-MM-DD ili null",
+    "datum_pocetka": "YYYY-MM-DD ili null", 
+    "datum_zavrsetka": "YYYY-MM-DD ili null",
+    "trajanje_mjeseci": "broj ili null",
+    "opcija_produljenja": "boolean ili null",
+    "uvjeti_produljenja": "string ili null",
+    "rok_otkaza_dani": "broj ili null"
+  },
+  "nekretnina": {
+    "naziv": "string ili null",
+    "adresa": "string ili null",
+    "katastarska_opcina": "string ili null",
+    "broj_kat_cestice": "string ili null",
+    "povrsina": "broj ili null",
+    "vrsta": "poslovna_zgrada/stan/zemljiste/ostalo ili null",
+    "namjena_prostora": "string ili null"
+  },
+  "zakupnik": {
+    "naziv_firme": "string ili null",
+    "ime_prezime": "string ili null", 
+    "oib": "string ili null",
+    "sjediste": "string ili null",
+    "kontakt_ime": "string ili null",
+    "kontakt_email": "string ili null",
+    "kontakt_telefon": "string ili null"
+  },
+  "financije": {
+    "osnovna_zakupnina": "broj ili null",
+    "zakupnina_po_m2": "broj ili null",
+    "cam_troskovi": "broj ili null", 
+    "polog_depozit": "broj ili null",
+    "garancija": "broj ili null",
+    "indeksacija": "boolean ili null",
+    "indeks": "string ili null",
+    "formula_indeksacije": "string ili null"
+  },
+  "ostalo": {
+    "obveze_odrzavanja": "zakupodavac/zakupnik/podijeljeno ili null",
+    "rezije_brojila": "string ili null"
+  }
+}
+
+VAŽNO: 
+- Ako ne možeš pronaći određenu informaciju, stavi null
+- Za datume koristi YYYY-MM-DD format
+- Za brojeve koristi decimalne vrijednosti bez valute 
+- Za boolean vrijednosti koristi true/false
+- Za enum vrijednosti koristi točno navedene opcije
+- Odgovori SAMO s JSON objektom, bez dodatnih objašnjenja""",
+                file_contents=[pdf_file]
+            )
+            
+            # Dobij odgovor od AI-ja
+            response = await chat.send_message(user_message)
+            
+            # Pokušaj parsirati JSON odgovor
+            try:
+                parsed_data = json.loads(response)
+                return {
+                    "success": True,
+                    "data": parsed_data,
+                    "message": "PDF je uspješno analiziran i podaci su izvučeni"
+                }
+            except json.JSONDecodeError:
+                # Ako JSON parsing ne uspije, pokušaj izvući JSON iz odgovora
+                start = response.find('{')
+                end = response.rfind('}') + 1
+                if start != -1 and end != 0:
+                    json_part = response[start:end]
+                    try:
+                        parsed_data = json.loads(json_part)
+                        return {
+                            "success": True,
+                            "data": parsed_data,
+                            "message": "PDF je uspješno analiziran i podaci su izvučeni"
+                        }
+                    except json.JSONDecodeError:
+                        pass
+                
+                # Ako ni to ne uspije, vrati raw odgovor
+                return {
+                    "success": False,
+                    "data": None,
+                    "message": f"AI je analizirao dokument, ali odgovor nije u očekivanom JSON formatu: {response[:500]}..."
+                }
+        
+        finally:
+            # Obriši privremenu datoteku
+            try:
+                os.unlink(tmp_path)
+            except:
+                pass
+                
+    except Exception as e:
+        logger.error(f"Greška pri AI analizi PDF-a: {str(e)}")
+        return {
+            "success": False,
+            "data": None,
+            "message": f"Greška pri analizi PDF-a: {str(e)}"
+        }
+
 # Helper funkcija za kreiranje podsjećanja
 async def create_podsjetnici_za_ugovor(ugovor: Ugovor):
     """Kreira automatske podsjetnike za ugovor"""
