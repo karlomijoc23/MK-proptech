@@ -1602,6 +1602,193 @@ const Ugovori = () => {
     }
   };
 
+  const generateContractPDF = async (ugovor) => {
+    try {
+      toast.info('Generiranje PDF ugovora...');
+      
+      const nekretnina = getNekretnina(ugovor.nekretnina_id);
+      const zakupnik = getZakupnik(ugovor.zakupnik_id);
+      
+      // Kreiraj novi PDF dokument
+      const doc = new jsPDF();
+      
+      // Zaglavlje
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('UGOVOR O ZAKUPU', 105, 20, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Broj: ${ugovor.interna_oznaka}`, 105, 30, { align: 'center' });
+      
+      // Linija
+      doc.setLineWidth(0.5);
+      doc.line(20, 35, 190, 35);
+      
+      let yPos = 50;
+      
+      // Ugovorne strane
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('UGOVORNE STRANE:', 20, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text('ZAKUPODAVAC:', 20, yPos);
+      yPos += 6;
+      doc.text(nekretnina?.vlasnik || 'Vlasnik nekretnine', 30, yPos);
+      yPos += 10;
+      
+      doc.text('ZAKUPNIK:', 20, yPos);
+      yPos += 6;
+      doc.text(zakupnik?.naziv_firme || zakupnik?.ime_prezime || 'Zakupnik', 30, yPos);
+      yPos += 6;
+      doc.text(`OIB: ${zakupnik?.oib}`, 30, yPos);
+      yPos += 6;
+      doc.text(`Adresa: ${zakupnik?.sjediste}`, 30, yPos);
+      yPos += 15;
+      
+      // Predmet ugovora
+      doc.setFont('helvetica', 'bold');
+      doc.text('PREDMET UGOVORA:', 20, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Nekretnina: ${nekretnina?.naziv}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Adresa: ${nekretnina?.adresa}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Katastarska općina: ${nekretnina?.katastarska_opcina}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Broj kat. čestice: ${nekretnina?.broj_kat_cestice}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Površina: ${nekretnina?.povrsina} m²`, 20, yPos);
+      yPos += 6;
+      doc.text(`Namjena: ${ugovor.namjena_prostora || 'Nisu specificirane'}`, 20, yPos);
+      yPos += 15;
+      
+      // Vrijeme trajanja
+      doc.setFont('helvetica', 'bold');
+      doc.text('VRIJEME TRAJANJA:', 20, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Početak zakupa: ${new Date(ugovor.datum_pocetka).toLocaleDateString()}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Završetak zakupa: ${new Date(ugovor.datum_zavrsetka).toLocaleDateString()}`, 20, yPos);
+      yPos += 6;
+      doc.text(`Trajanje: ${ugovor.trajanje_mjeseci} mjeseci`, 20, yPos);
+      yPos += 6;
+      doc.text(`Rok otkaza: ${ugovor.rok_otkaza_dani} dana`, 20, yPos);
+      yPos += 15;
+      
+      // Financijske odredbe
+      doc.setFont('helvetica', 'bold');
+      doc.text('FINANCIJSKE ODREDBE:', 20, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Mjesečna zakupnina: ${ugovor.osnovna_zakupnina.toLocaleString()} EUR`, 20, yPos);
+      yPos += 6;
+      
+      if (ugovor.zakupnina_po_m2) {
+        doc.text(`Zakupnina po m²: ${ugovor.zakupnina_po_m2.toLocaleString()} EUR/m²`, 20, yPos);
+        yPos += 6;
+      }
+      
+      if (ugovor.cam_troskovi) {
+        doc.text(`CAM troškovi: ${ugovor.cam_troskovi.toLocaleString()} EUR`, 20, yPos);
+        yPos += 6;
+      }
+      
+      if (ugovor.polog_depozit) {
+        doc.text(`Polog/depozit: ${ugovor.polog_depozit.toLocaleString()} EUR`, 20, yPos);
+        yPos += 6;
+      }
+      
+      if (ugovor.garancija) {
+        doc.text(`Garancija: ${ugovor.garancija.toLocaleString()} EUR`, 20, yPos);
+        yPos += 6;
+      }
+      
+      if (ugovor.indeksacija) {
+        doc.text(`Indeksacija: DA (${ugovor.indeks}, ${ugovor.formula_indeksacije})`, 20, yPos);
+        yPos += 6;
+      }
+      
+      yPos += 10;
+      
+      // Obveze održavanja
+      if (ugovor.obveze_odrzavanja) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('OBVEZE ODRŽAVANJA:', 20, yPos);
+        yPos += 8;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Odgovorno: ${ugovor.obveze_odrzavanja}`, 20, yPos);
+        yPos += 15;
+      }
+      
+      // Režije
+      if (ugovor.rezije_brojila) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('REŽIJE I BROJILA:', 20, yPos);
+        yPos += 8;
+        doc.setFont('helvetica', 'normal');
+        const rezije = doc.splitTextToSize(ugovor.rezije_brojila, 170);
+        doc.text(rezije, 20, yPos);
+        yPos += rezije.length * 6 + 10;
+      }
+      
+      // Opcija produljenja
+      if (ugovor.opcija_produljenja) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('OPCIJA PRODULJENJA:', 20, yPos);
+        yPos += 8;
+        doc.setFont('helvetica', 'normal');
+        doc.text('DA', 20, yPos);
+        if (ugovor.uvjeti_produljenja) {
+          yPos += 6;
+          const uvjeti = doc.splitTextToSize(`Uvjeti: ${ugovor.uvjeti_produljenja}`, 170);
+          doc.text(uvjeti, 20, yPos);
+          yPos += uvjeti.length * 6;
+        }
+        yPos += 10;
+      }
+      
+      // Potpisi
+      yPos = Math.max(yPos, 240);
+      doc.setFont('helvetica', 'bold');
+      doc.text('POTPISI:', 20, yPos);
+      yPos += 15;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text('Zakupodavac:', 20, yPos);
+      doc.text('Zakupnik:', 120, yPos);
+      yPos += 20;
+      
+      doc.text('_____________________', 20, yPos);
+      doc.text('_____________________', 120, yPos);
+      yPos += 8;
+      
+      doc.setFontSize(10);
+      doc.text(`Zagreb, ${new Date(ugovor.datum_potpisivanja).toLocaleDateString()}`, 20, yPos);
+      
+      // Datum generiranja
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.text(`Ugovor generiran: ${new Date().toLocaleString()}`, 20, 285);
+      
+      // Spremi PDF
+      const fileName = `Ugovor_${ugovor.interna_oznaka.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      toast.success(`PDF ugovor ${ugovor.interna_oznaka} je uspješno generiran za potpis!`);
+    } catch (error) {
+      console.error('Greška pri generiranju PDF ugovora:', error);
+      toast.error('Greška pri generiranju PDF ugovora');
+    }
+  };
+
   const filteredUgovori = ugovori.filter(ugovor => {
     // Prvo filtriraj po statusu
     let matches = true;
