@@ -201,7 +201,8 @@ const ClickableReminder = ({ podsjetnik }) => {
       const noviDatumZavrsetka = new Date(trenutniUgovor.datum_zavrsetka);
       noviDatumZavrsetka.setFullYear(noviDatumZavrsetka.getFullYear() + godina);
       
-      const noviUgovor = {
+      // Pripremi podatke za novi ugovor i otvori formu
+      const noviUgovorTemplate = {
         interna_oznaka: `${trenutniUgovor.interna_oznaka}-PROD-${godina}G`,
         nekretnina_id: trenutniUgovor.nekretnina_id,
         zakupnik_id: trenutniUgovor.zakupnik_id,
@@ -222,22 +223,18 @@ const ClickableReminder = ({ podsjetnik }) => {
         formula_indeksacije: trenutniUgovor.formula_indeksacije,
         obveze_odrzavanja: trenutniUgovor.obveze_odrzavanja,
         namjena_prostora: trenutniUgovor.namjena_prostora,
-        rezije_brojila: trenutniUgovor.rezije_brojila
+        rezije_brojila: trenutniUgovor.rezije_brojila,
+        _isRenewal: true,
+        _oldContractId: trenutniUgovor.id
       };
-
-      await api.createUgovor(noviUgovor);
       
-      // Ažuriraj status starog ugovora
-      await api.updateStatusUgovora(trenutniUgovor.id, 'arhivirano');
-      
-      toast.success(`Novi ugovor na ${godina} ${godina === 1 ? 'godinu' : 'godina'} je uspješno kreiran!`);
+      // Spremi template u sessionStorage i preusmjeri
+      sessionStorage.setItem('renewalTemplate', JSON.stringify(noviUgovorTemplate));
       setShowRenewalDialog(false);
-      
-      // Preusmjeri na ugovore
-      navigate('/ugovori');
+      navigate('/ugovori?action=renew');
     } catch (error) {
-      console.error('Greška pri kreiranju novog ugovora:', error);
-      toast.error('Greška pri kreiranju novog ugovora');
+      console.error('Greška pri pripremi produška ugovora:', error);
+      toast.error('Greška pri pripremi produžetka ugovora');
     }
   };
 
