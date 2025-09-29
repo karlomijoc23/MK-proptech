@@ -508,7 +508,7 @@ const Dashboard = () => {
     <div className="p-8 space-y-8">
       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-6">
         <Card data-testid="ukupno-nekretnina-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ukupno nekretnina</CardTitle>
