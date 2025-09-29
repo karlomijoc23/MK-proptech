@@ -158,6 +158,286 @@ const Navigation = () => {
   );
 };
 
+// Clickable Reminder Component
+const ClickableReminder = ({ podsjetnik }) => {
+  const navigate = useNavigate();
+  const [ugovorDetails, setUgovorDetails] = useState(null);
+  const [showRenewalDialog, setShowRenewalDialog] = useState(false);
+
+  useEffect(() => {
+    fetchUgovorDetails();
+  }, []);
+
+  const fetchUgovorDetails = async () => {
+    try {
+      const [ugovorRes, nekretnineRes, zakupniciRes] = await Promise.all([
+        api.getUgovori(),
+        api.getNekretnine(), 
+        api.getZakupnici()
+      ]);
+      
+      const ugovor = ugovorRes.data.find(u => u.id === podsjetnik.ugovor_id);
+      const nekretnina = nekretnineRes.data.find(n => n.id === ugovor?.nekretnina_id);
+      const zakupnik = zakupniciRes.data.find(z => z.id === ugovor?.zakupnik_id);
+      
+      setUgovorDetails({ ugovor, nekretnina, zakupnik });
+    } catch (error) {
+      console.error('Greška pri dohvaćanju detalja ugovora:', error);
+    }
+  };
+
+  const handleReminderClick = () => {
+    if (podsjetnik.tip === 'istek_ugovora') {
+      setShowRenewalDialog(true);
+    }
+  };
+
+  const handleRenewContract = async (godina) => {
+    try {
+      if (!ugovorDetails?.ugovor) return;
+      
+      const trenutniUgovor = ugovorDetails.ugovor;
+      const noviDatumPocetka = new Date(trenutniUgovor.datum_zavrsetka);
+      const noviDatumZavrsetka = new Date(trenutniUgovor.datum_zavrsetka);
+      noviDatumZavrsetka.setFullYear(noviDatumZavrsetka.getFullYear() + godina);
+      
+      const noviUgovor = {
+        interna_oznaka: `${trenutniUgovor.interna_oznaka}-PROD-${godina}G`,
+        nekretnina_id: trenutniUgovor.nekretnina_id,
+        zakupnik_id: trenutniUgovor.zakupnik_id,
+        datum_potpisivanja: new Date().toISOString().split('T')[0],
+        datum_pocetka: noviDatumPocetka.toISOString().split('T')[0],
+        datum_zavrsetka: noviDatumZavrsetka.toISOString().split('T')[0],
+        trajanje_mjeseci: godina * 12,
+        opcija_produljenja: trenutniUgovor.opcija_produljenja,
+        uvjeti_produljenja: trenutniUgovor.uvjeti_produljenja,
+        rok_otkaza_dani: trenutniUgovor.rok_otkaza_dani,
+        osnovna_zakupnina: trenutniUgovor.osnovna_zakupnina * (1 + 0.03 * godina), // 3% godišnje povećanje
+        zakupnina_po_m2: trenutniUgovor.zakupnina_po_m2 ? trenutniUgovor.zakupnina_po_m2 * (1 + 0.03 * godina) : null,
+        cam_troskovi: trenutniUgovor.cam_troskovi,
+        polog_depozit: trenutniUgovor.polog_depozit,
+        garancija: trenutniUgovor.garancija,
+        indeksacija: trenutniUgovor.indeksacija,
+        indeks: trenutniUgovor.indeks,
+        formula_indeksacije: trenutniUgovor.formula_indeksacije,
+        obveze_odrzavanja: trenutniUgovor.obveze_odrzavanja,
+        namjena_prostora: trenutniUgovor.namjena_prostora,
+        rezije_brojila: trenutniUgovor.rezije_brojila
+      };
+
+      await api.createUgovor(noviUgovor);
+      
+      // Ažuriraj status starog ugovora
+      await api.updateStatusUgovora(trenutniUgovor.id, 'arhivirano');
+      
+      toast.success(`Novi ugovor na ${godina} ${godina === 1 ? 'godinu' : 'godina'} je uspješno kreiran!`);
+      setShowRenewalDialog(false);
+      
+      // Preusmjeri na ugovore
+      navigate('/ugovori');
+    } catch (error) {
+      console.error('Greška pri kreiranju novog ugovora:', error);
+      toast.error('Greška pri kreiranju novog ugovora');
+    }
+  };
+
+  if (!ugovorDetails) {
+    return (
+      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+        <div>
+          <p className="font-medium">Učitava podsjećanje...</p>
+        </div>
+        <Badge variant="secondary">Učitava</Badge>
+      </div>
+    );
+  }
+
+  const getPriorityColor = (dani) => {
+    if (dani <= 30) return 'bg-red-100 border-red-200 hover:bg-red-200';
+    if (dani <= 60) return 'bg-orange-100 border-orange-200 hover:bg-orange-200';
+    return 'bg-yellow-100 border-yellow-200 hover:bg-yellow-200';
+  };
+
+  const getPriorityBadge = (dani) => {
+    if (dani <= 30) return <Badge variant="destructive">Hitno</Badge>;
+    if (dani <= 60) return <Badge variant="secondary" className="bg-orange-200 text-orange-800">Srednje</Badge>;
+    return <Badge variant="outline">Informativno</Badge>;
+  };
+
+  return (
+    <>
+      <div 
+        className={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${getPriorityColor(podsjetnik.dani_prije)}`}
+        onClick={handleReminderClick}
+        data-testid={`clickable-reminder-${podsjetnik.id}`}
+      >
+        <div className="flex-1">
+          <div className="flex items-center space-x-3 mb-2">
+            <h4 className="font-bold text-gray-900">
+              {podsjetnik.tip === 'istek_ugovora' ? 'ISTEK UGOVORA' : podsjetnik.tip.toUpperCase()}
+            </h4>
+            {getPriorityBadge(podsjetnik.dani_prije)}
+          </div>
+          
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-blue-600">
+              📋 {ugovorDetails.ugovor?.interna_oznaka}
+            </p>
+            <p className="text-sm text-gray-700">
+              🏢 {ugovorDetails.nekretnina?.naziv} - {ugovorDetails.nekretnina?.adresa}
+            </p>
+            <p className="text-sm text-gray-700">
+              👤 {ugovorDetails.zakupnik?.naziv_firme || ugovorDetails.zakupnik?.ime_prezime}
+            </p>
+            <p className="text-sm text-gray-600">
+              📅 Ističe: {new Date(ugovorDetails.ugovor?.datum_zavrsetka).toLocaleDateString()} 
+              <span className="font-medium text-red-600 ml-2">
+                (za {podsjetnik.dani_prije} dana)
+              </span>
+            </p>
+            <p className="text-sm text-green-600 font-medium">
+              💰 {ugovorDetails.ugovor?.osnovna_zakupnina?.toLocaleString()} €/mjesec
+            </p>
+          </div>
+        </div>
+        
+        <div className="text-right">
+          <div className="text-xs text-gray-500 mb-2">Kliknite za akciju</div>
+          <Button 
+            variant="default" 
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReminderClick();
+            }}
+          >
+            Riješi →
+          </Button>
+        </div>
+      </div>
+
+      {/* Renewal Dialog */}
+      <Dialog open={showRenewalDialog} onOpenChange={setShowRenewalDialog}>
+        <DialogContent className="max-w-2xl" aria-describedby="renewal-dialog-description">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Produžetak ugovora - {ugovorDetails.ugovor?.interna_oznaka}
+            </DialogTitle>
+          </DialogHeader>
+          <div id="renewal-dialog-description" className="sr-only">
+            Dialog za produžetak ugovora s opcijama 1, 2 ili 5 godina
+          </div>
+
+          <div className="space-y-6">
+            {/* Contract details */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium mb-3">Detalji trenutnog ugovora:</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Nekretnina:</span> {ugovorDetails.nekretnina?.naziv}
+                </div>
+                <div>
+                  <span className="font-medium">Zakupnik:</span> {ugovorDetails.zakupnik?.naziv_firme || ugovorDetails.zakupnik?.ime_prezime}
+                </div>
+                <div>
+                  <span className="font-medium">Trenutna kirija:</span> {ugovorDetails.ugovor?.osnovna_zakupnina?.toLocaleString()} €
+                </div>
+                <div>
+                  <span className="font-medium">Ističe:</span> {new Date(ugovorDetails.ugovor?.datum_zavrsetka).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Renewal options */}
+            <div>
+              <h3 className="font-medium mb-4">Izaberite opciju produžetka:</h3>
+              <div className="grid grid-cols-1 gap-3">
+                
+                <Card 
+                  className="cursor-pointer hover:bg-blue-50 border-2 hover:border-blue-300 transition-all"
+                  onClick={() => handleRenewContract(1)}
+                  data-testid="renewal-option-1-year"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-lg">1 Godina</h4>
+                        <p className="text-sm text-gray-600">
+                          Nova kirija: {((ugovorDetails.ugovor?.osnovna_zakupnina || 0) * 1.03).toLocaleString()} €/mjesec
+                        </p>
+                        <p className="text-xs text-gray-500">Povećanje: 3% (standardno)</p>
+                      </div>
+                      <Badge variant="default">Standardno</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="cursor-pointer hover:bg-green-50 border-2 hover:border-green-300 transition-all"
+                  onClick={() => handleRenewContract(2)}
+                  data-testid="renewal-option-2-years"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-lg">2 Godine</h4>
+                        <p className="text-sm text-gray-600">
+                          Nova kirija: {((ugovorDetails.ugovor?.osnovna_zakupnina || 0) * 1.06).toLocaleString()} €/mjesec
+                        </p>
+                        <p className="text-xs text-gray-500">Povećanje: 6% (3% godišnje x 2)</p>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-200 text-green-800">Preporučeno</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="cursor-pointer hover:bg-purple-50 border-2 hover:border-purple-300 transition-all"
+                  onClick={() => handleRenewContract(5)}
+                  data-testid="renewal-option-5-years"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-lg">5 Godina</h4>
+                        <p className="text-sm text-gray-600">
+                          Nova kirija: {((ugovorDetails.ugovor?.osnovna_zakupnina || 0) * 1.15).toLocaleString()} €/mjesec
+                        </p>
+                        <p className="text-xs text-gray-500">Povećanje: 15% (3% godišnje x 5)</p>
+                      </div>
+                      <Badge variant="outline" className="border-purple-300 text-purple-700">Dugoročno</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowRenewalDialog(false)}
+                className="flex-1"
+                data-testid="cancel-renewal"
+              >
+                Otkaži
+              </Button>
+              <Button 
+                variant="default"
+                onClick={() => navigate('/ugovori')}
+                className="flex-1"
+                data-testid="go-to-contracts"
+              >
+                Idi na ugovore
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 // Dashboard Component
 const Dashboard = () => {
   const [dashboard, setDashboard] = useState(null);
