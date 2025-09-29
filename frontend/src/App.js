@@ -2847,7 +2847,13 @@ const Dokumenti = () => {
                 )}
                 <div className="pt-2">
                   <div className="flex space-x-1">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleDocumentPreview(dokument)}
+                      data-testid={`preview-document-${dokument.id}`}
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       Pregled
                     </Button>
