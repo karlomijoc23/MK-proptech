@@ -1468,6 +1468,8 @@ const Ugovori = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('svi');
+  const [showCopyDialog, setShowCopyDialog] = useState(false);
+  const [contractToCopy, setContractToCopy] = useState(null);
 
   useEffect(() => {
     fetchData();
