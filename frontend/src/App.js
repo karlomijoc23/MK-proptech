@@ -60,6 +60,9 @@ const api = {
       },
     });
   },
+
+  // Podsjetnici actions
+  markReminderAsSent: (id) => axios.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
 };
 
 // Navigation Component
