@@ -400,6 +400,16 @@ async def get_aktivni_podsjetnici():
     }).to_list(1000)
     return [Podsjetnik(**parse_from_mongo(p)) for p in podsjetnici]
 
+@api_router.put("/podsjetnici/{podsjetnik_id}/oznaci-poslan")
+async def oznaci_podsjetnik_poslan(podsjetnik_id: str):
+    result = await db.podsjetnici.update_one(
+        {"id": podsjetnik_id},
+        {"$set": {"poslan": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Podsjetnik nije pronađen")
+    return {"poruka": "Podsjetnik je označen kao riješen"}
+
 # Dashboard i analitika
 @api_router.get("/dashboard")
 async def get_dashboard():
