@@ -579,7 +579,7 @@ VAŽNO:
             # Obriši privremenu datoteku
             try:
                 os.unlink(tmp_path)
-            except:
+            except OSError:
                 pass
                 
     except Exception as e:
