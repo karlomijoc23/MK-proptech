@@ -12,7 +12,7 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { toast } from 'sonner';
-import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2, Search, Bell, Download, Sparkles, ArrowRight } from 'lucide-react';
+import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2, Search, Bell, Download, Sparkles, ArrowRight, Printer } from 'lucide-react';
 import logoHorizontal from './assets/riforma-horizontal.svg';
 import logoMark from './assets/riforma-icon.svg';
 import './App.css';
@@ -45,7 +45,7 @@ const api = {
   deleteNekretnina: (id) => axios.delete(`${API}/nekretnine/${id}`),
   
   // Zakupnici
-  getZakupnici: () => axios.get(`${API}/zakupnici`),
+  getZakupnici: (params = {}) => axios.get(`${API}/zakupnici`, { params }),
   createZakupnik: (data) => axios.post(`${API}/zakupnici`, data),
   updateZakupnik: (id, data) => axios.put(`${API}/zakupnici/${id}`, data),
   
@@ -108,6 +108,8 @@ const api = {
       },
     });
   },
+
+  generateContractAnnex: (data) => axios.post(`${API}/ai/generate-contract-annex`, data),
 
   // Podsjetnici actions
   markReminderAsSent: (id) => axios.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
@@ -201,6 +203,60 @@ const getRiskBadges = (nekretnina) => {
   }
   return badges;
 };
+
+const buildDocumentUrl = (dokument) => {
+  if (!dokument || !dokument.putanja_datoteke) {
+    return null;
+  }
+  return `${BACKEND_URL}/${dokument.putanja_datoteke}`;
+};
+
+const DocumentViewer = ({ dokument, heightClass = 'h-[60vh] md:h-[72vh]' }) => {
+  if (!dokument || !dokument.putanja_datoteke) {
+    return (
+      <div className={`flex ${heightClass} items-center justify-center rounded-xl border border-dashed border-border/50 bg-muted/20 text-sm text-muted-foreground/80`}>
+        PDF nije dostupan. Preuzmite datoteku putem opcije ispod.
+      </div>
+    );
+  }
+
+  const viewerUrl = `${buildDocumentUrl(dokument)}#toolbar=0&view=FitH`;
+
+  return (
+    <div data-document-preview className={`w-full overflow-hidden rounded-xl border border-border/60 bg-white shadow-inner ${heightClass}`}>
+      <object data={viewerUrl} type="application/pdf" className="h-full w-full" style={{ border: 'none' }}>
+        <iframe
+          src={viewerUrl}
+          title={`Pregled: ${dokument.naziv}`}
+          className="h-full w-full"
+          loading="lazy"
+          style={{ border: 'none' }}
+        />
+        <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground/80">
+          Pregled nije podržan u ovom pregledniku. Koristite gumb za otvaranje u novom prozoru.
+        </div>
+      </object>
+    </div>
+  );
+};
+
+const DOCUMENT_TYPE_LABELS = {
+  ugovor: 'Ugovor',
+  aneks: 'Aneks',
+  certifikat: 'Certifikat',
+  osiguranje: 'Osiguranje',
+  zemljisnoknjizni_izvadak: 'Zemljišnoknjižni izvadak',
+  uporabna_dozvola: 'Uporabna dozvola',
+  gradevinska_dozvola: 'Građevinska dozvola',
+  energetski_certifikat: 'Energetski certifikat',
+  izvadak_iz_registra: 'Izvadak iz registra',
+  bon_2: 'BON-2',
+  racun: 'Račun',
+  procjena_vrijednosti: 'Procjena vrijednosti',
+  ostalo: 'Ostalo',
+};
+
+const formatDocumentType = (tip) => DOCUMENT_TYPE_LABELS[tip] || tip;
 
 const InfoField = ({ label, value, fallback = '—' }) => (
   <div className="space-y-1.5">
@@ -890,81 +946,71 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
-        <Card data-testid="ukupno-nekretnina-card" className="card-hover shadow-shell">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ukupno nekretnina</CardTitle>
-            <Building className="h-5 w-5 text-primary/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold text-foreground">{dashboard.ukupno_nekretnina}</div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="aktivni-ugovori-card" className="card-hover shadow-shell">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aktivni ugovori</CardTitle>
-            <Calendar className="h-5 w-5 text-primary/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold text-foreground">{dashboard.aktivni_ugovori}</div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="ugovori-na-isteku-card" className="card-hover shadow-shell">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ugovori na isteku</CardTitle>
-            <Bell className="h-5 w-5 text-primary/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold text-foreground">{dashboard.ugovori_na_isteku}</div>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="mjesecni-prihod-card" className="card-hover shadow-shell">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mjesečni prihod</CardTitle>
-            <DollarSign className="h-5 w-5 text-primary/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold text-foreground">{dashboard.mjesecni_prihod?.toLocaleString()} €</div>
-          </CardContent>
-        </Card>
-
-        <Card className="card-hover shadow-shell">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dokumenti ovaj mjesec</CardTitle>
-            <FileText className="h-5 w-5 text-primary/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold text-foreground">{documentsThisMonth}</div>
-            <p className="text-xs font-medium text-muted-foreground/80">Nova dokumenta u posljednjih 30 dana</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {[{
+          id: 'ukupno-nekretnina-card',
+          label: 'Ukupno nekretnina',
+          icon: Building,
+          value: dashboard.ukupno_nekretnina,
+        }, {
+          id: 'aktivni-ugovori-card',
+          label: 'Aktivni ugovori',
+          icon: Calendar,
+          value: dashboard.aktivni_ugovori,
+        }, {
+          id: 'ugovori-na-isteku-card',
+          label: 'Ugovori na isteku',
+          icon: Bell,
+          value: dashboard.ugovori_na_isteku,
+        }, {
+          id: 'mjesecni-prihod-card',
+          label: 'Mjesečni prihod',
+          icon: DollarSign,
+          value: `${dashboard.mjesecni_prihod?.toLocaleString() || '0'} €`,
+        }, {
+          id: 'dokumenti-mjesec',
+          label: 'Dokumenti ovaj mjesec',
+          icon: FileText,
+          value: documentsThisMonth,
+          sublabel: 'Nova dokumenta u posljednjih 30 dana',
+        }].map(({ id, label, icon: Icon, value, sublabel }) => (
+          <Card key={id} data-testid={id} className="card-hover shadow-shell">
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</CardTitle>
+                <Icon className="h-5 w-5 text-primary/70" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="truncate text-3xl font-semibold text-foreground">{value}</div>
+              {sublabel && <p className="mt-1 text-xs font-medium text-muted-foreground/80">{sublabel}</p>}
+            </CardContent>
+          </Card>
+        ))}
 
         <Card data-testid="vrijednost-portfelja-card" className="border-0 bg-gradient-to-r from-primary to-primary/80 text-white shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-white/80">Vrijednost portfelja</CardTitle>
-            <Building className="h-4 w-4 text-white/80" />
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-white/80">Vrijednost portfelja</CardTitle>
+              <Building className="h-4 w-4 text-white/80" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboard.ukupna_vrijednost_portfelja?.toLocaleString()} €</div>
-            <p className="text-xs text-white/80">
-              Ukupna tržišna vrijednost
-            </p>
+          <CardContent className="pt-0">
+            <div className="truncate text-2xl font-bold">{dashboard.ukupna_vrijednost_portfelja?.toLocaleString()} €</div>
+            <p className="text-xs text-white/80">Ukupna tržišna vrijednost</p>
           </CardContent>
         </Card>
 
         <Card data-testid="godisnji-prinos-card" className="border-0 bg-gradient-to-r from-accent to-primary text-white shadow-xl">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-white/80">Godišnji prinos</CardTitle>
-            <DollarSign className="h-4 w-4 text-white/80" />
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-white/80">Godišnji prinos</CardTitle>
+              <DollarSign className="h-4 w-4 text-white/80" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboard.godisnji_prinos?.toLocaleString()} €</div>
-            <p className="text-xs text-white/80">
-              {dashboard.prinos_postotak}% ROI
-            </p>
+          <CardContent className="pt-0">
+            <div className="truncate text-2xl font-bold">{dashboard.godisnji_prinos?.toLocaleString()} €</div>
+            <p className="text-xs text-white/80">{dashboard.prinos_postotak}% ROI</p>
           </CardContent>
         </Card>
       </div>
@@ -1171,6 +1217,14 @@ const Nekretnine = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingNekretnina, setEditingNekretnina] = useState(null);
   const [selectedNekretnina, setSelectedNekretnina] = useState(null);
+
+  const [propertySearch, setPropertySearch] = useState('');
+  const propertyTypeOptions = useMemo(() => {
+    const types = new Set((nekretnine || []).map((item) => item.vrsta).filter(Boolean));
+    return Array.from(types);
+  }, [nekretnine]);
+  const [riskFilter, setRiskFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const { dokumenti, ugovori, zakupnici, refresh: refreshEntities } = useEntityStore();
   const navigate = useNavigate();
 
@@ -1199,6 +1253,23 @@ const Nekretnine = () => {
   const tenantsById = useMemo(() => {
     return Object.fromEntries(zakupnici.map((zakupnik) => [zakupnik.id, zakupnik]));
   }, [zakupnici]);
+
+  const handleAddValuation = useCallback((property) => {
+    if (!property) {
+      return;
+    }
+    sessionStorage.setItem('dokumentPrefill', JSON.stringify({
+      naziv: `Procjena vrijednosti - ${property.naziv}` ,
+      tip: 'procjena_vrijednosti',
+      opis: property.adresa || '',
+      nekretnina_id: property.id,
+    }));
+    navigate(`/dokumenti?tip=procjena_vrijednosti&nekretnina=${property.id}`);
+  }, [navigate]);
+
+  const handleViewValuations = useCallback((propertyId) => {
+    navigate(`/dokumenti?tip=procjena_vrijednosti&nekretnina=${propertyId}`);
+  }, [navigate]);
 
   useEffect(() => {
     fetchNekretnine();
@@ -1430,6 +1501,63 @@ const Nekretnine = () => {
     return (neto / osnova) * 100;
   };
 
+  const filteredProperties = useMemo(() => {
+    const search = propertySearch.trim().toLowerCase();
+
+    return nekretnine.filter((property) => {
+      if (search) {
+        const haystack = `${property.naziv || ''} ${property.adresa || ''}`.toLowerCase();
+        if (!haystack.includes(search)) {
+          return false;
+        }
+      }
+
+      if (typeFilter !== 'all' && property.vrsta !== typeFilter) {
+        return false;
+      }
+
+      const riskCount = getRiskBadges(property).length;
+      if (riskFilter === 'risk' && riskCount === 0) {
+        return false;
+      }
+      if (riskFilter === 'clear' && riskCount > 0) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [nekretnine, propertySearch, typeFilter, riskFilter]);
+
+  const { totalArea, averageOccupancy, totalValue } = useMemo(() => {
+    if (!filteredProperties.length) {
+      return { totalArea: 0, averageOccupancy: null, totalValue: 0 };
+    }
+
+    let areaSum = 0;
+    let valueSum = 0;
+    let occupancySum = 0;
+    let occupancyCount = 0;
+
+    filteredProperties.forEach((property) => {
+      const area = parseNumericValue(property.povrsina) || 0;
+      areaSum += area;
+      valueSum += parseNumericValue(property.trzisna_vrijednost) || 0;
+
+      const contracts = contractsByProperty[property.id] || [];
+      if (contracts.length) {
+        const active = contracts.filter((c) => c.status === 'aktivno').length;
+        occupancySum += (active / contracts.length) * 100;
+        occupancyCount += 1;
+      }
+    });
+
+    return {
+      totalArea: areaSum,
+      totalValue: valueSum,
+      averageOccupancy: occupancyCount ? occupancySum / occupancyCount : null,
+    };
+  }, [filteredProperties, contractsByProperty]);
+
   if (loading) {
     return <div className="px-6 py-10">Učitava nekretnine...</div>;
   }
@@ -1453,8 +1581,92 @@ const Nekretnine = () => {
         </Button>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="border border-border/60">
+          <CardContent className="flex items-center justify-between gap-4 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ukupna površina</p>
+              <p className="text-2xl font-semibold text-foreground">{totalArea.toLocaleString('hr-HR', { maximumFractionDigits: 0 })} m²</p>
+            </div>
+            <Badge variant="outline" className="rounded-full text-[11px]">Portfolio</Badge>
+          </CardContent>
+        </Card>
+        <Card className="border border-border/60">
+          <CardContent className="flex items-center justify-between gap-4 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prosječna popunjenost</p>
+              <p className="text-2xl font-semibold text-foreground">{averageOccupancy !== null ? `${averageOccupancy.toFixed(1)} %` : '—'}</p>
+            </div>
+            <Badge variant="outline" className="rounded-full text-[11px]">Leasing</Badge>
+          </CardContent>
+        </Card>
+        <Card className="border border-border/60">
+          <CardContent className="flex items-center justify-between gap-4 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Procijenjena vrijednost</p>
+              <p className="text-2xl font-semibold text-foreground">{formatCurrency(totalValue)}</p>
+            </div>
+            <Badge variant="outline" className="rounded-full text-[11px]">Valuacija</Badge>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-white/70 p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full items-center gap-2 md:max-w-sm">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            value={propertySearch}
+            onChange={(e) => setPropertySearch(e.target.value)}
+            placeholder="Pretraži naziv ili adresu..."
+            className="flex-1"
+          />
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rizik</span>
+            <div className="flex gap-2">
+              <Button
+                variant={riskFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setRiskFilter('all')}
+              >
+                Sve
+              </Button>
+              <Button
+                variant={riskFilter === 'risk' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setRiskFilter('risk')}
+              >
+                Sa rizikom
+              </Button>
+              <Button
+                variant={riskFilter === 'clear' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setRiskFilter('clear')}
+              >
+                Bez rizika
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Vrsta</span>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[160px] text-left">
+                <SelectValue placeholder="Sve vrste" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Sve vrste</SelectItem>
+                {propertyTypeOptions.map((type) => (
+                  <SelectItem key={type} value={type}>{formatPropertyType(type)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {nekretnine.map((nekretnina) => {
+        {filteredProperties.map((nekretnina) => {
           const propertyDocuments = documentsByProperty[nekretnina.id] || [];
           const propertyContracts = contractsByProperty[nekretnina.id] || [];
           const activeContracts = propertyContracts.filter((ugovor) => ugovor.status === 'aktivno');
@@ -2149,57 +2361,82 @@ const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
 
 // Zakupnici Component
 const Zakupnici = () => {
-  const [zakupnici, setZakupnici] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { zakupnici, loading: storeLoading, error: storeError, refresh: refreshEntities } = useEntityStore();
+  const [searchValue, setSearchValue] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingZakupnik, setEditingZakupnik] = useState(null);
-  const { refresh: refreshEntities } = useEntityStore();
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchZakupnici();
-  }, []);
-
-  const fetchZakupnici = async () => {
-    try {
-      const response = await api.getZakupnici();
-      setZakupnici(response.data);
-    } catch (error) {
-      console.error('Greška pri dohvaćanju zakupnika:', error);
-      toast.error('Greška pri učitavanju zakupnika');
-    } finally {
-      setLoading(false);
+  const filteredZakupnici = useMemo(() => {
+    if (!searchValue.trim()) {
+      return zakupnici;
     }
-  };
+
+    const tokens = searchValue
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    const pick = (value) => (value || '').toString().toLowerCase();
+
+    return zakupnici.filter((tenant) => {
+      const haystack = [
+        tenant.naziv_firme,
+        tenant.ime_prezime,
+        tenant.oib,
+        tenant.sjediste,
+        tenant.kontakt_ime,
+        tenant.kontakt_email,
+        tenant.kontakt_telefon,
+        tenant.iban,
+      ].map(pick);
+
+      return tokens.every((token) => haystack.some((field) => field.includes(token)));
+    });
+  }, [zakupnici, searchValue]);
 
   const handleCreateZakupnik = async (formData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await api.createZakupnik(formData);
       toast.success('Zakupnik je uspješno kreiran');
-      fetchZakupnici();
       await refreshEntities();
       setShowCreateForm(false);
     } catch (error) {
       console.error('Greška pri kreiranju zakupnika:', error);
       toast.error('Greška pri kreiranju zakupnika');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleUpdateZakupnik = async (formData) => {
-    if (!editingZakupnik) return;
+    if (!editingZakupnik || submitting) return;
+    setSubmitting(true);
     try {
       await api.updateZakupnik(editingZakupnik.id, formData);
       toast.success('Zakupnik je uspješno ažuriran');
-      fetchZakupnici();
       await refreshEntities();
       setEditingZakupnik(null);
     } catch (error) {
       console.error('Greška pri ažuriranju zakupnika:', error);
       toast.error('Greška pri ažuriranju zakupnika');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (storeLoading) {
     return <div className="px-6 py-10">Učitava zakupnike...</div>;
+  }
+
+  if (storeError) {
+    return (
+      <div className="px-6 py-10 text-sm text-destructive">
+        Greška pri učitavanju zakupnika. Pokušajte ponovno kasnije.
+      </div>
+    );
   }
 
   return (
@@ -2211,97 +2448,179 @@ const Zakupnici = () => {
             Evidencija partnera s ključnim kontaktima, financijskim podacima i AI podsjetnicima za obnovu ugovora.
           </p>
         </div>
-        <Button 
-          onClick={() => setShowCreateForm(true)}
-          data-testid="dodaj-zakupnika-btn"
-          className="h-11 rounded-full bg-primary text-primary-foreground shadow-shell hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="ml-2">Dodaj zakupnika</span>
-        </Button>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+          <div className="relative w-full md:w-72">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Pretraži po nazivu, OIB-u ili kontaktu..."
+              className="pl-10"
+              aria-label="Pretraži zakupnike"
+              data-testid="zakupnici-search-input"
+            />
+          </div>
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            data-testid="dodaj-zakupnika-btn"
+            className="h-11 rounded-full bg-primary text-primary-foreground shadow-shell hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="ml-2">Dodaj zakupnika</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {zakupnici.map((zakupnik) => (
-          <Card key={zakupnik.id} data-testid={`zakupnik-card-${zakupnik.id}`} className="card-hover shadow-shell">
-            <CardHeader className="border-b border-border/40 bg-primary/5">
-              <CardTitle className="text-lg font-semibold text-foreground">{zakupnik.naziv_firme || zakupnik.ime_prezime}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                <span className="font-semibold text-primary">OIB:</span> {zakupnik.oib}
-              </p>
-              <p>
-                <span className="font-semibold text-primary">Sjedište:</span> {zakupnik.sjediste}
-              </p>
-              <p>
-                <span className="font-semibold text-primary">Kontakt:</span> {zakupnik.kontakt_ime}
-              </p>
-              <p>
-                <span className="font-semibold text-primary">Email:</span> {zakupnik.kontakt_email}
-              </p>
-              <p>
-                <span className="font-semibold text-primary">Telefon:</span> {zakupnik.kontakt_telefon}
-              </p>
-              {zakupnik.iban && (
-                <p>
-                  <span className="font-semibold text-primary">IBAN:</span> {zakupnik.iban}
-                </p>
-              )}
-              <div className="pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditingZakupnik(zakupnik)}
-                  data-testid={`uredi-zakupnika-${zakupnik.id}`}
-                >
-                  <Edit className="w-4 h-4 mr-1" />
-                  Uredi
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {filteredZakupnici.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border/70 bg-muted/10 px-6 py-16 text-center">
+          <Search className="h-10 w-10 text-muted-foreground/50" />
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-foreground">Nema rezultata</p>
+            <p className="text-sm text-muted-foreground">
+              Pokušajte s drugim upitom ili dodajte novog zakupnika.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredZakupnici.map((zakupnik) => {
+            const displayName = zakupnik.naziv_firme || zakupnik.ime_prezime || 'Nepoznati zakupnik';
+            const entityType = zakupnik.naziv_firme ? 'Tvrtka' : 'Osoba';
+            const highlightTags = [];
+            if (!zakupnik.oib) highlightTags.push('Bez OIB');
+            if (zakupnik.iban) highlightTags.push('IBAN');
 
-      {/* Create Zakupnik Dialog */}
+            return (
+              <Card key={zakupnik.id} data-testid={`zakupnik-card-${zakupnik.id}`} className="card-hover shadow-shell">
+                <CardHeader className="border-b border-border/40 bg-primary/5 px-5 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-3">
+                      <CardTitle className="text-lg font-semibold text-foreground">{displayName}</CardTitle>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="rounded-full border-primary/30 bg-white/70 text-[11px] uppercase tracking-[0.2em] text-primary">{entityType}</Badge>
+                        {highlightTags.map((tag) => (
+                          <Badge key={tag} variant="outline" className="rounded-full text-[11px] uppercase tracking-wide text-muted-foreground/80">{tag}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {zakupnik.kontakt_email && (
+                      <a
+                        href={`mailto:${zakupnik.kontakt_email}`}
+                        className="rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-xs font-semibold text-primary hover:bg-white"
+                      >
+                        {zakupnik.kontakt_email}
+                      </a>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-5 px-5 py-6 text-sm text-muted-foreground">
+                  <div className="grid gap-3">
+                    <div className="rounded-2xl border border-border/60 bg-white/95 px-4 py-3 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">OIB</p>
+                      <p className="text-lg font-semibold text-foreground">{zakupnik.oib || '—'}</p>
+                    </div>
+                    <div className="rounded-2xl border border-border/60 bg-white/95 px-4 py-3 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Sjedište</p>
+                      <p className="text-base font-medium text-foreground">{zakupnik.sjediste}</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/60 bg-white/95 px-4 py-3 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">Kontakt osoba</p>
+                    <div className="space-y-1">
+                      <p className="font-medium text-foreground">{zakupnik.kontakt_ime}</p>
+                      <p className="text-sm text-muted-foreground/80">{zakupnik.kontakt_telefon}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {zakupnik.kontakt_email && (
+                      <Badge variant="secondary" className="rounded-full bg-accent/10 text-xs font-medium uppercase tracking-wide text-accent">
+                        {zakupnik.kontakt_email}
+                      </Badge>
+                    )}
+                    {zakupnik.iban && (
+                      <Badge variant="outline" className="rounded-full text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+                        {zakupnik.iban}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setEditingZakupnik(zakupnik)}
+                      data-testid={`uredi-zakupnika-${zakupnik.id}`}
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span className="ml-2">Uredi</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="flex-1"
+                      onClick={() => {
+                        toast(
+                          `Zakupnik ${displayName} označen je kao prioritetan. Kreirajte podsjetnik za obnovu ugovora.`,
+                          { description: 'Otvorite ugovor za više detalja.' }
+                        );
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4 text-accent" />
+                      <span className="ml-2">AI preporuka</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent aria-describedby="zakupnik-form-description">
+        <DialogContent className="max-w-2xl" aria-describedby="dodaj-zakupnika-form-description">
           <DialogHeader>
             <DialogTitle>Dodaj novog zakupnika</DialogTitle>
           </DialogHeader>
-          <div id="zakupnik-form-description" className="sr-only">
-            Forma za kreiranje novog zakupnika s osnovnim informacijama
+          <div id="dodaj-zakupnika-form-description" className="sr-only">
+            Forma za kreiranje novog zakupnika
           </div>
-          <ZakupnikForm 
+          <ZakupnikForm
             onSubmit={handleCreateZakupnik}
             onCancel={() => setShowCreateForm(false)}
+            submitting={submitting}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Edit Zakupnik Dialog */}
-      <Dialog open={!!editingZakupnik} onOpenChange={() => setEditingZakupnik(null)}>
-        <DialogContent aria-describedby="uredi-zakupnik-form-description">
+      <Dialog
+        open={Boolean(editingZakupnik)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingZakupnik(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl" aria-describedby="uredi-zakupnik-form-description">
           <DialogHeader>
             <DialogTitle>Uredi zakupnika</DialogTitle>
           </DialogHeader>
           <div id="uredi-zakupnik-form-description" className="sr-only">
             Forma za ažuriranje postojećeg zakupnika
           </div>
-          <ZakupnikForm 
+          <ZakupnikForm
             zakupnik={editingZakupnik}
             onSubmit={handleUpdateZakupnik}
             onCancel={() => setEditingZakupnik(null)}
+            submitting={submitting}
           />
         </DialogContent>
       </Dialog>
     </div>
   );
 };
-
 // Zakupnik Form Component
-const ZakupnikForm = ({ zakupnik, onSubmit, onCancel }) => {
+const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
   const [formData, setFormData] = useState({
     naziv_firme: zakupnik?.naziv_firme || '',
     ime_prezime: zakupnik?.ime_prezime || '',
@@ -2313,15 +2632,16 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel }) => {
     iban: zakupnik?.iban || ''
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (submitting) return;
     const data = {
       ...formData,
       naziv_firme: formData.naziv_firme || null,
       ime_prezime: formData.ime_prezime || null,
       iban: formData.iban || null
     };
-    onSubmit(data);
+    await onSubmit(data);
   };
 
   return (
@@ -2415,8 +2735,12 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel }) => {
       </div>
 
       <div className="flex space-x-2">
-        <Button type="submit" data-testid="potvrdi-zakupnik-form">
-          Kreiraj zakupnika
+        <Button
+          type="submit"
+          data-testid="potvrdi-zakupnik-form"
+          disabled={submitting}
+        >
+          {submitting ? 'Spremam...' : zakupnik ? 'Spremi promjene' : 'Kreiraj zakupnika'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-zakupnik-form">
           Odustani
@@ -2428,10 +2752,7 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel }) => {
 
 // Ugovori Component
 const Ugovori = () => {
-  const [ugovori, setUgovori] = useState([]);
-  const [nekretnine, setNekretnine] = useState([]);
-  const [zakupnici, setZakupnici] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { ugovori, nekretnine, zakupnici, dokumenti, loading: storeLoading, error: storeError, refresh: refreshEntities } = useEntityStore();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('aktivno');
   const [showCopyDialog, setShowCopyDialog] = useState(false);
@@ -2439,7 +2760,7 @@ const Ugovori = () => {
   const [renewalTemplate, setRenewalTemplate] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
-  const { dokumenti, refresh: refreshEntities } = useEntityStore();
+  const [isMutating, setIsMutating] = useState(false);
   const documentsByContract = useMemo(() => {
     return dokumenti.reduce((acc, dokument) => {
       if (dokument.ugovor_id) {
@@ -2452,10 +2773,22 @@ const Ugovori = () => {
     }, {});
   }, [dokumenti]);
 
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const [annexDialogOpen, setAnnexDialogOpen] = useState(false);
+  const [annexContract, setAnnexContract] = useState(null);
+  const [annexForm, setAnnexForm] = useState({
+    nova_zakupnina: '',
+    novi_datum_zavrsetka: '',
+    dodatne_promjene: '',
+    naziv: '',
+    uploadao: '',
+  });
+  const [annexGenerating, setAnnexGenerating] = useState(false);
+  const [annexSaving, setAnnexSaving] = useState(false);
+  const [annexResult, setAnnexResult] = useState(null);
+
   useEffect(() => {
-    fetchData();
-    
-    // Provjeri je li došao renewal request
     const urlParams = new URLSearchParams(location.search);
     if (urlParams.get('action') === 'renew') {
       const template = sessionStorage.getItem('renewalTemplate');
@@ -2467,34 +2800,25 @@ const Ugovori = () => {
     }
   }, [location]);
 
-  const fetchData = async () => {
-    try {
-      const [ugovoriRes, nekretnineRes, zakupniciRes] = await Promise.all([
-        api.getUgovori(),
-        api.getNekretnine(),
-        api.getZakupnici()
-      ]);
-      setUgovori(ugovoriRes.data);
-      setNekretnine(nekretnineRes.data);
-      setZakupnici(zakupniciRes.data);
-    } catch (error) {
-      console.error('Greška pri dohvaćanju podataka:', error);
-      toast.error('Greška pri učitavanju podataka');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const nekretnineById = useMemo(() => Object.fromEntries(nekretnine.map((item) => [item.id, item])), [nekretnine]);
+  const zakupniciById = useMemo(() => Object.fromEntries(zakupnici.map((item) => [item.id, item])), [zakupnici]);
 
   const handleCreateUgovor = async (formData) => {
+    if (isMutating) {
+      return;
+    }
+    setIsMutating(true);
     try {
       await api.createUgovor(formData);
       toast.success('Ugovor je uspješno kreiran');
-      fetchData();
       await refreshEntities();
       setShowCreateForm(false);
+      setRenewalTemplate(null);
     } catch (error) {
       console.error('Greška pri kreiranju ugovora:', error);
       toast.error('Greška pri kreiranju ugovora');
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -2502,7 +2826,6 @@ const Ugovori = () => {
     try {
       await api.updateStatusUgovora(ugovorId, noviStatus);
       toast.success('Status ugovora je ažuriran');
-      fetchData();
       await refreshEntities();
     } catch (error) {
       console.error('Greška pri ažuriranju statusa:', error);
@@ -2510,13 +2833,11 @@ const Ugovori = () => {
     }
   };
 
-  const getNekretnina = (nekretnina_id) => {
-    return nekretnine.find(n => n.id === nekretnina_id);
-  };
+  const getNekretnina = useCallback((nekretninaId) => nekretnineById[nekretninaId], [nekretnineById]);
 
-  const getZakupnik = (zakupnik_id) => {
-    return zakupnici.find(z => z.id === zakupnik_id);
-  };
+  const getZakupnik = useCallback((zakupnikId) => zakupniciById[zakupnikId], [zakupniciById]);
+
+  const getDocumentUrl = useCallback((dokument) => buildDocumentUrl(dokument), []);
 
   const getStatusBadge = (status) => {
     const statusMap = {
@@ -2543,22 +2864,173 @@ const Ugovori = () => {
   };
 
   const handleDownloadContractDocument = (dokument) => {
-    if (!dokument.putanja_datoteke) {
+    const url = getDocumentUrl(dokument);
+    if (!url) {
       toast.error('PDF nije dostupan za ovaj dokument');
       return;
     }
-    const url = `${BACKEND_URL}/${dokument.putanja_datoteke}`;
     window.open(url, '_blank', 'noopener');
   };
 
-  const handleCreateCopiedContract = async (godina) => {
+  const handlePreviewContractDocument = (dokument) => {
+    setPreviewDocument(dokument);
+    setShowPreviewDialog(true);
+  };
+
+  const handleOpenAnnexDialog = (ugovor) => {
+    setAnnexContract(ugovor);
+    setAnnexForm({
+      nova_zakupnina: ugovor.osnovna_zakupnina != null ? ugovor.osnovna_zakupnina.toString() : '',
+      novi_datum_zavrsetka: ugovor.datum_zavrsetka || '',
+      dodatne_promjene: '',
+      naziv: `Aneks - ${ugovor.interna_oznaka}`,
+      uploadao: '',
+    });
+    setAnnexResult(null);
+    setAnnexDialogOpen(true);
+  };
+
+  const handleCloseAnnexDialog = () => {
+    if (annexGenerating || annexSaving) {
+      return;
+    }
+    setAnnexDialogOpen(false);
+    setAnnexContract(null);
+    setAnnexResult(null);
+  };
+
+  const normaliseAmount = (value) => {
+    if (!value) {
+      return null;
+    }
+    const numeric = value.replace(/[^0-9,.-]/g, '').replace(/,/g, '.');
+    const parsed = Number(numeric);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const handleGenerateAnnex = async () => {
+    if (!annexContract || annexGenerating) {
+      return;
+    }
+    setAnnexGenerating(true);
     try {
-      if (!contractToCopy) return;
-      
+      const response = await api.generateContractAnnex({
+        ugovor_id: annexContract.id,
+        nova_zakupnina: normaliseAmount(annexForm.nova_zakupnina),
+        novi_datum_zavrsetka: annexForm.novi_datum_zavrsetka || null,
+        dodatne_promjene: annexForm.dodatne_promjene || null,
+      });
+      const data = response.data;
+      if (!data || data.success === false) {
+        const message = data?.message || 'Generiranje aneksa nije uspjelo';
+        toast.error(message);
+        return;
+      }
+      setAnnexResult(data);
+      if (data.metadata?.source === 'fallback') {
+        toast.success('Aneks je generiran koristeći lokalni predložak. Provjerite sadržaj prije spremanja.');
+      } else {
+        toast.success('AI aneks je generiran');
+      }
+    } catch (error) {
+      console.error('Greška pri generiranju AI aneksa:', error);
+      const message = error.response?.data?.detail || 'Generiranje aneksa nije uspjelo';
+      toast.error(message);
+    } finally {
+      setAnnexGenerating(false);
+    }
+  };
+
+  const buildAnnexPdf = useCallback((title, content) => {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 20;
+    let cursorY = 30;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(title, marginX, cursorY);
+    cursorY += 15;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(content || '', 170);
+    lines.forEach((line) => {
+      if (cursorY > pageHeight - 30) {
+        doc.addPage();
+        cursorY = 30;
+      }
+      doc.text(line, marginX, cursorY);
+      cursorY += 14;
+    });
+
+    doc.setFontSize(9);
+    doc.text(`Generirano: ${new Date().toLocaleString('hr-HR')}`, marginX, Math.min(cursorY + 10, pageHeight - 15));
+    return doc;
+  }, []);
+
+  const handleAnnexDownload = () => {
+    if (!annexResult || !annexContract) {
+      return;
+    }
+    const title = annexResult.title || `Aneks - ${annexContract.interna_oznaka}`;
+    const doc = buildAnnexPdf(title, annexResult.content || '');
+    const safeName = (annexForm.naziv || title).replace(/[^a-z0-9]/gi, '_');
+    doc.save(`${safeName || 'aneks'}.pdf`);
+  };
+
+  const handleAnnexSaveAsDocument = async () => {
+    if (!annexResult || !annexContract || annexSaving) {
+      return;
+    }
+    setAnnexSaving(true);
+    try {
+      const title = annexForm.naziv || annexResult.title || `Aneks - ${annexContract.interna_oznaka}`;
+      const doc = buildAnnexPdf(title, annexResult.content || '');
+      const blob = doc.output('blob');
+      const fileName = `${title.replace(/[^a-z0-9]/gi, '_') || 'aneks'}.pdf`;
+      const FileCtor = typeof File !== 'undefined' ? File : class extends Blob {
+        constructor(parts, filename, options) {
+          super(parts, options);
+          this.name = filename;
+          this.lastModified = Date.now();
+        }
+      };
+      const file = new FileCtor([blob], fileName, { type: 'application/pdf' });
+
+      await api.createDokument({
+        naziv: title,
+        tip: 'aneks',
+        opis: annexForm.dodatne_promjene || 'AI generirani aneks ugovora',
+        verzija: '1.0',
+        ugovor_id: annexContract.id,
+        nekretnina_id: annexContract.nekretnina_id,
+        zakupnik_id: annexContract.zakupnik_id,
+        uploadao: annexForm.uploadao || 'AI generator',
+        file,
+      });
+
+      await refreshEntities();
+      toast.success('Aneks je spremljen kao dokument');
+      handleCloseAnnexDialog();
+    } catch (error) {
+      console.error('Greška pri spremanju AI aneksa:', error);
+      const message = error.response?.data?.detail || 'Spremanje aneksa nije uspjelo';
+      toast.error(message);
+    } finally {
+      setAnnexSaving(false);
+    }
+  };
+
+  const handleCreateCopiedContract = async (godina) => {
+    if (!contractToCopy || isMutating) {
+      return;
+    }
+    setIsMutating(true);
+    try {
       const noviDatumPocetka = new Date();
       const noviDatumZavrsetka = new Date();
       noviDatumZavrsetka.setFullYear(noviDatumZavrsetka.getFullYear() + godina);
-      
       const noviUgovor = {
         interna_oznaka: `${contractToCopy.interna_oznaka}-COPY-${godina}G-${Date.now()}`,
         nekretnina_id: contractToCopy.nekretnina_id,
@@ -2580,18 +3052,19 @@ const Ugovori = () => {
         formula_indeksacije: contractToCopy.formula_indeksacije,
         obveze_odrzavanja: contractToCopy.obveze_odrzavanja,
         namjena_prostora: contractToCopy.namjena_prostora,
-        rezije_brojila: contractToCopy.rezije_brojila
+        rezije_brojila: contractToCopy.rezije_brojila,
       };
 
       await api.createUgovor(noviUgovor);
       toast.success(`Novi ugovor na ${godina} ${godina === 1 ? 'godinu' : 'godina'} je uspješno kreiran na osnovu postojećeg!`);
       setShowCopyDialog(false);
       setContractToCopy(null);
-      fetchData();
       await refreshEntities();
     } catch (error) {
       console.error('Greška pri kreiranju kopije ugovora:', error);
       toast.error('Greška pri kreiranju kopije ugovora');
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -2786,6 +3259,8 @@ const Ugovori = () => {
   const activeContractsCount = useMemo(() => ugovori.filter((u) => u.status === 'aktivno').length, [ugovori]);
   const archivedContractsCount = useMemo(() => ugovori.filter((u) => archivedStatuses.has(u.status)).length, [ugovori]);
   const expiringContractsCount = useMemo(() => ugovori.filter((u) => u.status === 'aktivno' && isUgovorNaIsteku(u)).length, [ugovori]);
+  const loading = storeLoading && ugovori.length === 0;
+  const refreshingStore = storeLoading && ugovori.length > 0;
 
   const filteredUgovori = ugovori.filter(ugovor => {
     // Prvo filtriraj po statusu
@@ -2821,8 +3296,15 @@ const Ugovori = () => {
     return <div className="p-8">Učitava ugovore...</div>;
   }
 
+  if (storeError && !ugovori.length) {
+    return <div className="px-6 py-10 text-sm text-destructive">Greška pri učitavanju ugovora. Pokušajte ponovno kasnije.</div>;
+  }
+
   return (
     <div className="p-8 space-y-6">
+      {refreshingStore && (
+        <div className="text-xs text-muted-foreground/70">Osvježavanje podataka...</div>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">Ugovori o zakupu</h1>
         <div className="flex items-center space-x-4">
@@ -2944,19 +3426,31 @@ const Ugovori = () => {
                     </p>
                     <ul className="space-y-1 text-sm">
                       {contractDocuments.slice(0, 3).map((dokument) => (
-                        <li key={dokument.id} className="flex items-center justify-between">
+                        <li key={dokument.id} className="flex items-center justify-between gap-2">
                           <span className="truncate mr-2" title={dokument.naziv}>
                             {dokument.naziv}
                           </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadContractDocument(dokument)}
-                            disabled={!dokument.putanja_datoteke}
-                            data-testid={`ugovor-doc-download-${dokument.id}`}
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handlePreviewContractDocument(dokument)}
+                              disabled={!dokument.putanja_datoteke}
+                              className="h-8 w-8"
+                              data-testid={`ugovor-doc-preview-${dokument.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadContractDocument(dokument)}
+                              disabled={!dokument.putanja_datoteke}
+                              data-testid={`ugovor-doc-download-${dokument.id}`}
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -3009,6 +3503,15 @@ const Ugovori = () => {
                     className="ml-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     📄 PDF
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleOpenAnnexDialog(ugovor)}
+                    data-testid={`ai-annex-${ugovor.id}`}
+                    className="ml-2"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1 text-accent" /> AI Aneks
                   </Button>
                 </div>
               </CardContent>
@@ -3148,6 +3651,210 @@ const Ugovori = () => {
                   Otkaži
                 </Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog
+        open={showPreviewDialog}
+        onOpenChange={(open) => {
+          setShowPreviewDialog(open);
+          if (!open) {
+            setPreviewDocument(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="ugovor-document-preview-description">
+          <DialogHeader>
+            <DialogTitle>Pregled dokumenta</DialogTitle>
+          </DialogHeader>
+          <div id="ugovor-document-preview-description" className="sr-only">
+            Pregled povezanog PDF dokumenta ugovora
+          </div>
+          {previewDocument && (
+            <div className="space-y-4">
+              <div className="grid gap-2 rounded-xl border border-border/60 bg-primary/5 p-4 text-sm">
+                <div>
+                  <span className="font-medium text-primary">Naziv:</span> {previewDocument.naziv}
+                </div>
+                <div>
+                  <span className="font-medium text-primary">Tip:</span> {formatDocumentType(previewDocument.tip)}
+                </div>
+                <div>
+                  <span className="font-medium text-primary">Verzija:</span> {previewDocument.verzija}
+                </div>
+                <div>
+                  <span className="font-medium text-primary">Uploadao:</span> {previewDocument.uploadao}
+                </div>
+                <div>
+                  <span className="font-medium text-primary">Datum:</span> {new Date(previewDocument.kreiran).toLocaleDateString('hr-HR')}
+                </div>
+                {previewDocument.opis && (
+                  <div>
+                    <span className="font-medium text-primary">Opis:</span>
+                    <p className="text-muted-foreground">{previewDocument.opis}</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const url = getDocumentUrl(previewDocument);
+                    if (!url) {
+                      toast.error('PDF datoteka nije dostupna.');
+                      return;
+                    }
+                    window.open(url, '_blank', 'noopener');
+                  }}
+                  disabled={!getDocumentUrl(previewDocument)}
+                >
+                  <Download className="w-4 h-4 mr-2" /> Otvori u novom prozoru
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const holder = document.querySelector('[data-document-preview]');
+                    const iframe = holder ? holder.querySelector('iframe') : null;
+                    const url = getDocumentUrl(previewDocument);
+                    if (iframe && iframe.contentWindow) {
+                      iframe.contentWindow.focus();
+                      iframe.contentWindow.print();
+                      return;
+                    }
+                    if (url) {
+                      const printWindow = window.open(url, '_blank', 'noopener');
+                      if (printWindow) {
+                        printWindow.addEventListener('load', () => printWindow.print(), { once: true });
+                      }
+                    } else {
+                      toast.error('PDF datoteka nije učitana za ovaj dokument');
+                    }
+                  }}
+                  disabled={!getDocumentUrl(previewDocument)}
+                >
+                  <Printer className="w-4 h-4 mr-2" /> Ispiši
+                </Button>
+              </div>
+              <DocumentViewer dokument={previewDocument} heightClass="h-[65vh]" />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Annex Dialog */}
+      <Dialog
+        open={annexDialogOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            setAnnexDialogOpen(true);
+          } else {
+            handleCloseAnnexDialog();
+          }
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="ai-annex-description">
+          <DialogHeader>
+            <DialogTitle>AI Aneks ugovora {annexContract?.interna_oznaka ? `(${annexContract.interna_oznaka})` : ''}</DialogTitle>
+          </DialogHeader>
+          <div id="ai-annex-description" className="sr-only">
+            Generiranje AI aneksa na temelju odabranog ugovora
+          </div>
+          {annexContract && (
+            <div className="space-y-6">
+              <div className="grid gap-4 rounded-xl border border-border/60 bg-primary/5 p-4 text-sm">
+                <div>
+                  <span className="font-semibold text-primary">Zakupnina:</span> {annexContract.osnovna_zakupnina?.toLocaleString()} €/mjesec
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <span><span className="font-semibold text-primary">Početak:</span> {new Date(annexContract.datum_pocetka).toLocaleDateString('hr-HR')}</span>
+                  <span><span className="font-semibold text-primary">Završetak:</span> {new Date(annexContract.datum_zavrsetka).toLocaleDateString('hr-HR')}</span>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="annex-nova-zakupnina">Nova zakupnina (€/mjesec)</Label>
+                    <Input
+                      id="annex-nova-zakupnina"
+                      value={annexForm.nova_zakupnina}
+                      onChange={(e) => setAnnexForm((prev) => ({ ...prev, nova_zakupnina: e.target.value }))}
+                      placeholder={annexContract.osnovna_zakupnina?.toString() || ''}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="annex-novi-datum">Novi datum završetka</Label>
+                    <Input
+                      id="annex-novi-datum"
+                      type="date"
+                      value={annexForm.novi_datum_zavrsetka}
+                      onChange={(e) => setAnnexForm((prev) => ({ ...prev, novi_datum_zavrsetka: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="annex-promjene">Dodatne promjene / napomene</Label>
+                  <Textarea
+                    id="annex-promjene"
+                    value={annexForm.dodatne_promjene}
+                    onChange={(e) => setAnnexForm((prev) => ({ ...prev, dodatne_promjene: e.target.value }))}
+                    placeholder="Npr. indeksacija od sljedećeg tromjesečja, formula korekcije kirije, posebni uvjeti"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground/80">
+                  AI će koristiti postojeće podatke ugovora i unesene izmjene kako bi generirao prijedlog aneksa na hrvatskom jeziku.
+                </p>
+                <Button onClick={handleGenerateAnnex} disabled={annexGenerating}>
+                  {annexGenerating ? 'Generiram...' : 'Generiraj aneks'}
+                </Button>
+              </div>
+
+              {annexResult && (
+                <div className="space-y-4">
+                  {annexResult.metadata?.source === 'fallback' && (
+                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
+                      Automatski predložak je korišten jer AI servis trenutno nije dostupan. Molimo pregledajte i prilagodite tekst prije slanja.
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="annex-naziv">Naziv dokumenta</Label>
+                      <Input
+                        id="annex-naziv"
+                        value={annexForm.naziv}
+                        onChange={(e) => setAnnexForm((prev) => ({ ...prev, naziv: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="annex-uploadao">Uploadao</Label>
+                      <Input
+                        id="annex-uploadao"
+                        value={annexForm.uploadao}
+                        onChange={(e) => setAnnexForm((prev) => ({ ...prev, uploadao: e.target.value }))}
+                        placeholder="Ime osobe koja odobrava aneks"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Generirani aneks</Label>
+                    <Textarea value={annexResult.content || ''} readOnly rows={14} className="mt-2" />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <Button variant="outline" onClick={handleAnnexDownload}>
+                      <Download className="w-4 h-4 mr-2" /> Preuzmi PDF
+                    </Button>
+                    <Button onClick={handleAnnexSaveAsDocument} disabled={annexSaving}>
+                      {annexSaving ? 'Spremam...' : 'Spremi kao dokument'}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -3656,23 +4363,6 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
 };
 
 // Dokumenti Component
-const DOCUMENT_TYPE_LABELS = {
-  ugovor: 'Ugovor',
-  aneks: 'Aneks',
-  certifikat: 'Certifikat',
-  osiguranje: 'Osiguranje',
-  zemljisnoknjizni_izvadak: 'Zemljišnoknjižni izvadak',
-  uporabna_dozvola: 'Uporabna dozvola',
-  gradevinska_dozvola: 'Građevinska dozvola',
-  energetski_certifikat: 'Energetski certifikat',
-  izvadak_iz_registra: 'Izvadak iz registra',
-  bon_2: 'BON-2',
-  racun: 'Račun',
-  ostalo: 'Ostalo',
-};
-
-const formatDocumentType = (tip) => DOCUMENT_TYPE_LABELS[tip] || tip;
-
 const Dokumenti = () => {
   const { dokumenti, nekretnine, zakupnici, ugovori, loading: storeLoading, refresh } = useEntityStore();
   const [isMutating, setIsMutating] = useState(false);
@@ -3737,40 +4427,7 @@ const Dokumenti = () => {
     }, {});
   }, [dokumenti]);
 
-  const getDocumentUrl = useCallback((dokument) => {
-    if (!dokument || !dokument.putanja_datoteke) {
-      return null;
-    }
-    return `${BACKEND_URL}/${dokument.putanja_datoteke}`;
-  }, []);
-
-  const DocumentViewer = ({ dokument }) => {
-    if (!dokument || !dokument.putanja_datoteke) {
-      return (
-        <div className="flex h-[65vh] items-center justify-center rounded-xl border border-dashed border-border/50 bg-muted/20 text-sm text-muted-foreground/80">
-          PDF nije dostupan. Preuzmite datoteku putem opcije ispod.
-        </div>
-      );
-    }
-
-    const viewerUrl = `${BACKEND_URL}/${dokument.putanja_datoteke}#toolbar=0&view=FitH`;
-
-    return (
-      <div className="h-[70vh] overflow-hidden rounded-xl border border-border/60 bg-white shadow-inner">
-        <object data={viewerUrl} type="application/pdf" className="h-full w-full">
-          <iframe
-            src={viewerUrl}
-            title={`Pregled: ${dokument.naziv}`}
-            className="h-full w-full"
-            loading="lazy"
-          />
-          <div className="p-6 text-sm text-muted-foreground/80">
-            Pregled nije podržan u ovom pregledniku. Koristite gumb za otvaranje u novom prozoru.
-          </div>
-        </object>
-      </div>
-    );
-  };
+  const getDocumentUrl = useCallback((dokument) => buildDocumentUrl(dokument), []);
 
   const handleCreateDokument = async (formData) => {
     setIsMutating(true);
@@ -3948,7 +4605,7 @@ const Dokumenti = () => {
       </Dialog>
 
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh]" aria-describedby="document-preview-description">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="document-preview-description">
           <DialogHeader>
             <DialogTitle>Pregled dokumenta: {previewDocument?.naziv}</DialogTitle>
           </DialogHeader>
@@ -3976,14 +4633,8 @@ const Dokumenti = () => {
               </div>
 
               <div className="space-y-3">
-                <DocumentViewer dokument={previewDocument} />
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-muted-foreground/80">
-                    Datoteka: {previewDocument.putanja_datoteke || 'Nije prenesena'}
-                    {previewDocument.velicina_datoteke > 0 && (
-                      <> • Veličina: {(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB</>
-                    )}
-                  </div>
+                <div className="flex justify-end">
+                  <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -3999,6 +4650,39 @@ const Dokumenti = () => {
                   >
                     <Download className="w-4 h-4 mr-2" /> Otvori u novom prozoru
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const holder = document.querySelector('[data-document-preview]');
+                      const iframe = holder ? holder.querySelector('iframe') : null;
+                      const url = getDocumentUrl(previewDocument);
+                      if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        return;
+                      }
+                      if (url) {
+                        const printWindow = window.open(url, '_blank', 'noopener');
+                        if (printWindow) {
+                          printWindow.addEventListener('load', () => printWindow.print(), { once: true });
+                        }
+                      } else {
+                        toast.error('PDF datoteka nije učitana za ovaj dokument');
+                      }
+                    }}
+                    disabled={!previewDocument.putanja_datoteke}
+                    data-testid="print-document"
+                  >
+                    <Printer className="w-4 h-4 mr-2" /> Ispiši
+                  </Button>
+                </div>
+                </div>
+                <DocumentViewer dokument={previewDocument} />
+                <div className="text-xs text-muted-foreground/80">
+                  Datoteka: {previewDocument.putanja_datoteke || 'Nije prenesena'}
+                  {previewDocument.velicina_datoteke > 0 && (
+                    <> • Veličina: {(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB</>
+                  )}
                 </div>
               </div>
 
@@ -4360,6 +5044,7 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
             <SelectContent>
               <SelectItem value="ugovor">Ugovor</SelectItem>
               <SelectItem value="racun">Račun</SelectItem>
+              <SelectItem value="procjena_vrijednosti">Procjena vrijednosti</SelectItem>
               <SelectItem value="aneks">Aneks</SelectItem>
               <SelectItem value="zemljisnoknjizni_izvadak">Zemljišnoknjižni izvadak</SelectItem>
               <SelectItem value="uporabna_dozvola">Uporabna dozvola</SelectItem>
@@ -4704,4 +5389,5 @@ function App() {
   );
 }
 
+export { Zakupnici, EntityStoreContext, EntityStoreProvider };
 export default App;

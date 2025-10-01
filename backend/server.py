@@ -197,7 +197,7 @@ async def log_activity(user: Dict[str, str], method: str, path: str, status: int
             path=path,
             status_code=status,
         )
-        await db.activity_logs.insert_one(prepare_for_mongo(log.dict()))
+        await db.activity_logs.insert_one(prepare_for_mongo(log.model_dump()))
     except Exception as exc:
         logger.error("Failed to log activity: %s", exc)
 
@@ -440,6 +440,43 @@ class UgovorCreate(BaseModel):
     namjena_prostora: Optional[str] = None
     rezije_brojila: Optional[str] = None
 
+
+class AneksRequest(BaseModel):
+    ugovor_id: str
+    nova_zakupnina: Optional[float] = None
+    novi_datum_zavrsetka: Optional[date] = None
+    dodatne_promjene: Optional[str] = None
+
+
+def _build_annex_fallback(
+    ugovor: Ugovor,
+    promjene_text: str,
+    property_summary: str,
+    tenant_summary: str,
+) -> str:
+    lines = [
+        "ANEKS UGOVORA",
+        "",
+        f"Aneks se odnosi na ugovor interne oznake {ugovor.interna_oznaka} sklopljen {ugovor.datum_potpisivanja.isoformat()} između zakupodavca i zakupnika navedenih u originalnom ugovoru.",
+        "",
+        "1. PREDMET UGOVORA",
+        property_summary,
+        tenant_summary,
+        "",
+        "2. IZMJENE I DOPUNE",
+        promjene_text or "Nema dodatnih promjena specificiranih od korisnika.",
+        "",
+        "3. OSTALI UVJETI",
+        "Sve ostale odredbe izvornog ugovora ostaju nepromijenjene i u potpunosti na snazi.",
+        "",
+        "4. STUPANJE NA SNAGU",
+        "Ovaj aneks stupa na snagu danom potpisa obiju ugovornih strana.",
+        "",
+        "Potpis zakupodavca: ____________________",
+        "Potpis zakupnika:   ____________________",
+    ]
+    return "\n".join(lines)
+
 class Dokument(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     naziv: str
@@ -569,9 +606,9 @@ async def root():
 # Nekretnine
 @api_router.post("/nekretnine", response_model=Nekretnina, status_code=201)
 async def create_nekretnina(nekretnina: NekretninarCreate):
-    nekretnina_dict = prepare_for_mongo(nekretnina.dict())
+    nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     nekretnina_obj = Nekretnina(**nekretnina_dict)
-    await db.nekretnine.insert_one(prepare_for_mongo(nekretnina_obj.dict()))
+    await db.nekretnine.insert_one(prepare_for_mongo(nekretnina_obj.model_dump()))
     return nekretnina_obj
 
 @api_router.get("/nekretnine", response_model=List[Nekretnina])
@@ -588,7 +625,7 @@ async def get_nekretnina(nekretnina_id: str):
 
 @api_router.put("/nekretnine/{nekretnina_id}", response_model=Nekretnina)
 async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate):
-    nekretnina_dict = prepare_for_mongo(nekretnina.dict())
+    nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     result = await db.nekretnine.update_one(
         {"id": nekretnina_id}, 
         {"$set": nekretnina_dict}
@@ -609,14 +646,31 @@ async def delete_nekretnina(nekretnina_id: str):
 # Zakupnici
 @api_router.post("/zakupnici", response_model=Zakupnik, status_code=201)
 async def create_zakupnik(zakupnik: ZakupnikCreate):
-    zakupnik_dict = prepare_for_mongo(zakupnik.dict())
+    zakupnik_dict = prepare_for_mongo(zakupnik.model_dump())
     zakupnik_obj = Zakupnik(**zakupnik_dict)
-    await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.dict()))
+    await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.model_dump()))
     return zakupnik_obj
 
 @api_router.get("/zakupnici", response_model=List[Zakupnik])
-async def get_zakupnici():
-    zakupnici = await db.zakupnici.find().to_list(1000)
+async def get_zakupnici(search: Optional[str] = None):
+    query = None
+    if search:
+        trimmed = search.strip()
+        if trimmed:
+            pattern = {"$regex": re.escape(trimmed), "$options": "i"}
+            query = {
+                "$or": [
+                    {"naziv_firme": pattern},
+                    {"ime_prezime": pattern},
+                    {"oib": pattern},
+                    {"kontakt_ime": pattern},
+                    {"kontakt_email": pattern},
+                    {"kontakt_telefon": pattern},
+                ]
+            }
+
+    zakupnici_cursor = db.zakupnici.find(query) if query else db.zakupnici.find()
+    zakupnici = await zakupnici_cursor.to_list(1000)
     return [Zakupnik(**parse_from_mongo(z)) for z in zakupnici]
 
 @api_router.get("/zakupnici/{zakupnik_id}", response_model=Zakupnik)
@@ -626,16 +680,31 @@ async def get_zakupnik(zakupnik_id: str):
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
     return Zakupnik(**parse_from_mongo(zakupnik))
 
+
+@api_router.put("/zakupnici/{zakupnik_id}", response_model=Zakupnik)
+async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
+    existing = await db.zakupnici.find_one({"id": zakupnik_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
+
+    update_payload = prepare_for_mongo(zakupnik.model_dump())
+    await db.zakupnici.update_one({"id": zakupnik_id}, {"$set": update_payload})
+
+    updated = await db.zakupnici.find_one({"id": zakupnik_id})
+    if not updated:
+        raise HTTPException(status_code=500, detail="Ažuriranje zakupnika nije uspjelo")
+    return Zakupnik(**parse_from_mongo(updated))
+
 # Ugovori
 @api_router.post("/ugovori", response_model=Ugovor, status_code=201)
 async def create_ugovor(ugovor: UgovorCreate):
-    ugovor_dict = prepare_for_mongo(ugovor.dict())
+    ugovor_dict = prepare_for_mongo(ugovor.model_dump())
     ugovor_obj = Ugovor(**ugovor_dict)
     
     # Kreiraj automatske podsjetnike
     await create_podsjetnici_za_ugovor(ugovor_obj)
     
-    await db.ugovori.insert_one(prepare_for_mongo(ugovor_obj.dict()))
+    await db.ugovori.insert_one(prepare_for_mongo(ugovor_obj.model_dump()))
     return ugovor_obj
 
 @api_router.get("/ugovori", response_model=List[Ugovor])
@@ -720,9 +789,9 @@ async def create_dokument(request: Request):
         file_path = f"uploads/{safe_name}"
         file_size = len(file_bytes)
 
-    dokument_dict = prepare_for_mongo(dokument_input.dict())
+    dokument_dict = prepare_for_mongo(dokument_input.model_dump())
     dokument_obj = Dokument(**dokument_dict, putanja_datoteke=file_path, velicina_datoteke=file_size)
-    await db.dokumenti.insert_one(prepare_for_mongo(dokument_obj.dict()))
+    await db.dokumenti.insert_one(prepare_for_mongo(dokument_obj.model_dump()))
     return dokument_obj
 
 @api_router.get("/dokumenti", response_model=List[Dokument])
@@ -759,9 +828,9 @@ def _enrich_racun_payload(data: Dict[str, Any]) -> Dict[str, Any]:
 
 @api_router.post("/racuni", response_model=Racun, status_code=201)
 async def create_racun(racun: RacunCreate):
-    racun_dict = _enrich_racun_payload(racun.dict())
+    racun_dict = _enrich_racun_payload(racun.model_dump())
     racun_obj = Racun(**racun_dict)
-    await db.racuni.insert_one(prepare_for_mongo(racun_obj.dict()))
+    await db.racuni.insert_one(prepare_for_mongo(racun_obj.model_dump()))
     return racun_obj
 
 
@@ -931,6 +1000,112 @@ async def pretraga(q: str):
         "ugovori": [Ugovor(**parse_from_mongo(u)) for u in ugovori]
     }
 
+@api_router.post("/ai/generate-contract-annex")
+async def generate_contract_annex(payload: AneksRequest):
+    openai_key = os.environ.get("OPENAI_API_KEY")
+
+    ugovor_doc = await db.ugovori.find_one({"id": payload.ugovor_id})
+    if not ugovor_doc:
+        raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+
+    ugovor = Ugovor(**parse_from_mongo(ugovor_doc))
+
+    nekretnina_doc = await db.nekretnine.find_one({"id": ugovor.nekretnina_id})
+    zakupnik_doc = await db.zakupnici.find_one({"id": ugovor.zakupnik_id})
+
+    nekretnina = Nekretnina(**parse_from_mongo(nekretnina_doc)) if nekretnina_doc else None
+    zakupnik = Zakupnik(**parse_from_mongo(zakupnik_doc)) if zakupnik_doc else None
+
+    promjene = []
+    if payload.nova_zakupnina is not None:
+        promjene.append(f"Nova zakupnina: {payload.nova_zakupnina:.2f} EUR mjesečno")
+    if payload.novi_datum_zavrsetka is not None:
+        promjene.append(f"Novi datum završetka: {payload.novi_datum_zavrsetka.isoformat()}")
+    if payload.dodatne_promjene:
+        promjene.append(f"Dodatne napomene: {payload.dodatne_promjene}")
+
+    promjene_text = "\n".join(promjene) if promjene else "Nema dodatnih promjena specificiranih od korisnika."
+
+    contract_summary = "\n".join([
+        f"Interna oznaka: {ugovor.interna_oznaka}",
+        f"Status trenutnog ugovora: {ugovor.status}",
+        f"Trajanje: {ugovor.trajanje_mjeseci} mjeseci",
+        f"Razdoblje: {ugovor.datum_pocetka.isoformat()} - {ugovor.datum_zavrsetka.isoformat()}",
+        f"Osnovna zakupnina: {ugovor.osnovna_zakupnina} EUR/mj",
+        f"Zakupnina po m²: {ugovor.zakupnina_po_m2 or 'n/a'}",
+        f"Depozit/polog: {ugovor.polog_depozit or 'n/a'}",
+        f"CAM troškovi: {ugovor.cam_troskovi or 'n/a'}",
+        f"Opcija produljenja: {'DA' if ugovor.opcija_produljenja else 'NE'}",
+        f"Uvjeti produljenja: {ugovor.uvjeti_produljenja or 'n/a'}",
+    ])
+
+    property_summary = "\n".join([
+        f"Nekretnina: {nekretnina.naziv if nekretnina else 'n/a'}",
+        f"Adresa: {nekretnina.adresa if nekretnina else 'n/a'}",
+        f"Površina: {nekretnina.povrsina if nekretnina and nekretnina.povrsina else 'n/a'}",
+    ])
+
+    tenant_summary = "\n".join([
+        f"Zakupnik: {zakupnik.naziv_firme or zakupnik.ime_prezime if zakupnik else 'n/a'}",
+        f"OIB: {zakupnik.oib if zakupnik else 'n/a'}",
+        f"Sjedište: {zakupnik.sjediste if zakupnik else 'n/a'}",
+    ])
+
+    title = f"Aneks ugovora {ugovor.interna_oznaka}" if ugovor.interna_oznaka else "Aneks ugovora"
+
+    def _response_payload(content: str, source: str) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "title": title,
+            "content": content.strip(),
+            "metadata": {
+                "nova_zakupnina": payload.nova_zakupnina,
+                "novi_datum_zavrsetka": payload.novi_datum_zavrsetka.isoformat() if payload.novi_datum_zavrsetka else None,
+                "source": source,
+            },
+        }
+
+    if not openai_key:
+        fallback_text = _build_annex_fallback(ugovor, promjene_text, property_summary, tenant_summary)
+        return _response_payload(fallback_text, "fallback")
+
+    client = OpenAI(api_key=openai_key)
+
+    system_prompt = (
+        "Ti si pravni savjetnik specijaliziran za poslovne najmove u Hrvatskoj. "
+        "Na temelju postojećeg ugovora i zadanih promjena pripremi jasan, profesionalan i pravno utemeljen aneks ugovora."
+    )
+
+    user_prompt = (
+        "Pripremi aneks ugovora na hrvatskom jeziku. Nadogradnja treba sadržavati:"\
+        "\n- uvodni dio s referencom na originalni ugovor,"\
+        "\n- točke koje jasno opisuju promjene (nova cijena, novi rok i sve dodatne napomene),"\
+        "\n- klauzulu o stupanju na snagu i potvrdu da ostale odredbe ugovora ostaju nepromijenjene,"\
+        "\n- prostor za potpise obiju strana."\
+        "\nKoristi strukturirane točke i službeni ton."\
+        f"\n\nSažetak postojećeg ugovora:\n{contract_summary}\n\nPodaci o nekretnini:\n{property_summary}\n\nPodaci o zakupniku:\n{tenant_summary}\n\nŽeljene promjene:\n{promjene_text}"
+    )
+
+    try:
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.2,
+        )
+        ai_text = response.choices[0].message.content if response.choices else ""
+        if not ai_text or not ai_text.strip():
+            raise ValueError("AI response empty")
+        return _response_payload(ai_text, "openai")
+    except Exception as exc:
+        logger.error("Greška pri generiranju AI aneksa (koristi se fallback): %s", exc)
+        fallback_text = _build_annex_fallback(ugovor, promjene_text, property_summary, tenant_summary)
+        return _response_payload(fallback_text, "fallback")
+
+
 @api_router.post("/ai/parse-pdf-contract")
 async def parse_pdf_contract(file: UploadFile = File(...)):
     """AI funkcija za čitanje i izvlačenje podataka iz PDF ugovora (OpenAI)"""
@@ -1033,7 +1208,7 @@ async def create_podsjetnici_za_ugovor(ugovor: Ugovor):
             dani_prije=dani_prije
         )
         
-        await db.podsjetnici.insert_one(prepare_for_mongo(podsjetnik.dict()))
+        await db.podsjetnici.insert_one(prepare_for_mongo(podsjetnik.model_dump()))
 
 # Include the router in the main app
 app.include_router(api_router)
