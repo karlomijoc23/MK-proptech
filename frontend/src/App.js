@@ -3738,12 +3738,39 @@ const Dokumenti = () => {
   }, [dokumenti]);
 
   const getDocumentUrl = useCallback((dokument) => {
-    if (!dokument.putanja_datoteke) {
-      toast.error('PDF datoteka nije učitana za ovaj dokument');
+    if (!dokument || !dokument.putanja_datoteke) {
       return null;
     }
     return `${BACKEND_URL}/${dokument.putanja_datoteke}`;
   }, []);
+
+  const DocumentViewer = ({ dokument }) => {
+    if (!dokument || !dokument.putanja_datoteke) {
+      return (
+        <div className="flex h-[65vh] items-center justify-center rounded-xl border border-dashed border-border/50 bg-muted/20 text-sm text-muted-foreground/80">
+          PDF nije dostupan. Preuzmite datoteku putem opcije ispod.
+        </div>
+      );
+    }
+
+    const viewerUrl = `${BACKEND_URL}/${dokument.putanja_datoteke}#toolbar=0&view=FitH`;
+
+    return (
+      <div className="h-[70vh] overflow-hidden rounded-xl border border-border/60 bg-white shadow-inner">
+        <object data={viewerUrl} type="application/pdf" className="h-full w-full">
+          <iframe
+            src={viewerUrl}
+            title={`Pregled: ${dokument.naziv}`}
+            className="h-full w-full"
+            loading="lazy"
+          />
+          <div className="p-6 text-sm text-muted-foreground/80">
+            Pregled nije podržan u ovom pregledniku. Koristite gumb za otvaranje u novom prozoru.
+          </div>
+        </object>
+      </div>
+    );
+  };
 
   const handleCreateDokument = async (formData) => {
     setIsMutating(true);
@@ -3879,7 +3906,11 @@ const Dokumenti = () => {
                     className="flex-1"
                     onClick={() => {
                       const url = getDocumentUrl(dokument);
-                      if (url) window.open(url, '_blank', 'noopener');
+                      if (!url) {
+                        toast.error('PDF datoteka nije učitana za ovaj dokument');
+                        return;
+                      }
+                      window.open(url, '_blank', 'noopener');
                     }}
                     data-testid={`open-document-${dokument.id}`}
                     disabled={!dokument.putanja_datoteke}
@@ -3944,28 +3975,24 @@ const Dokumenti = () => {
                 )}
               </div>
 
-              <div className="border-2 border-dashed border-border/50 rounded-lg p-8 text-center">
-                <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">Pregled dokumenta</h3>
-                <p className="text-muted-foreground mb-4">Dokument: {previewDocument.naziv}</p>
-                <div className="space-y-2">
-                  <div className="rounded-lg border border-border/50 bg-white p-2">
-                    <iframe
-                      title={`Pregled: ${previewDocument.naziv}`}
-                      src={getDocumentUrl(previewDocument)}
-                      className="h-[420px] w-full rounded-md"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Datoteka: {previewDocument.putanja_datoteke || 'Nije prenesena'} • Veličina: {previewDocument.velicina_datoteke > 0 ? `${(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB` : 'Nepoznato'}
+              <div className="space-y-3">
+                <DocumentViewer dokument={previewDocument} />
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-xs text-muted-foreground/80">
+                    Datoteka: {previewDocument.putanja_datoteke || 'Nije prenesena'}
+                    {previewDocument.velicina_datoteke > 0 && (
+                      <> • Veličina: {(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB</>
+                    )}
                   </div>
                   <Button
                     variant="outline"
-                    className="w-full"
                     onClick={() => {
                       const url = getDocumentUrl(previewDocument);
-                      if (url) window.open(url, '_blank', 'noopener');
+                      if (!url) {
+                        toast.error('PDF datoteka nije učitana za ovaj dokument');
+                        return;
+                      }
+                      window.open(url, '_blank', 'noopener');
                     }}
                     disabled={!previewDocument.putanja_datoteke}
                     data-testid="download-document"
@@ -3991,6 +4018,7 @@ const Dokumenti = () => {
 const emptySelectValue = 'none';
 
 const normalizeSelectValue = (value) => (value === emptySelectValue ? '' : value);
+
 
 const LinkedEntitySelect = ({ label, placeholder, entities, value, onChange, renderLabel, testId, allowNone = true }) => {
   const selectValue = allowNone ? (value || emptySelectValue) : (value || undefined);
