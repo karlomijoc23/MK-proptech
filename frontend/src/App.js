@@ -242,7 +242,6 @@ const EntityStoreProvider = ({ children }) => {
     zakupnici: [],
     ugovori: [],
     dokumenti: [],
-    racuni: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -262,7 +261,6 @@ const EntityStoreProvider = ({ children }) => {
         zakupnici: zakRes.data,
         ugovori: ugRes.data,
         dokumenti: dokRes.data,
-        racuni: [],
       });
       setError(null);
     } catch (err) {
@@ -751,10 +749,22 @@ const Dashboard = () => {
 
       const today = new Date();
       const daysUntil = Math.ceil((expiry - today) / MS_PER_DAY);
-      const allowedLead = Math.max(reminder.dani_prije ?? 0, 0) + 7;
+      const rawLead = reminder?.dani_prije;
+      const lead = rawLead === null || rawLead === undefined || rawLead === ''
+        ? null
+        : Number(rawLead);
 
-      if (daysUntil > allowedLead) {
-        return false;
+      if (lead !== null && Number.isFinite(lead)) {
+        const windowUpper = lead + 7;
+        const windowLower = Math.max(lead - 7, 0);
+        if (daysUntil > windowUpper || daysUntil < windowLower) {
+          return false;
+        }
+      } else {
+        const allowedLead = 7;
+        if (daysUntil > allowedLead) {
+          return false;
+        }
       }
 
       if (daysUntil < -14) {
@@ -980,13 +990,13 @@ const Dashboard = () => {
                     <ClickableReminder key={reminder.id} podsjetnik={reminder} />
                   ))}
                   {activeRemindersCount > upcomingReminders.length && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground/80">
                       Prikazano prvih {upcomingReminders.length} aktivnih podsjećanja.
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Trenutno nema aktivnih podsjećanja.</p>
+                <p className="text-sm text-muted-foreground/80">Trenutno nema aktivnih podsjećanja.</p>
               )}
             </CardContent>
           </Card>
@@ -997,7 +1007,7 @@ const Dashboard = () => {
                 <CardTitle className="text-lg font-semibold">Statistika podsjećanja</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="space-y-3 text-sm text-muted-foreground">
                   <div className="flex justify-between">
                     <span>Ukupno podsjećanja</span>
                     <span className="font-semibold text-foreground">{totalReminders}</span>
@@ -1032,21 +1042,21 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 {upcomingReminders.length > 0 ? (
-                  <div className="space-y-3 text-sm text-gray-600">
+                  <div className="space-y-3 text-sm text-muted-foreground">
                     {upcomingReminders.map((reminder) => {
                       const { contract, property, tenant } = getReminderContext(reminder);
                       return (
                         <div key={reminder.id} className="border-l-4 border-blue-500 pl-3">
                           <p className="font-medium text-foreground">{getReminderLabel(reminder.tip)}</p>
                           {contract && (
-                            <p className="text-xs text-gray-600">Ugovor: {contract.interna_oznaka}</p>
+                            <p className="text-xs text-muted-foreground">Ugovor: {contract.interna_oznaka}</p>
                           )}
                           {(property || tenant) && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground/80">
                               {(property && property.naziv) || 'Nepoznata nekretnina'} • {tenant?.naziv_firme || tenant?.ime_prezime || 'Nepoznat zakupnik'}
                             </p>
                           )}
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground/80">
                             {new Date(reminder.datum_podsjetnika).toLocaleDateString()} ({reminder.dani_prije} dana prije)
                           </p>
                         </div>
@@ -1054,7 +1064,7 @@ const Dashboard = () => {
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">Nema nadolazećih podsjećanja.</p>
+                  <p className="text-sm text-muted-foreground/80">Nema nadolazećih podsjećanja.</p>
                 )}
               </CardContent>
             </Card>
@@ -1097,14 +1107,14 @@ const Dashboard = () => {
 
               <div className="space-y-2">
                 {filteredAllReminders.length === 0 ? (
-                  <p className="text-sm text-gray-500">Nema podsjećanja za zadane filtere.</p>
+                  <p className="text-sm text-muted-foreground/80">Nema podsjećanja za zadane filtere.</p>
                 ) : (
                   filteredAllReminders.map((reminder) => {
                     const { contract, property, tenant } = getReminderContext(reminder);
                     const isSent = Boolean(reminder.poslan);
                     const isHighPriority = !isSent && reminder.dani_prije !== undefined && reminder.dani_prije <= 30;
                     return (
-                      <Card key={reminder.id} className="border border-gray-200">
+                      <Card key={reminder.id} className="border border-border/60">
                         <CardHeader className="flex flex-row items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{getReminderLabel(reminder.tip)}</Badge>
@@ -1116,7 +1126,7 @@ const Dashboard = () => {
                               <Badge variant="outline">Aktivno</Badge>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground/80">
                             {reminder.datum_podsjetnika
                               ? new Date(reminder.datum_podsjetnika).toLocaleDateString('hr-HR')
                               : 'Nepoznat datum'}
@@ -1125,7 +1135,7 @@ const Dashboard = () => {
                               : ''}
                           </p>
                         </CardHeader>
-                        <CardContent className="text-sm text-gray-700 space-y-1">
+                        <CardContent className="text-sm text-muted-foreground space-y-1">
                           <p className="font-medium text-foreground">
                             Ugovor: {contract?.interna_oznaka || 'Nepoznat ugovor'}
                           </p>
@@ -1138,7 +1148,7 @@ const Dashboard = () => {
                             {tenant?.oib ? ` • OIB: ${tenant.oib}` : ''}
                           </p>
                           {reminder.napomena && (
-                            <p className="text-xs text-gray-500">Napomena: {reminder.napomena}</p>
+                            <p className="text-xs text-muted-foreground/80">Napomena: {reminder.napomena}</p>
                           )}
                         </CardContent>
                       </Card>
@@ -1503,8 +1513,8 @@ const Nekretnine = () => {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-t border-gray-100 bg-gray-50">
-                <div className="text-xs text-gray-500">
+              <CardFooter className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-t border-border/40 bg-primary/5">
+                <div className="text-xs text-muted-foreground/80">
                   Posljednje ažuriranje: {formatDate(nekretnina.updated_at || nekretnina.kreiran || nekretnina.azuriran)}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -1539,7 +1549,7 @@ const Nekretnine = () => {
                     size="icon"
                     onClick={() => generatePropertyReport(nekretnina)}
                     data-testid={`pdf-analiza-${nekretnina.id}`}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
@@ -1567,7 +1577,7 @@ const Nekretnine = () => {
             <DialogHeader>
               <DialogTitle className="flex flex-col gap-1">
                 <span className="text-2xl font-semibold text-foreground">{selectedNekretnina.naziv}</span>
-                <span className="text-sm font-normal text-gray-600">{selectedNekretnina.adresa}</span>
+                <span className="text-sm font-normal text-muted-foreground">{selectedNekretnina.adresa}</span>
               </DialogTitle>
             </DialogHeader>
             <div id="nekretnina-details-description" className="sr-only">
@@ -1659,14 +1669,14 @@ const Nekretnine = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {(documentsByProperty[selectedNekretnina.id] || []).length === 0 ? (
-                      <p className="text-sm text-gray-500">Nema povezanih dokumenata. Dodajte ih iz modula Dokumenti.</p>
+                      <p className="text-sm text-muted-foreground/80">Nema povezanih dokumenata. Dodajte ih iz modula Dokumenti.</p>
                     ) : (
                       <div className="space-y-2">
                         {(documentsByProperty[selectedNekretnina.id] || []).map((doc) => (
-                          <div key={doc.id} className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 text-sm">
+                          <div key={doc.id} className="flex items-center justify-between rounded-md border border-border/60 px-3 py-2 text-sm">
                             <div>
                               <p className="font-medium text-foreground">{doc.naziv}</p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-muted-foreground/80">
                                 {formatDocumentType(doc.tip)} • {formatDate(doc.kreiran)}
                               </p>
                             </div>
@@ -1692,7 +1702,7 @@ const Nekretnine = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {(contractsByProperty[selectedNekretnina.id] || []).length === 0 ? (
-                      <div className="space-y-3 text-sm text-gray-500">
+                      <div className="space-y-3 text-sm text-muted-foreground/80">
                         <p>Još nema ugovora povezanih s ovom nekretninom.</p>
                         <Button variant="outline" size="sm" onClick={() => {
                           setSelectedNekretnina(null);
@@ -1706,13 +1716,13 @@ const Nekretnine = () => {
                         {(contractsByProperty[selectedNekretnina.id] || []).map((ugovor) => {
                           const zakupnik = tenantsById[ugovor.zakupnik_id];
                           return (
-                            <div key={ugovor.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm">
+                            <div key={ugovor.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded-md border border-border/60 px-3 py-2 text-sm">
                               <div className="space-y-1">
                                 <p className="font-medium text-foreground">{ugovor.interna_oznaka}</p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-muted-foreground/80">
                                   {formatDate(ugovor.datum_pocetka)} — {formatDate(ugovor.datum_zavrsetka)}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-muted-foreground/80">
                                   Zakupnik: {zakupnik?.naziv_firme || zakupnik?.ime_prezime || 'Nepoznat zakupnik'}
                                 </p>
                               </div>
@@ -1757,7 +1767,7 @@ const Nekretnine = () => {
                       <InfoField label="Sudski sporovi" value={selectedNekretnina.sudski_sporovi || '—'} />
                       <InfoField label="Hipoteke" value={selectedNekretnina.hipoteke || '—'} />
                     </div>
-                    <div className="border border-gray-200 rounded-md p-3 bg-gray-50 text-sm text-gray-700">
+                    <div className="border border-border/60 rounded-md p-3 bg-primary/5 text-sm text-muted-foreground">
                       <p>Napomena upravitelja:</p>
                       <p className="mt-1 text-foreground">{selectedNekretnina.napomene || 'Nema dodatnih napomena.'}</p>
                     </div>
@@ -2189,47 +2199,53 @@ const Zakupnici = () => {
   };
 
   if (loading) {
-    return <div className="p-8">Učitava zakupnike...</div>;
+    return <div className="px-6 py-10">Učitava zakupnike...</div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Zakupnici</h1>
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 md:px-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-primary">Zakupnici</h1>
+          <p className="text-sm text-muted-foreground">
+            Evidencija partnera s ključnim kontaktima, financijskim podacima i AI podsjetnicima za obnovu ugovora.
+          </p>
+        </div>
         <Button 
           onClick={() => setShowCreateForm(true)}
           data-testid="dodaj-zakupnika-btn"
+          className="h-11 rounded-full bg-primary text-primary-foreground shadow-shell hover:bg-primary/90"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Dodaj zakupnika
+          <Plus className="h-4 w-4" />
+          <span className="ml-2">Dodaj zakupnika</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {zakupnici.map((zakupnik) => (
-          <Card key={zakupnik.id} data-testid={`zakupnik-card-${zakupnik.id}`}>
-            <CardHeader>
-              <CardTitle>{zakupnik.naziv_firme || zakupnik.ime_prezime}</CardTitle>
+          <Card key={zakupnik.id} data-testid={`zakupnik-card-${zakupnik.id}`} className="card-hover shadow-shell">
+            <CardHeader className="border-b border-border/40 bg-primary/5">
+              <CardTitle className="text-lg font-semibold text-foreground">{zakupnik.naziv_firme || zakupnik.ime_prezime}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm">
-                <span className="font-medium">OIB:</span> {zakupnik.oib}
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                <span className="font-semibold text-primary">OIB:</span> {zakupnik.oib}
               </p>
-              <p className="text-sm">
-                <span className="font-medium">Sjedište:</span> {zakupnik.sjediste}
+              <p>
+                <span className="font-semibold text-primary">Sjedište:</span> {zakupnik.sjediste}
               </p>
-              <p className="text-sm">
-                <span className="font-medium">Kontakt:</span> {zakupnik.kontakt_ime}
+              <p>
+                <span className="font-semibold text-primary">Kontakt:</span> {zakupnik.kontakt_ime}
               </p>
-              <p className="text-sm">
-                <span className="font-medium">Email:</span> {zakupnik.kontakt_email}
+              <p>
+                <span className="font-semibold text-primary">Email:</span> {zakupnik.kontakt_email}
               </p>
-              <p className="text-sm">
-                <span className="font-medium">Telefon:</span> {zakupnik.kontakt_telefon}
+              <p>
+                <span className="font-semibold text-primary">Telefon:</span> {zakupnik.kontakt_telefon}
               </p>
               {zakupnik.iban && (
-                <p className="text-sm">
-                  <span className="font-medium">IBAN:</span> {zakupnik.iban}
+                <p>
+                  <span className="font-semibold text-primary">IBAN:</span> {zakupnik.iban}
                 </p>
               )}
               <div className="pt-2">
@@ -2886,11 +2902,11 @@ const Ugovori = () => {
               <CardContent className="space-y-3">
                 <div>
                   <p className="font-medium text-blue-600">{nekretnina?.naziv}</p>
-                  <p className="text-sm text-gray-600">{nekretnina?.adresa}</p>
+                  <p className="text-sm text-muted-foreground">{nekretnina?.adresa}</p>
                 </div>
                 <div>
                   <p className="font-medium">{zakupnik?.naziv_firme || zakupnik?.ime_prezime}</p>
-                  <p className="text-sm text-gray-600">OIB: {zakupnik?.oib}</p>
+                  <p className="text-sm text-muted-foreground">OIB: {zakupnik?.oib}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -2911,19 +2927,19 @@ const Ugovori = () => {
                     {ugovor.osnovna_zakupnina.toLocaleString()} €/mjesec
                   </p>
                   {ugovor.zakupnina_po_m2 && (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {ugovor.zakupnina_po_m2.toLocaleString()} €/m²
                     </p>
                   )}
                   {ugovor.polog_depozit && (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Polog: {ugovor.polog_depozit.toLocaleString()} €
                     </p>
                   )}
                 </div>
                 {contractDocuments.length > 0 && (
-                  <div className="border-t border-gray-100 pt-2 space-y-1">
-                    <p className="text-xs font-semibold text-gray-500 uppercase">
+                  <div className="border-t border-border/40 pt-2 space-y-1">
+                    <p className="text-xs font-semibold text-muted-foreground/80 uppercase">
                       Dokumenti ({contractDocuments.length})
                     </p>
                     <ul className="space-y-1 text-sm">
@@ -2945,7 +2961,7 @@ const Ugovori = () => {
                       ))}
                     </ul>
                     {contractDocuments.length > 3 && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground/80">
                         +{contractDocuments.length - 3} dodatnih dokumenata
                       </p>
                     )}
@@ -2970,7 +2986,7 @@ const Ugovori = () => {
                   </Select>
                   
                   {ugovor.opcija_produljenja && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="rounded-full text-[11px] uppercase tracking-wide text-primary">
                       Opcija produljenja
                     </Badge>
                   )}
@@ -2990,7 +3006,7 @@ const Ugovori = () => {
                     size="sm"
                     onClick={() => generateContractPDF(ugovor)}
                     data-testid={`generate-pdf-${ugovor.id}`}
-                    className="ml-2 bg-green-600 hover:bg-green-700 text-white"
+                    className="ml-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     📄 PDF
                   </Button>
@@ -3040,20 +3056,20 @@ const Ugovori = () => {
           {contractToCopy && (
             <div className="space-y-6">
               {/* Original contract details */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-3">Kopira se ugovor:</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="rounded-2xl border border-border/60 bg-primary/5 p-4">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Kopira se ugovor</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm text-foreground/90">
                   <div>
-                    <span className="font-medium">Oznaka:</span> {contractToCopy.interna_oznaka}
+                    <span className="font-semibold text-primary">Oznaka:</span> {contractToCopy.interna_oznaka}
                   </div>
                   <div>
-                    <span className="font-medium">Kirija:</span> {contractToCopy.osnovna_zakupnina?.toLocaleString()} €
+                    <span className="font-semibold text-primary">Kirija:</span> {contractToCopy.osnovna_zakupnina?.toLocaleString()} €
                   </div>
                   <div>
-                    <span className="font-medium">Početak:</span> {new Date(contractToCopy.datum_pocetka).toLocaleDateString()}
+                    <span className="font-semibold text-primary">Početak:</span> {new Date(contractToCopy.datum_pocetka).toLocaleDateString()}
                   </div>
                   <div>
-                    <span className="font-medium">Završetak:</span> {new Date(contractToCopy.datum_zavrsetka).toLocaleDateString()}
+                    <span className="font-semibold text-primary">Završetak:</span> {new Date(contractToCopy.datum_zavrsetka).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -3064,7 +3080,7 @@ const Ugovori = () => {
                 <div className="grid grid-cols-1 gap-3">
                   
                   <Card 
-                    className="cursor-pointer hover:bg-blue-50 border-2 hover:border-blue-300 transition-all"
+                    className="cursor-pointer border border-border/60 transition-all hover:border-primary/60 hover:bg-primary/10"
                     onClick={() => handleCreateCopiedContract(1)}
                     data-testid="copy-option-1-year"
                   >
@@ -3072,18 +3088,18 @@ const Ugovori = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <h4 className="font-bold text-lg">1 Godina</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
                           </p>
-                          <p className="text-xs text-gray-500">Početak: danas, završetak: za godinu dana</p>
+                          <p className="text-xs text-muted-foreground/80">Početak: danas, završetak: za godinu dana</p>
                         </div>
-                        <Badge variant="default">Kratko</Badge>
+                        <Badge variant="default" className="rounded-full bg-primary text-primary-foreground">Kratko</Badge>
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card 
-                    className="cursor-pointer hover:bg-green-50 border-2 hover:border-green-300 transition-all"
+                    className="cursor-pointer border border-accent/60 transition-all hover:border-accent hover:bg-accent/15"
                     onClick={() => handleCreateCopiedContract(2)}
                     data-testid="copy-option-2-years"
                   >
@@ -3091,18 +3107,18 @@ const Ugovori = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <h4 className="font-bold text-lg">2 Godine</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
                           </p>
-                          <p className="text-xs text-gray-500">Početak: danas, završetak: za 2 godine</p>
+                          <p className="text-xs text-muted-foreground/80">Početak: danas, završetak: za 2 godine</p>
                         </div>
-                        <Badge variant="secondary" className="bg-green-200 text-green-800">Preporučeno</Badge>
+                        <Badge variant="secondary" className="rounded-full border-none bg-accent text-primary-foreground">Preporučeno</Badge>
                       </div>
                     </CardContent>
                   </Card>
 
                   <Card 
-                    className="cursor-pointer hover:bg-purple-50 border-2 hover:border-purple-300 transition-all"
+                    className="cursor-pointer border border-border/60 transition-all hover:border-primary/60 hover:bg-primary/10"
                     onClick={() => handleCreateCopiedContract(5)}
                     data-testid="copy-option-5-years"
                   >
@@ -3110,12 +3126,12 @@ const Ugovori = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <h4 className="font-bold text-lg">5 Godina</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Ista kirija: {contractToCopy.osnovna_zakupnina?.toLocaleString()} €/mjesec
                           </p>
-                          <p className="text-xs text-gray-500">Početak: danas, završetak: za 5 godina</p>
+                          <p className="text-xs text-muted-foreground/80">Početak: danas, završetak: za 5 godina</p>
                         </div>
-                        <Badge variant="outline" className="border-purple-300 text-purple-700">Dugoročno</Badge>
+                        <Badge variant="outline" className="rounded-full border-primary/40 text-primary">Dugoročno</Badge>
                       </div>
                     </CardContent>
                   </Card>
@@ -3296,12 +3312,12 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
   return (
     <form onSubmit={handleSubmit} className="space-y-4" data-testid="ugovor-form">
       {/* PDF Upload Section */}
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+      <div className="border-2 border-dashed border-border/50 rounded-lg p-4 bg-primary/5">
         <div className="text-center">
           <h3 className="text-lg font-medium text-foreground mb-2">
             📄 AI Analiza PDF Ugovora
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Učitajte postojeći PDF ugovor za automatsko popunjavanje forme
           </p>
           
@@ -3353,7 +3369,7 @@ const UgovorForm = ({ nekretnine, zakupnici, onSubmit, onCancel, renewalTemplate
             </div>
           )}
           
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-muted-foreground/80 mt-2">
             Podržani format: PDF • AI će pokušati izvući podatke iz ugovora
           </p>
         </div>
@@ -3651,7 +3667,7 @@ const DOCUMENT_TYPE_LABELS = {
   energetski_certifikat: 'Energetski certifikat',
   izvadak_iz_registra: 'Izvadak iz registra',
   bon_2: 'BON-2',
-   racun: 'Račun',
+  racun: 'Račun',
   ostalo: 'Ostalo',
 };
 
@@ -3665,9 +3681,6 @@ const Dokumenti = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewDocument, setPreviewDocument] = useState(null);
-  const [showBillDialog, setShowBillDialog] = useState(false);
-  const [billInitialData, setBillInitialData] = useState(null);
-  const [savingBillFromDocument, setSavingBillFromDocument] = useState(false);
 
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   useEffect(() => {
@@ -3724,13 +3737,12 @@ const Dokumenti = () => {
     }, {});
   }, [dokumenti]);
 
-  const downloadDocument = useCallback((dokument) => {
+  const getDocumentUrl = useCallback((dokument) => {
     if (!dokument.putanja_datoteke) {
       toast.error('PDF datoteka nije učitana za ovaj dokument');
-      return;
+      return null;
     }
-    const url = `${BACKEND_URL}/${dokument.putanja_datoteke}`;
-    window.open(url, '_blank', 'noopener');
+    return `${BACKEND_URL}/${dokument.putanja_datoteke}`;
   }, []);
 
   const handleCreateDokument = async (formData) => {
@@ -3753,23 +3765,6 @@ const Dokumenti = () => {
   const handleDocumentPreview = (dokument) => {
     setPreviewDocument(dokument);
     setShowPreviewDialog(true);
-  };
-
-  const handleCreateBillFromDocument = async (payload) => {
-    setSavingBillFromDocument(true);
-    try {
-      await api.createRacun(payload);
-      toast.success('Račun je kreiran iz dokumenta');
-      await refresh();
-      setShowBillDialog(false);
-      setBillInitialData(null);
-    } catch (error) {
-      console.error('Greška pri kreiranju računa iz dokumenta:', error);
-      const message = error.response?.data?.detail || 'Greška pri kreiranju računa';
-      toast.error(message);
-    } finally {
-      setSavingBillFromDocument(false);
-    }
   };
 
   if (!initialLoadComplete && refreshingStore) {
@@ -3867,7 +3862,7 @@ const Dokumenti = () => {
                 <p className="text-sm">
                   <span className="font-medium">Datum:</span> {new Date(dokument.kreiran).toLocaleDateString()}
                 </p>
-                {dokument.opis && <p className="text-sm text-gray-600">{dokument.opis}</p>}
+                {dokument.opis && <p className="text-sm text-muted-foreground">{dokument.opis}</p>}
                 <div className="pt-2 flex space-x-1">
                   <Button
                     variant="outline"
@@ -3882,11 +3877,14 @@ const Dokumenti = () => {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => downloadDocument(dokument)}
-                    data-testid={`download-document-${dokument.id}`}
+                    onClick={() => {
+                      const url = getDocumentUrl(dokument);
+                      if (url) window.open(url, '_blank', 'noopener');
+                    }}
+                    data-testid={`open-document-${dokument.id}`}
                     disabled={!dokument.putanja_datoteke}
                   >
-                    <Download className="w-4 h-4 mr-1" /> Preuzmi
+                    <Download className="w-4 h-4 mr-1" /> Otvori
                   </Button>
                 </div>
               </CardContent>
@@ -3896,7 +3894,10 @@ const Dokumenti = () => {
       </div>
 
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent className="max-w-2xl" aria-describedby="dokument-form-description">
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          aria-describedby="dokument-form-description"
+        >
           <DialogHeader>
             <DialogTitle>Dodaj novi dokument</DialogTitle>
           </DialogHeader>
@@ -3910,6 +3911,7 @@ const Dokumenti = () => {
             onSubmit={handleCreateDokument}
             onCancel={() => setShowCreateForm(false)}
             refreshEntities={refresh}
+            loading={loading}
           />
         </DialogContent>
       </Dialog>
@@ -3925,7 +3927,7 @@ const Dokumenti = () => {
 
           {previewDocument && (
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-primary/5 p-4 rounded-lg">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div><span className="font-medium">Naziv:</span> {previewDocument.naziv}</div>
                   <div><span className="font-medium">Tip:</span> {formatDocumentType(previewDocument.tip)}</div>
@@ -3937,46 +3939,39 @@ const Dokumenti = () => {
                 {previewDocument.opis && (
                   <div className="mt-3">
                     <span className="font-medium">Opis:</span>
-                    <p className="mt-1 text-gray-700">{previewDocument.opis}</p>
+                    <p className="mt-1 text-muted-foreground">{previewDocument.opis}</p>
                   </div>
                 )}
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="border-2 border-dashed border-border/50 rounded-lg p-8 text-center">
                 <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">Pregled dokumenta</h3>
-                <p className="text-gray-600 mb-4">Dokument: {previewDocument.naziv}</p>
-                <p className="text-sm text-gray-500 mb-4">Za puni pregled preuzmite dokument i otvorite ga u vanjskom pregledniku.</p>
+                <p className="text-muted-foreground mb-4">Dokument: {previewDocument.naziv}</p>
                 <div className="space-y-2">
-                  <Button
-                    variant="default"
-                    className="w-full"
-                    onClick={() => downloadDocument(previewDocument)}
-                    disabled={!previewDocument.putanja_datoteke}
-                    data-testid="download-document"
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Preuzmi PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                  onClick={() => {
-                    setBillInitialData({
-                      dokument_id: previewDocument.id,
-                      nekretnina_id: previewDocument.nekretnina_id || '',
-                      ugovor_id: previewDocument.ugovor_id || '',
-                      tip_rezije: previewDocument.tip === 'racun' ? 'ostalo' : 'struja',
-                      dobavljac: previewDocument.opis || '',
-                      broj_racuna: previewDocument.naziv || '',
-                    });
-                    setShowBillDialog(true);
-                  }}
-                  >
-                    ➕ Kreiraj račun iz dokumenta
-                  </Button>
+                  <div className="rounded-lg border border-border/50 bg-white p-2">
+                    <iframe
+                      title={`Pregled: ${previewDocument.naziv}`}
+                      src={getDocumentUrl(previewDocument)}
+                      className="h-[420px] w-full rounded-md"
+                      loading="lazy"
+                    />
+                  </div>
                   <div className="text-xs text-gray-400">
                     Datoteka: {previewDocument.putanja_datoteke || 'Nije prenesena'} • Veličina: {previewDocument.velicina_datoteke > 0 ? `${(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB` : 'Nepoznato'}
                   </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      const url = getDocumentUrl(previewDocument);
+                      if (url) window.open(url, '_blank', 'noopener');
+                    }}
+                    disabled={!previewDocument.putanja_datoteke}
+                    data-testid="download-document"
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Otvori u novom prozoru
+                  </Button>
                 </div>
               </div>
 
@@ -3987,26 +3982,6 @@ const Dokumenti = () => {
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showBillDialog} onOpenChange={(open) => { setShowBillDialog(open); if (!open) setBillInitialData(null); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="racun-iz-dokumenta">
-          <DialogHeader>
-            <DialogTitle>Kreiraj račun iz dokumenta</DialogTitle>
-          </DialogHeader>
-          <div id="racun-iz-dokumenta" className="sr-only">
-            Forma za kreiranje računa na temelju odabranog dokumenta
-          </div>
-          <BillForm
-            nekretnine={nekretnine}
-            ugovori={ugovori}
-            dokumenti={dokumenti}
-            initialData={billInitialData}
-            onSubmit={handleCreateBillFromDocument}
-            onCancel={() => { setShowBillDialog(false); setBillInitialData(null); }}
-            loading={savingBillFromDocument}
-          />
         </DialogContent>
       </Dialog>
     </div>
@@ -4047,7 +4022,7 @@ const LinkedEntitySelect = ({ label, placeholder, entities, value, onChange, ren
   );
 };
 
-const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refreshEntities }) => {
+const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refreshEntities, loading }) => {
   const fileInputRef = useRef(null);
   const initialFormState = {
     naziv: '',
@@ -4064,7 +4039,7 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
-  const [quickCreateLoading, setQuickCreateLoading] = useState({ property: false, tenant: false, contract: false, bill: false });
+  const [quickCreateLoading, setQuickCreateLoading] = useState({ property: false, tenant: false, contract: false });
 
   const toNumber = (value, fallback = 0) => {
     const num = Number(value);
@@ -4316,49 +4291,6 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
     }
   };
 
-  const handleCreateBillFromAI = async () => {
-    if (!aiSuggestions?.racun) {
-      toast.error('AI nije prepoznao podatke o računu');
-      return;
-    }
-    if (!formData.nekretnina_id) {
-      toast.error('Povežite račun s nekretninom');
-      return;
-    }
-    setQuickCreateLoading((prev) => ({ ...prev, bill: true }));
-    const bill = aiSuggestions.racun;
-    try {
-      const amountDue = Number(bill?.iznos_za_platiti ?? 0);
-      const amountPaid = Number(bill?.iznos_placen ?? 0);
-      const payload = {
-        nekretnina_id: formData.nekretnina_id,
-        ugovor_id: formData.ugovor_id || null,
-        dokument_id: formData.tip === 'racun' ? null : null,
-        tip_rezije: bill.tip_rezije || 'struja',
-        dobavljac: bill.dobavljac || null,
-        broj_racuna: bill.broj_racuna || formData.naziv || null,
-        razdoblje_od: bill.razdoblje_od || null,
-        razdoblje_do: bill.razdoblje_do || null,
-        datum_izdavanja: bill.datum_izdavanja || null,
-        datum_dospijeca: bill.datum_dospijeca || null,
-        iznos_za_platiti: Number.isFinite(amountDue) ? amountDue : 0,
-        iznos_placen: bill.iznos_placen && Number.isFinite(amountPaid) ? amountPaid : null,
-        valuta: bill.valuta || 'EUR',
-        status: 'due',
-        napomena: null,
-        placeno_na_dan: null,
-      };
-      await api.createRacun(payload);
-      toast.success('Račun je kreiran iz AI prijedloga');
-      await refreshEntities();
-    } catch (error) {
-      console.error('Greška pri kreiranju računa iz AI prijedloga:', error);
-      toast.error('Greška pri kreiranju računa');
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, bill: false }));
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -4457,7 +4389,7 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
           onChange={handleFileChange}
           data-testid="dokument-file-input"
         />
-        <p className="text-xs text-gray-500 mt-1">PDF će biti analiziran kako bi se automatski predložile informacije i poveznice.</p>
+        <p className="text-xs text-muted-foreground/80 mt-1">PDF će biti analiziran kako bi se automatski predložile informacije i poveznice.</p>
       </div>
 
       {aiLoading && <div className="text-sm text-blue-600">Analiziram PDF dokument...</div>}
@@ -4477,8 +4409,8 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
           <div className="grid md:grid-cols-2 gap-3">
             <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2">
               <p className="text-xs font-semibold text-blue-700 uppercase">Nekretnina</p>
-              <p className="text-sm text-gray-700">{aiSuggestions.nekretnina?.naziv || 'Nije prepoznato'}</p>
-              <p className="text-xs text-gray-500">{aiSuggestions.nekretnina?.adresa}</p>
+              <p className="text-sm text-muted-foreground">{aiSuggestions.nekretnina?.naziv || 'Nije prepoznato'}</p>
+              <p className="text-xs text-muted-foreground/80">{aiSuggestions.nekretnina?.adresa}</p>
               <div className="flex flex-wrap gap-2">
                 {matchedProperty ? (
                   <Badge variant="outline" className="text-green-700 border-green-300">Pronađena: {matchedProperty.naziv}</Badge>
@@ -4505,8 +4437,8 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
             </div>
             <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2">
               <p className="text-xs font-semibold text-blue-700 uppercase">Zakupnik</p>
-              <p className="text-sm text-gray-700">{aiSuggestions.zakupnik?.naziv_firme || aiSuggestions.zakupnik?.ime_prezime || 'Nije prepoznato'}</p>
-              <p className="text-xs text-gray-500">OIB: {aiSuggestions.zakupnik?.oib || 'N/A'}</p>
+              <p className="text-sm text-muted-foreground">{aiSuggestions.zakupnik?.naziv_firme || aiSuggestions.zakupnik?.ime_prezime || 'Nije prepoznato'}</p>
+              <p className="text-xs text-muted-foreground/80">OIB: {aiSuggestions.zakupnik?.oib || 'N/A'}</p>
               <div className="flex flex-wrap gap-2">
                 {matchedTenant ? (
                   <Badge variant="outline" className="text-green-700 border-green-300">Pronađen: {matchedTenant.naziv_firme || matchedTenant.ime_prezime}</Badge>
@@ -4533,7 +4465,7 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
             </div>
             <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
               <p className="text-xs font-semibold text-blue-700 uppercase">Ugovor</p>
-              <p className="text-sm text-gray-700">Oznaka: {aiSuggestions.ugovor?.interna_oznaka || 'Nije prepoznato'}</p>
+              <p className="text-sm text-muted-foreground">Oznaka: {aiSuggestions.ugovor?.interna_oznaka || 'Nije prepoznato'}</p>
               <div className="flex flex-wrap gap-2">
                 {matchedContract ? (
                   <Badge variant="outline" className="text-green-700 border-green-300">Pronađen: {matchedContract.interna_oznaka}</Badge>
@@ -4558,25 +4490,6 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
                 </Button>
               </div>
             </div>
-            {aiSuggestions.racun && (
-              <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
-                <p className="text-xs font-semibold text-blue-700 uppercase">Račun</p>
-                <p className="text-sm text-gray-700">Dobavljač: {aiSuggestions.racun.dobavljac || 'Nije prepoznato'}</p>
-                <p className="text-xs text-gray-500">Broj računa: {aiSuggestions.racun.broj_racuna || 'N/A'}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">Tip: {utilityTypeLabels[aiSuggestions.racun.tip_rezije] || 'Račun'}</Badge>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={quickCreateLoading.bill}
-                    onClick={handleCreateBillFromAI}
-                  >
-                    {quickCreateLoading.bill ? 'Spremam...' : 'Kreiraj račun'}
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -4621,8 +4534,8 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
       </div>
 
       <div className="flex space-x-2 pt-4">
-        <Button type="submit" data-testid="potvrdi-dokument-form">
-          Dodaj dokument
+        <Button type="submit" data-testid="potvrdi-dokument-form" disabled={loading}>
+          {loading ? 'Spremam...' : 'Dodaj dokument'}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} data-testid="odustani-dokument-form">
           Odustani
@@ -4632,588 +4545,11 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, onSubmit, onCancel, refr
   );
 };
 
-// Računi Component
-const utilityTypeLabels = {
-  struja: 'Struja',
-  voda: 'Voda',
-  plin: 'Plin',
-  komunalije: 'Komunalije',
-  internet: 'Internet',
-  ostalo: 'Ostalo',
-};
-
-const billStatusLabels = {
-  draft: 'Draft',
-  due: 'Za plaćanje',
-  paid: 'Plaćeno',
-  partial: 'Djelomično',
-  disputed: 'Reklamirano',
-};
-
-const billStatusOptions = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'due', label: 'Za plaćanje' },
-  { value: 'paid', label: 'Plaćeno' },
-  { value: 'partial', label: 'Djelomično plaćeno' },
-  { value: 'disputed', label: 'Reklamirano' },
-];
-
-const Racuni = () => {
-  const { racuni, nekretnine, ugovori, dokumenti, loading: storeLoading, refresh } = useEntityStore();
-  const [filterStatus, setFilterStatus] = useState('svi');
-  const [filterUtility, setFilterUtility] = useState('sve');
-  const [propertyFilter, setPropertyFilter] = useState('all');
-  const [showOnlyOverdue, setShowOnlyOverdue] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingBill, setEditingBill] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const loading = storeLoading;
-
-  const filteredBills = useMemo(() => {
-    return racuni.filter((bill) => {
-      if (filterStatus !== 'svi' && bill.status !== filterStatus) {
-        return false;
-      }
-      if (filterUtility !== 'sve' && bill.tip_rezije !== filterUtility) {
-        return false;
-      }
-      if (propertyFilter !== 'all' && bill.nekretnina_id !== propertyFilter) {
-        return false;
-      }
-      if (showOnlyOverdue) {
-        if (!bill.datum_dospijeca) return false;
-        const due = new Date(bill.datum_dospijeca);
-        const today = new Date();
-        if (!(due < today && bill.status !== 'paid')) return false;
-      }
-      return true;
-    });
-  }, [racuni, filterStatus, filterUtility, propertyFilter, showOnlyOverdue]);
-
-  const totalDue = useMemo(() => {
-    return filteredBills.reduce((sum, bill) => {
-      if (bill.status === 'paid') return sum;
-      const remaining = bill.iznos_za_platiti - (bill.iznos_placen || 0);
-      return sum + (remaining > 0 ? remaining : 0);
-    }, 0);
-  }, [filteredBills]);
-
-  const overdueCount = useMemo(() => {
-    const today = new Date();
-    return filteredBills.filter((bill) => {
-      if (!bill.datum_dospijeca) return false;
-      const due = new Date(bill.datum_dospijeca);
-      return due < today && bill.status !== 'paid';
-    }).length;
-  }, [filteredBills]);
-
-  const handleSaveBill = async (payload) => {
-    setIsSaving(true);
-    try {
-      if (editingBill) {
-        await api.updateRacun(editingBill.id, payload);
-        toast.success('Račun je ažuriran');
-      } else {
-        await api.createRacun(payload);
-        toast.success('Račun je kreiran');
-      }
-      await refresh();
-      setShowForm(false);
-      setEditingBill(null);
-    } catch (error) {
-      console.error('Greška pri spremanju računa:', error);
-      const message = error.response?.data?.detail || 'Greška pri spremanju računa';
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteBill = async (bill) => {
-    if (!window.confirm('Jeste li sigurni da želite obrisati ovaj račun?')) {
-      return;
-    }
-    setIsDeleting(true);
-    try {
-      await api.deleteRacun(bill.id);
-      toast.success('Račun je obrisan');
-      await refresh();
-    } catch (error) {
-      console.error('Greška pri brisanju računa:', error);
-      toast.error('Greška pri brisanju računa');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleStatusChange = async (bill, newStatus) => {
-    try {
-      await api.updateRacun(bill.id, { status: newStatus });
-      toast.success('Status računa je ažuriran');
-      await refresh();
-    } catch (error) {
-      console.error('Greška pri ažuriranju statusa računa:', error);
-      toast.error('Greška pri ažuriranju statusa računa');
-    }
-  };
-
-  if (loading) {
-    return <div className="p-8">Učitava račune...</div>;
-  }
-
-  return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Računi i režije</h1>
-        <Button onClick={() => { setShowForm(true); setEditingBill(null); }}>
-          <Plus className="w-4 h-4 mr-2" /> Dodaj račun
-        </Button>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-gray-500">Ukupno za plaćanje</p>
-            <p className="text-2xl font-semibold">{totalDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-gray-500">Računi na čekanju</p>
-            <p className="text-2xl font-semibold">{filteredBills.filter((bill) => bill.status !== 'paid').length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-gray-500">Kašnjenja</p>
-            <p className="text-2xl font-semibold text-red-600">{overdueCount}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
-        <div className="grid md:grid-cols-4 gap-3">
-          <div>
-            <Label className="text-xs uppercase text-gray-500">Status</Label>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="svi">Svi</SelectItem>
-                {billStatusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs uppercase text-gray-500">Vrsta režije</Label>
-            <Select value={filterUtility} onValueChange={setFilterUtility}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sve">Sve</SelectItem>
-                {Object.entries(utilityTypeLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs uppercase text-gray-500">Nekretnina</Label>
-            <Select value={propertyFilter} onValueChange={setPropertyFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sve nekretnine" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sve nekretnine</SelectItem>
-                {nekretnine.map((nekretnina) => (
-                  <SelectItem key={nekretnina.id} value={nekretnina.id}>{nekretnina.naziv}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center space-x-2 mt-6">
-            <input
-              type="checkbox"
-              id="filter-overdue"
-              checked={showOnlyOverdue}
-              onChange={(e) => setShowOnlyOverdue(e.target.checked)}
-            />
-            <Label htmlFor="filter-overdue">Prikaži samo kašnjenja</Label>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {filteredBills.length === 0 ? (
-          <div className="bg-white border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500">
-            Nema računa koji zadovoljavaju kriterije.
-          </div>
-        ) : (
-          filteredBills.map((bill) => {
-            const property = nekretnine.find((n) => n.id === bill.nekretnina_id);
-            const contract = ugovori.find((u) => u.id === bill.ugovor_id);
-            const linkedDocuments = dokumenti.filter((doc) => doc.id === bill.dokument_id);
-            const isOverdue = bill.datum_dospijeca && new Date(bill.datum_dospijeca) < new Date() && bill.status !== 'paid';
-
-            return (
-              <Card key={bill.id} className={isOverdue ? 'border-red-200 bg-red-50/40' : ''}>
-                <CardContent className="py-4">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-semibold">{utilityTypeLabels[bill.tip_rezije]}</h3>
-                        <Badge variant="outline">{billStatusLabels[bill.status]}</Badge>
-                        {isOverdue && <Badge variant="destructive">Kasni</Badge>}
-                      </div>
-                      <p className="text-sm text-gray-600">{bill.dobavljac || 'Nepoznat dobavljač'} • {bill.broj_racuna || 'Bez broja'}</p>
-                      <p className="text-sm text-gray-500">{property?.naziv} | {property?.adresa}</p>
-                      {contract && (
-                        <p className="text-sm text-gray-500">Ugovor: {contract.interna_oznaka}</p>
-                      )}
-                    </div>
-                    <div className="text-right space-y-1">
-                      <p className="text-lg font-semibold">{bill.iznos_za_platiti.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {bill.valuta}</p>
-                      {bill.iznos_placen ? (
-                        <p className="text-xs text-gray-600">Plaćeno: {bill.iznos_placen.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                      ) : (
-                        <p className="text-xs text-red-500">Nije plaćeno</p>
-                      )}
-                      <p className="text-xs text-gray-500">Dospijeće: {bill.datum_dospijeca ? new Date(bill.datum_dospijeca).toLocaleDateString() : '—'}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
-                    <div className="flex space-x-2">
-                      <Select value={bill.status} onValueChange={(value) => handleStatusChange(bill, value)}>
-                        <SelectTrigger className="w-40">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {billStatusOptions.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {linkedDocuments.length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const docUrl = `${BACKEND_URL}/${linkedDocuments[0].putanja_datoteke}`;
-                            window.open(docUrl, '_blank', 'noopener');
-                          }}
-                          disabled={!linkedDocuments[0].putanja_datoteke}
-                        >
-                          <Download className="w-4 h-4 mr-2" /> PDF
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => { setEditingBill(bill); setShowForm(true); }}
-                        data-testid={`uredi-racun-${bill.id}`}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteBill(bill)}
-                        disabled={isDeleting}
-                        data-testid={`obrisi-racun-${bill.id}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
-      </div>
-
-      <Dialog open={showForm} onOpenChange={(open) => { setShowForm(open); if (!open) setEditingBill(null); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="racun-form-description">
-          <DialogHeader>
-            <DialogTitle>{editingBill ? 'Uredi račun' : 'Dodaj račun'}</DialogTitle>
-          </DialogHeader>
-          <div id="racun-form-description" className="sr-only">Forma za upravljanje računima</div>
-          <BillForm
-            nekretnine={nekretnine}
-            ugovori={ugovori}
-            dokumenti={dokumenti}
-            initialData={editingBill}
-            onSubmit={handleSaveBill}
-            onCancel={() => { setShowForm(false); setEditingBill(null); }}
-            loading={isSaving}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-const BillForm = ({ nekretnine, ugovori, dokumenti, initialData, onSubmit, onCancel, loading }) => {
-  const defaultState = {
-    nekretnina_id: '',
-    ugovor_id: '',
-    dokument_id: '',
-    tip_rezije: 'struja',
-    dobavljac: '',
-    broj_racuna: '',
-    razdoblje_od: '',
-    razdoblje_do: '',
-    datum_izdavanja: '',
-    datum_dospijeca: '',
-    iznos_za_platiti: '',
-    iznos_placen: '',
-    valuta: 'EUR',
-    status: 'due',
-    napomena: '',
-    placeno_na_dan: '',
-  };
-  const [formData, setFormData] = useState(defaultState);
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        ...defaultState,
-        nekretnina_id: initialData.nekretnina_id || '',
-        ugovor_id: initialData.ugovor_id || '',
-        dokument_id: initialData.dokument_id || '',
-        tip_rezije: initialData.tip_rezije || 'struja',
-        dobavljac: initialData.dobavljac || '',
-        broj_racuna: initialData.broj_racuna || '',
-        razdoblje_od: initialData.razdoblje_od || '',
-        razdoblje_do: initialData.razdoblje_do || '',
-        datum_izdavanja: initialData.datum_izdavanja || '',
-        datum_dospijeca: initialData.datum_dospijeca || '',
-        iznos_za_platiti: initialData.iznos_za_platiti?.toString() || '',
-        iznos_placen: initialData.iznos_placen?.toString() || '',
-        valuta: initialData.valuta || 'EUR',
-        status: initialData.status || 'due',
-        napomena: initialData.napomena || '',
-        placeno_na_dan: initialData.placeno_na_dan || '',
-      });
-    } else {
-      setFormData({ ...defaultState });
-    }
-  }, [initialData]);
-
-  const propertyContracts = useMemo(() => {
-    if (!formData.nekretnina_id) {
-      return ugovori;
-    }
-    return ugovori.filter((ugovor) => ugovor.nekretnina_id === formData.nekretnina_id);
-  }, [formData.nekretnina_id, ugovori]);
-
-  const propertyDocuments = useMemo(() => {
-    if (!formData.nekretnina_id) {
-      return dokumenti;
-    }
-    return dokumenti.filter((doc) => doc.nekretnina_id === formData.nekretnina_id || doc.id === formData.dokument_id);
-  }, [formData.nekretnina_id, dokumenti, formData.dokument_id]);
-
-  const sanitizePayload = () => ({
-    nekretnina_id: formData.nekretnina_id,
-    ugovor_id: formData.ugovor_id || null,
-    dokument_id: formData.dokument_id || null,
-    tip_rezije: formData.tip_rezije,
-    dobavljac: formData.dobavljac || null,
-    broj_racuna: formData.broj_racuna || null,
-    razdoblje_od: formData.razdoblje_od || null,
-    razdoblje_do: formData.razdoblje_do || null,
-    datum_izdavanja: formData.datum_izdavanja || null,
-    datum_dospijeca: formData.datum_dospijeca || null,
-    iznos_za_platiti: Number(formData.iznos_za_platiti || 0),
-    iznos_placen: formData.iznos_placen !== '' ? Number(formData.iznos_placen) : null,
-    valuta: formData.valuta || 'EUR',
-    status: formData.status,
-    napomena: formData.napomena || null,
-    placeno_na_dan: formData.placeno_na_dan || null,
-  });
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!formData.nekretnina_id) {
-      toast.error('Odaberite nekretninu');
-      return;
-    }
-    const amount = Number(formData.iznos_za_platiti || 0);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error('Iznos za plaćanje mora biti veći od 0');
-      return;
-    }
-    await onSubmit(sanitizePayload());
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid md:grid-cols-2 gap-4">
-        <LinkedEntitySelect
-          label="Nekretnina *"
-          placeholder="Odaberite nekretninu"
-          entities={nekretnine}
-          value={formData.nekretnina_id}
-          onChange={(value) => setFormData((prev) => ({ ...prev, nekretnina_id: value, ugovor_id: '', dokument_id: '' }))}
-          renderLabel={(nekretnina) => `${nekretnina.naziv} - ${nekretnina.adresa}`}
-          testId="racun-nekretnina-select"
-          allowNone={false}
-        />
-        <LinkedEntitySelect
-          label="Ugovor"
-          placeholder="Ne povezuj ugovor"
-          entities={propertyContracts}
-          value={formData.ugovor_id}
-          onChange={(value) => setFormData((prev) => ({ ...prev, ugovor_id: value }))}
-          renderLabel={(ugovor) => ugovor.interna_oznaka}
-          testId="racun-ugovor-select"
-        />
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label className="text-xs uppercase text-gray-500">Tip režije *</Label>
-          <Select value={formData.tip_rezije} onValueChange={(value) => setFormData((prev) => ({ ...prev, tip_rezije: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(utilityTypeLabels).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-xs uppercase text-gray-500">Status</Label>
-          <Select value={formData.status} onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {billStatusOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label>Dobavljač</Label>
-          <Input value={formData.dobavljac} onChange={(e) => setFormData((prev) => ({ ...prev, dobavljac: e.target.value }))} />
-        </div>
-        <div>
-          <Label>Broj računa</Label>
-          <Input value={formData.broj_racuna} onChange={(e) => setFormData((prev) => ({ ...prev, broj_racuna: e.target.value }))} />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label>Razdoblje od</Label>
-          <Input type="date" value={formData.razdoblje_od} onChange={(e) => setFormData((prev) => ({ ...prev, razdoblje_od: e.target.value }))} />
-        </div>
-        <div>
-          <Label>Razdoblje do</Label>
-          <Input type="date" value={formData.razdoblje_do} onChange={(e) => setFormData((prev) => ({ ...prev, razdoblje_do: e.target.value }))} />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label>Datum izdavanja</Label>
-          <Input type="date" value={formData.datum_izdavanja} onChange={(e) => setFormData((prev) => ({ ...prev, datum_izdavanja: e.target.value }))} />
-        </div>
-        <div>
-          <Label>Datum dospijeća</Label>
-          <Input type="date" value={formData.datum_dospijeca} onChange={(e) => setFormData((prev) => ({ ...prev, datum_dospijeca: e.target.value }))} />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-4">
-        <div>
-          <Label>Iznos za platiti *</Label>
-          <Input
-            type="number"
-            step="0.01"
-            value={formData.iznos_za_platiti}
-            onChange={(e) => setFormData((prev) => ({ ...prev, iznos_za_platiti: e.target.value }))}
-            required
-          />
-        </div>
-        <div>
-          <Label>Iznos plaćen</Label>
-          <Input
-            type="number"
-            step="0.01"
-            value={formData.iznos_placen}
-            onChange={(e) => setFormData((prev) => ({ ...prev, iznos_placen: e.target.value }))}
-          />
-        </div>
-        <div>
-          <Label>Valuta</Label>
-          <Input value={formData.valuta} onChange={(e) => setFormData((prev) => ({ ...prev, valuta: e.target.value }))} />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label>Datum plaćanja</Label>
-          <Input type="date" value={formData.placeno_na_dan} onChange={(e) => setFormData((prev) => ({ ...prev, placeno_na_dan: e.target.value }))} />
-        </div>
-        <div>
-          <Label>Poveži dokument</Label>
-          <Select
-            value={formData.dokument_id || emptySelectValue}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, dokument_id: normalizeSelectValue(value) }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Odaberite dokument" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={emptySelectValue}>Bez dokumenta</SelectItem>
-              {propertyDocuments
-                .filter((doc) => doc.id)
-                .map((doc) => (
-                  <SelectItem key={doc.id} value={doc.id}>{doc.naziv}</SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div>
-        <Label>Napomena</Label>
-        <Textarea value={formData.napomena} onChange={(e) => setFormData((prev) => ({ ...prev, napomena: e.target.value }))} />
-      </div>
-
-      <div className="flex space-x-2 pt-2">
-        <Button type="submit" disabled={loading}> {loading ? 'Spremam...' : 'Spremi'} </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>Odustani</Button>
-      </div>
-    </form>
-  );
-};
-
-
 // Property Timeline Component
 const PropertyTimeline = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { nekretnine, ugovori, dokumenti, racuni = [] } = useEntityStore();
+  const { nekretnine, ugovori, dokumenti } = useEntityStore();
   const [podsjetnici, setPodsjetnici] = useState([]);
   const property = nekretnine.find((item) => item.id === id);
 
@@ -5254,19 +4590,6 @@ const PropertyTimeline = () => {
       });
     });
 
-  racuni
-    .filter((bill) => bill.nekretnina_id === id)
-    .forEach((bill) => {
-      const label = utilityTypeLabels[bill.tip_rezije] || 'Račun';
-      events.push({
-        type: 'Račun',
-        title: `${label} • ${bill.iznos_za_platiti.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${bill.valuta}`,
-        description: bill.dobavljac || 'Dobavljač nije naveden',
-        date: bill.datum_dospijeca || bill.datum_izdavanja || bill.kreiran,
-        link: `/racuni?highlight=${bill.id}`,
-      });
-    });
-
   podsjetnici
     .filter((item) => {
       const contract = contractById[item.ugovor_id];
@@ -5294,30 +4617,30 @@ const PropertyTimeline = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Timeline: {property.naziv}</h1>
-          <p className="text-sm text-gray-500">{property.adresa}</p>
+          <p className="text-sm text-muted-foreground/80">{property.adresa}</p>
         </div>
         <Button variant="outline" onClick={() => navigate('/nekretnine')}>&larr; Povratak</Button>
       </div>
 
       {events.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-gray-500">
+          <CardContent className="p-8 text-center text-muted-foreground/80">
             Nema evidentiranih aktivnosti za ovu nekretninu.
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           {events.map((event, index) => (
-            <Card key={index} className="border border-gray-200">
+            <Card key={index} className="border border-border/60">
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <Badge variant="outline" className="mb-1">{event.type}</Badge>
                     <h3 className="text-lg font-semibold">{event.title}</h3>
-                    <p className="text-sm text-gray-500">{event.description}</p>
+                    <p className="text-sm text-muted-foreground/80">{event.description}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-600">{event.date ? new Date(event.date).toLocaleDateString() : 'Nepoznat datum'}</p>
+                    <p className="text-sm text-muted-foreground">{event.date ? new Date(event.date).toLocaleDateString() : 'Nepoznat datum'}</p>
                     {event.link && (
                       <Link to={event.link} className="text-xs text-blue-600 hover:underline">Detalji</Link>
                     )}
@@ -5336,18 +4659,18 @@ const PropertyTimeline = () => {
 function App() {
   return (
     <EntityStoreProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="App">
         <BrowserRouter>
           <Navigation />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-          <Route path="/nekretnine" element={<Nekretnine />} />
-          <Route path="/nekretnine/:id/timeline" element={<PropertyTimeline />} />
-          <Route path="/zakupnici" element={<Zakupnici />} />
-          <Route path="/ugovori" element={<Ugovori />} />
-          <Route path="/dokumenti" element={<Dokumenti />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/nekretnine" element={<Nekretnine />} />
+            <Route path="/nekretnine/:id/timeline" element={<PropertyTimeline />} />
+            <Route path="/zakupnici" element={<Zakupnici />} />
+            <Route path="/ugovori" element={<Ugovori />} />
+            <Route path="/dokumenti" element={<Dokumenti />} />
+          </Routes>
+        </BrowserRouter>
       </div>
     </EntityStoreProvider>
   );

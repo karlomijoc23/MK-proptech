@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title>riforma icon logo</title>
+  <desc>Rounded-square document with folded corner forming an abstract "r" and a network motif, in deep green with teal accent.</desc>
+  <!-- Background rounded square -->
+  <rect x="64" y="64" width="896" height="896" rx="160" fill="#0F5E4D"/>
+  <!-- Folded corner to suggest document -->
+  <path d="M864 320 L704 320 L704 160" fill="#0B4237" opacity="0.9"/>
+  <!-- Abstract 'r' - stem and loop -->
+  <path d="M360 288 h160 a160 160 0 0 1 0 320 h-72 v128 h-88 V288z
+           M448 384 v128 h72 a64 64 0 0 0 0 -128h-72z"
+        fill="#FFFFFF" opacity="0.96"/>
+  <!-- Roof/check stroke (property + compliance) -->
+  <path d="M280 628 L424 504 L600 636 L792 452" fill="none" stroke="#00C08B" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- AI nodes -->
+  <circle cx="424" cy="504" r="14" fill="#00C08B"/>
+  <circle cx="600" cy="636" r="14" fill="#00C08B"/>
+  <circle cx="792" cy="452" r="14" fill="#00C08B"/>
+</svg>
