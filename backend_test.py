@@ -284,9 +284,7 @@ class CroatianRealEstateAPITester:
             "naziv": "Zemljišnoknjižni izvadak",
             "tip": "zemljisnoknjizni_izvadak",
             "opis": "Izvadak iz zemljišnih knjiga za nekretninu",
-            "verzija": "1.0",
-            "nekretnina_id": self.created_entities['nekretnine'][0],
-            "uploadao": "Administrator"
+            "nekretnina_id": self.created_entities['nekretnine'][0]
         }
         
         success, response = self.run_test(

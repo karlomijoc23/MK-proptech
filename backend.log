@@ -1,6 +1,1135 @@
 INFO:     Will watch for changes in these directories: ['/Users/gs/Documents/MK-proptech']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [82640] using WatchFiles
-INFO:     Started server process [82642]
+INFO:     Started reloader process [83393] using WatchFiles
+INFO:     Started server process [83395]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     127.0.0.1:61323 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61326 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61328 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61330 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61333 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61332 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61323 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61326 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61328 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61330 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61333 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61332 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61323 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61326 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61338 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61338 - "GET /api/nekretnine HTTP/1.1" 200 OK
+2025-10-01 21:01:44,227 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61343 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61347 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61347 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61347 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61349 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61351 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61353 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61356 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61356 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61356 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61358 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61360 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61364 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61364 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61364 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61366 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61369 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61370 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61372 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61372 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61376 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61377 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61378 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61380 - "GET /uploads/9934448d-8ffe-4d14-81a3-93357b9f61de_MLASING%20PTZ-022_24.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61384 - "GET /uploads/9934448d-8ffe-4d14-81a3-93357b9f61de_MLASING%20PTZ-022_24.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61390 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61390 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61393 - "OPTIONS /api/ai/generate-contract-annex HTTP/1.1" 200 OK
+2025-10-01 21:03:28,672 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61393 - "POST /api/ai/generate-contract-annex HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61407 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61407 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61411 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61412 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61413 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61415 - "GET /uploads/8076b55e-b200-458a-96a4-36dee44c628a_Aneks___PTZ_022_24.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61424 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61424 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61427 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61428 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61430 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61440 - "GET /uploads/9934448d-8ffe-4d14-81a3-93357b9f61de_MLASING%20PTZ-022_24.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61442 - "GET /uploads/8076b55e-b200-458a-96a4-36dee44c628a_Aneks___PTZ_022_24.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61447 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61449 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61450 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61447 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61449 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61452 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83395]
+INFO:     Started server process [83703]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61462 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61462 - "GET /api/nekretnine HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83703]
+INFO:     Started server process [83722]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83722]
+INFO:     Started server process [83733]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83733]
+INFO:     Started server process [83749]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61490 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61491 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61492 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61490 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61491 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61494 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61509 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61511 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61513 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61518 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61516 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61519 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61509 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61511 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61516 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61513 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61518 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61519 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61509 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61511 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61531 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61534 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61535 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61538 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61540 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61541 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61531 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61534 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61538 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61540 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61541 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61535 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61531 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61534 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61552 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61554 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61556 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61558 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61560 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61562 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61554 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61558 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61560 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61556 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61552 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61562 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61554 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61558 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61571 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61574 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61575 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61578 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61579 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61571 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61574 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61578 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61575 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61579 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61569 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61571 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61596 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61600 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61605 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61606 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61602 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61596 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61605 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61606 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61600 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61602 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61596 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61598 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61615 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61618 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61619 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61621 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61623 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61625 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61615 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61618 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61623 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61619 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61621 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61625 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61615 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61618 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61635 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61637 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61635 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61635 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61637 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61647 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61635 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61639 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61637 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61647 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61635 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61633 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61652 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+2025-10-01 21:18:29,925 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61655 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61666 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61668 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61674 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61674 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61668 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61674 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61666 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61666 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61674 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61668 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61668 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61674 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61664 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61676 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [83749]
+INFO:     Started server process [84640]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84640]
+INFO:     Started server process [84668]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84668]
+INFO:     Started server process [84687]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84687]
+INFO:     Started server process [84709]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84709]
+INFO:     Started server process [84737]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61701 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61701 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61703 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61703 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+2025-10-01 21:21:16,440 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61709 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84737]
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Started server process [84823]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61716 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61716 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61716 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61718 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61721 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61722 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61724 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61724 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61724 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61726 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61729 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61730 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61732 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61732 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61732 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61734 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61737 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61738 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61740 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61740 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61744 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61745 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61746 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61749 - "GET /uploads/afa52e09-dabb-4d8f-9cc6-990f1cd609f2_MLASING%20PTZ-022_24.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61752 - "GET /uploads/afa52e09-dabb-4d8f-9cc6-990f1cd609f2_MLASING%20PTZ-022_24.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61755 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61755 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84823]
+INFO:     Started server process [84942]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61758 - "OPTIONS /api/ai/generate-contract-annex HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61758 - "POST /api/ai/generate-contract-annex HTTP/1.1" 404 Not Found
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84942]
+INFO:     Started server process [84970]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61762 - "POST /api/ai/generate-contract-annex HTTP/1.1" 404 Not Found
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84970]
+INFO:     Started server process [84998]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61767 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61767 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61770 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61772 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61773 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61770 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61772 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61775 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61775 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61772 - "GET /api/nekretnine HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [84998]
+INFO:     Started server process [85025]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85025]
+INFO:     Started server process [85052]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85052]
+INFO:     Started server process [85295]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:61808 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61810 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61813 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61814 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61808 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61813 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61816 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61818 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61891 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61891 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61904 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61904 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61904 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61909 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61910 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61904 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61909 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61912 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61912 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61912 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+2025-10-01 21:48:37,793 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:61914 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61929 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61931 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61933 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61935 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61935 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61933 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61933 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61935 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61931 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61931 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61931 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61933 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61935 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61935 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:61935 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61931 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61929 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61933 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61937 - "GET /uploads/1b2e57ee-92a9-40c9-afa3-03cc6af71348_MLASING%20PTZ-022_24.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61939 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61939 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62060 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62061 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62062 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62066 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62067 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62068 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62060 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62061 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62062 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62066 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62067 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62068 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62060 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62061 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62098 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62100 - "OPTIONS /api/ai/generate-contract HTTP/1.1" 200 OK
+2025-10-01 21:54:20,833 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62100 - "POST /api/ai/generate-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62115 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62115 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62117 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62120 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62121 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62117 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62120 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62123 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62123 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62123 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62125 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62125 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62125 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62125 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62132 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62135 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62132 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62133 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62138 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62140 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62148 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62149 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62150 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62148 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62149 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62153 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+2025-10-01 21:59:52,762 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62162 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62168 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62168 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62170 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62170 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62174 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62174 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62177 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62177 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62177 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62177 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+2025-10-01 22:01:25,331 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62179 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62197 - "OPTIONS /api/ugovori/41c0f857-cb29-4e2f-b969-ce5d74a89222/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62199 - "PUT /api/ugovori/41c0f857-cb29-4e2f-b969-ce5d74a89222/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62199 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62197 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62202 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62203 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62595 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62599 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62601 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62605 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62606 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62595 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62599 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62605 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62601 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62606 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62595 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62598 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62608 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62608 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62610 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62608 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62615 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62615 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62617 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62617 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+2025-10-01 22:17:20,172 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:62619 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62645 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62646 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62648 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62650 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62652 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62645 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62646 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62648 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62650 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62654 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62650 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62650 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62684 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62687 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62688 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62692 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62693 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62684 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62687 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62688 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62692 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62693 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62697 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62721 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62722 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62724 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62727 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62728 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62721 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62727 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62730 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62724 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62722 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62722 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62724 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62742 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62744 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62747 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62748 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62750 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62742 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62744 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62747 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62750 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62752 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62748 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62748 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62767 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62769 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62771 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62774 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62775 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62767 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62769 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62774 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62771 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62777 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62775 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62775 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62807 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62808 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62811 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62812 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62814 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62807 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62808 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62811 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62812 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62818 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62814 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62814 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62848 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62852 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62857 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62859 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62860 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62848 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62852 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62859 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62857 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62862 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62860 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62860 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63085 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63087 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63089 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63092 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63090 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63085 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63087 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63089 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63092 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63094 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63090 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63090 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63118 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63120 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63124 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63125 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63118 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63120 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63128 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63124 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63125 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63126 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63149 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63151 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63154 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63155 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63157 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63149 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63151 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63154 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63155 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63159 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63157 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63157 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63227 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63230 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63232 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63233 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63225 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63227 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63230 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63232 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63233 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63237 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63237 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+2025-10-01 22:32:14,098 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63239 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63239 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63239 - "POST /api/zakupnici HTTP/1.1" 201 Created
+2025-10-01 22:33:03,452 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63247 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63247 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63247 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63256 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63257 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63258 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63263 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63266 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63267 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63263 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63271 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63269 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63269 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63269 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63286 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63288 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63290 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63292 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63286 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63296 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63294 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63288 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63286 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63288 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63304 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63306 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63309 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63310 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63304 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63306 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63314 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63312 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63304 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63304 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63325 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63327 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63330 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63331 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63325 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63335 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63333 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63327 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63325 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63325 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63344 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63348 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63349 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63350 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63344 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63349 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63352 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63354 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63350 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63354 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63369 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63372 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63374 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63375 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63369 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63379 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63372 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63377 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63369 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63369 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63452 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63454 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63457 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63458 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63452 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63454 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63462 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63457 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63477 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63478 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63479 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63464 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63481 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63477 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63483 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63492 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63494 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63497 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63498 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63492 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63502 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63497 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63500 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63510 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63512 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63515 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63516 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63510 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63512 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63518 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63515 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63531 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63533 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63536 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63537 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63531 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63533 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63536 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63540 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63541 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63550 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63551 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63553 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63541 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63559 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63550 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63557 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63567 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63568 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63569 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63571 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63567 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63569 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63578 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63579 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63590 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63593 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63594 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63590 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63593 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63596 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63598 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63605 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63607 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63608 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63610 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63605 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63608 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63618 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63616 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63641 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63644 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63646 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63647 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63641 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63646 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63649 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63651 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63666 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63668 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63671 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63672 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63666 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63668 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63674 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63676 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63684 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63686 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63691 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63692 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63684 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63686 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63696 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63691 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63707 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63707 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63709 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63709 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+2025-10-01 22:48:08,067 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:63712 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63712 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63712 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63712 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63715 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63719 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63717 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63721 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63721 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63721 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63723 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63727 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63726 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63726 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63727 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63727 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63726 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63723 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63721 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63721 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:63721 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63726 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63723 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63727 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63727 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63727 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63723 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63723 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63732 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63732 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63734 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63734 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63736 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63736 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63742 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63743 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63744 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63742 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63743 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63746 - "GET /api/dashboard HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [85295]
+INFO:     Started server process [89485]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89485]
+INFO:     Started server process [89500]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend/server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89500]
+INFO:     Started server process [89513]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:63773 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63775 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63779 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63780 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63782 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63783 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63773 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63779 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63775 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63782 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63780 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63783 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63773 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63779 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63829 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63833 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63831 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63836 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63838 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63839 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63839 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63836 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63831 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63833 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63838 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63829 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63839 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63836 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63851 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63853 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63856 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63857 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63859 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63861 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63851 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63853 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63857 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63859 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63856 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63861 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63851 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63853 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63878 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63876 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63881 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63883 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63880 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63885 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63878 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63881 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63883 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63880 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63876 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63885 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63878 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63881 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63909 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63913 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63916 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63918 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63919 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63909 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63913 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63916 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63918 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63919 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63909 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63925 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63928 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63929 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63925 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63937 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63935 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63929 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63935 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63948 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63953 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63955 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63956 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63948 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63955 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63960 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63958 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63960 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63960 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63971 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63975 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63976 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63977 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63971 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63975 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63979 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63981 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63977 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63981 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63991 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63993 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63995 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63991 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63997 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63999 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64006 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64013 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64015 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64016 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64006 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64013 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64020 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64018 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64016 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64016 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64027 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64031 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64032 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64033 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64027 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64032 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64039 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64037 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64032 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64032 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64044 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64044 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:64044 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64046 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64050 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64049 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64052 - "OPTIONS /api/zakupnici/419edcd3-0318-4d92-82ac-d350bb91bb4d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64052 - "PUT /api/zakupnici/419edcd3-0318-4d92-82ac-d350bb91bb4d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64052 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64054 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64057 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64058 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64079 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64081 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64085 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64084 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64079 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64087 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64081 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64089 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64142 - "OPTIONS /api/zakupnici/419edcd3-0318-4d92-82ac-d350bb91bb4d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64142 - "PUT /api/zakupnici/419edcd3-0318-4d92-82ac-d350bb91bb4d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64142 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64144 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64147 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64148 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64150 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64150 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64150 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64154 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64152 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64150 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64156 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64893 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64893 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64893 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64893 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64895 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64895 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64899 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64900 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64901 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64900 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64903 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64905 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65014 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65019 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65020 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65024 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65014 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65019 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65022 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65024 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65020 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65014 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65017 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65026 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65026 - "GET /api/templates/aneks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65028 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65026 - "GET /api/templates/ugovor HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65026 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65028 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65030 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65026 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65028 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65032 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65034 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65034 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [89513]
+INFO:     Stopping reloader process [83393]
