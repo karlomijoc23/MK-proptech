@@ -18,6 +18,29 @@ import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit,
 import logoMain from './assets/riforma-logo.png';
 import './App.css';
 
+const apiClient = axios.create();
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers = config.headers || {};
+    if (!config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+    return Promise.reject(error);
+  }
+);
+
 const getBackendUrl = () => {
   const envValue = process.env.REACT_APP_BACKEND_URL?.trim();
   if (envValue) {
@@ -40,28 +63,28 @@ const API = `${BACKEND_URL}/api`;
 // API functions
 const api = {
   // Nekretnine
-  getNekretnine: () => axios.get(`${API}/nekretnine`),
-  createNekretnina: (data) => axios.post(`${API}/nekretnine`, data),
-  updateNekretnina: (id, data) => axios.put(`${API}/nekretnine/${id}`, data),
-  deleteNekretnina: (id) => axios.delete(`${API}/nekretnine/${id}`),
+  getNekretnine: () => apiClient.get(`${API}/nekretnine`),
+  createNekretnina: (data) => apiClient.post(`${API}/nekretnine`, data),
+  updateNekretnina: (id, data) => apiClient.put(`${API}/nekretnine/${id}`, data),
+  deleteNekretnina: (id) => apiClient.delete(`${API}/nekretnine/${id}`),
   
   // Zakupnici
-  getZakupnici: (params = {}) => axios.get(`${API}/zakupnici`, { params }),
-  createZakupnik: (data) => axios.post(`${API}/zakupnici`, data),
-  updateZakupnik: (id, data) => axios.put(`${API}/zakupnici/${id}`, data),
+  getZakupnici: (params = {}) => apiClient.get(`${API}/zakupnici`, { params }),
+  createZakupnik: (data) => apiClient.post(`${API}/zakupnici`, data),
+  updateZakupnik: (id, data) => apiClient.put(`${API}/zakupnici/${id}`, data),
   
   // Ugovori
-  getUgovori: () => axios.get(`${API}/ugovori`),
-  createUgovor: (data) => axios.post(`${API}/ugovori`, data),
-  updateUgovor: (id, data) => axios.put(`${API}/ugovori/${id}`, data),
-  updateStatusUgovora: (id, status) => axios.put(`${API}/ugovori/${id}/status`, { novi_status: status }),
+  getUgovori: () => apiClient.get(`${API}/ugovori`),
+  createUgovor: (data) => apiClient.post(`${API}/ugovori`, data),
+  updateUgovor: (id, data) => apiClient.put(`${API}/ugovori/${id}`, data),
+  updateStatusUgovora: (id, status) => apiClient.put(`${API}/ugovori/${id}/status`, { novi_status: status }),
   
   // Dokumenti
-  getDokumenti: () => axios.get(`${API}/dokumenti`),
-  getDokumentiNekretnine: (id) => axios.get(`${API}/dokumenti/nekretnina/${id}`),
-  getDokumentiZakupnika: (id) => axios.get(`${API}/dokumenti/zakupnik/${id}`),
-  getDokumentiUgovora: (id) => axios.get(`${API}/dokumenti/ugovor/${id}`),
-  getDokumentiPropertyUnit: (id) => axios.get(`${API}/dokumenti/property-unit/${id}`),
+  getDokumenti: () => apiClient.get(`${API}/dokumenti`),
+  getDokumentiNekretnine: (id) => apiClient.get(`${API}/dokumenti/nekretnina/${id}`),
+  getDokumentiZakupnika: (id) => apiClient.get(`${API}/dokumenti/zakupnik/${id}`),
+  getDokumentiUgovora: (id) => apiClient.get(`${API}/dokumenti/ugovor/${id}`),
+  getDokumentiPropertyUnit: (id) => apiClient.get(`${API}/dokumenti/property-unit/${id}`),
   createDokument: (data) => {
     const formData = new FormData();
     formData.append('naziv', data.naziv);
@@ -86,7 +109,7 @@ const api = {
       formData.append('file', data.file);
     }
 
-    return axios.post(`${API}/dokumenti`, formData, {
+    return apiClient.post(`${API}/dokumenti`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -94,26 +117,26 @@ const api = {
   },
 
   // Podprostori / jedinice
-  getUnits: (params = {}) => axios.get(`${API}/units`, { params }),
-  getUnitsForProperty: (propertyId) => axios.get(`${API}/nekretnine/${propertyId}/units`),
-  getUnit: (unitId) => axios.get(`${API}/units/${unitId}`),
-  createUnit: (propertyId, payload) => axios.post(`${API}/nekretnine/${propertyId}/units`, payload),
-  updateUnit: (unitId, payload) => axios.put(`${API}/units/${unitId}`, payload),
-  deleteUnit: (unitId) => axios.delete(`${API}/units/${unitId}`),
-  bulkUpdateUnits: (payload) => axios.post(`${API}/units/bulk-update`, payload),
+  getUnits: (params = {}) => apiClient.get(`${API}/units`, { params }),
+  getUnitsForProperty: (propertyId) => apiClient.get(`${API}/nekretnine/${propertyId}/units`),
+  getUnit: (unitId) => apiClient.get(`${API}/units/${unitId}`),
+  createUnit: (propertyId, payload) => apiClient.post(`${API}/nekretnine/${propertyId}/units`, payload),
+  updateUnit: (unitId, payload) => apiClient.put(`${API}/units/${unitId}`, payload),
+  deleteUnit: (unitId) => apiClient.delete(`${API}/units/${unitId}`),
+  bulkUpdateUnits: (payload) => apiClient.post(`${API}/units/bulk-update`, payload),
 
   // Dashboard
-  getDashboard: () => axios.get(`${API}/dashboard`),
+  getDashboard: () => apiClient.get(`${API}/dashboard`),
   
   // Podsjećanja
-  getPodsjetnici: () => axios.get(`${API}/podsjetnici`),
-  getAktivniPodsjetnici: () => axios.get(`${API}/podsjetnici/aktivni`),
+  getPodsjetnici: () => apiClient.get(`${API}/podsjetnici`),
+  getAktivniPodsjetnici: () => apiClient.get(`${API}/podsjetnici/aktivni`),
   
   // AI PDF parsing
   parsePdfContract: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return axios.post(`${API}/ai/parse-pdf-contract`, formData, {
+    return apiClient.post(`${API}/ai/parse-pdf-contract`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -121,15 +144,18 @@ const api = {
   },
 
   // Maintenance
-  getMaintenanceTasks: (params = {}) => axios.get(`${API}/maintenance-tasks`, { params }),
-  getMaintenanceTask: (id) => axios.get(`${API}/maintenance-tasks/${id}`),
-  createMaintenanceTask: (payload) => axios.post(`${API}/maintenance-tasks`, payload),
-  updateMaintenanceTask: (id, payload) => axios.patch(`${API}/maintenance-tasks/${id}`, payload),
-  deleteMaintenanceTask: (id) => axios.delete(`${API}/maintenance-tasks/${id}`),
-  addMaintenanceComment: (id, payload) => axios.post(`${API}/maintenance-tasks/${id}/comments`, payload),
+  getMaintenanceTasks: (params = {}) => apiClient.get(`${API}/maintenance-tasks`, { params }),
+  getMaintenanceTask: (id) => apiClient.get(`${API}/maintenance-tasks/${id}`),
+  createMaintenanceTask: (payload) => apiClient.post(`${API}/maintenance-tasks`, payload),
+  updateMaintenanceTask: (id, payload) => apiClient.patch(`${API}/maintenance-tasks/${id}`, payload),
+  deleteMaintenanceTask: (id) => apiClient.delete(`${API}/maintenance-tasks/${id}`),
+  addMaintenanceComment: (id, payload) => apiClient.post(`${API}/maintenance-tasks/${id}/comments`, payload),
+
+  // Audit
+  getAuditLogs: (params = {}) => apiClient.get(`${API}/audit/logs`, { params }),
 
   // Podsjetnici actions
-  markReminderAsSent: (id) => axios.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
+  markReminderAsSent: (id) => apiClient.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
 };
 
 const parseNumericValue = (value) => {
@@ -205,6 +231,206 @@ const formatDateTime = (value) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+const useAuditTimeline = (
+  entityType,
+  entityId,
+  { parentId, limit = 20, enabled = true } = {},
+) => {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const shouldFetch = enabled && Boolean(entityType || entityId || parentId);
+
+  const fetchLogs = useCallback(
+    async (options = {}) => {
+      if (!shouldFetch) {
+        setLogs([]);
+        setError(null);
+        if (!options.silent) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!options.silent) {
+        setLoading(true);
+      }
+
+      try {
+        const params = { limit };
+        if (entityType) {
+          params.entity_type = entityType;
+        }
+        if (entityId) {
+          params.entity_id = entityId;
+        }
+        if (parentId) {
+          params.parent_id = parentId;
+        }
+        const response = await api.getAuditLogs(params);
+        setLogs(response.data || []);
+        setError(null);
+      } catch (err) {
+        console.error('Greška pri dohvaćanju audit zapisa:', err);
+        setError('Audit zapis nije moguće učitati');
+        setLogs([]);
+      } finally {
+        if (!options.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [shouldFetch, entityType, entityId, parentId, limit],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!shouldFetch) {
+      setLogs([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    const run = async () => {
+      setLoading(true);
+      try {
+        const params = { limit };
+        if (entityType) {
+          params.entity_type = entityType;
+        }
+        if (entityId) {
+          params.entity_id = entityId;
+        }
+        if (parentId) {
+          params.parent_id = parentId;
+        }
+        const response = await api.getAuditLogs(params);
+        if (!cancelled) {
+          setLogs(response.data || []);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Greška pri dohvaćanju audit zapisa:', err);
+          setError('Audit zapis nije moguće učitati');
+          setLogs([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldFetch, entityType, entityId, parentId, limit]);
+
+  return {
+    logs,
+    loading,
+    error,
+    refresh: fetchLogs,
+  };
+};
+
+const AuditTimelinePanel = ({
+  title = 'Povijest aktivnosti',
+  logs = [],
+  loading = false,
+  error = null,
+  emptyMessage = 'Nema dostupnih audit zapisa.',
+  className = '',
+}) => {
+  const classes = ['space-y-3'];
+  if (className) {
+    classes.push(className);
+  }
+
+  const entries = Array.isArray(logs) ? logs : [];
+
+  return (
+    <div className={classes.join(' ')}>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        {loading && <span className="text-xs text-muted-foreground">Učitavam…</span>}
+      </div>
+      {error ? (
+        <p className="text-xs text-destructive">{error}</p>
+      ) : loading ? (
+        <p className="text-xs text-muted-foreground">Molimo pričekajte…</p>
+      ) : entries.length === 0 ? (
+        <p className="text-xs text-muted-foreground">{emptyMessage}</p>
+      ) : (
+        <ul className="space-y-2">
+          {entries.map((log) => {
+            const key = log.id || log.request_id || `${log.path}-${log.timestamp}`;
+            return (
+              <li key={key} className="rounded-lg border border-border/60 bg-background/80 p-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="border-border/70 text-muted-foreground uppercase">
+                      {log.method}
+                    </Badge>
+                    <span className="font-medium text-foreground">{log.user || 'Nepoznati korisnik'}</span>
+                    {log.role && <span className="text-muted-foreground">{log.role}</span>}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    {typeof log.duration_ms === 'number' && (
+                      <span className="text-[11px]">{`${Math.round(log.duration_ms)} ms`}</span>
+                    )}
+                    <span className="text-[11px]">{formatDateTime(log.timestamp)}</span>
+                  </div>
+                </div>
+                <div className="mt-1 break-words text-muted-foreground/80">
+                  <span className="font-medium text-foreground">Ruta:</span> {log.path}
+                </div>
+                {Array.isArray(log.scopes) && log.scopes.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-muted-foreground/80">
+                    {log.scopes.slice(0, 4).map((scope) => (
+                      <Badge key={scope} variant="outline" className="border-dashed border-border/70 text-muted-foreground">
+                        {scope}
+                      </Badge>
+                    ))}
+                    {log.scopes.length > 4 && (
+                      <span className="text-muted-foreground/60">+{log.scopes.length - 4}</span>
+                    )}
+                  </div>
+                )}
+                {log.changes && (
+                  <details className="mt-2 rounded border border-border/40 bg-white/80 p-2">
+                    <summary className="cursor-pointer text-[11px] font-semibold text-foreground">Promjene</summary>
+                    <pre className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-[11px] leading-snug text-muted-foreground">
+{JSON.stringify(log.changes, null, 2)}
+                    </pre>
+                  </details>
+                )}
+                {log.request_payload && (
+                  <details className="mt-2 rounded border border-border/40 bg-white/80 p-2">
+                    <summary className="cursor-pointer text-[11px] font-semibold text-foreground">Payload</summary>
+                    <pre className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap break-words text-[11px] leading-snug text-muted-foreground">
+{JSON.stringify(log.request_payload, null, 2)}
+                    </pre>
+                  </details>
+                )}
+                {log.message && (
+                  <p className="mt-2 text-[11px] text-destructive">{log.message}</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 };
 
 const formatPropertyType = (value) => {
@@ -325,6 +551,8 @@ const EMPTY_MAINTENANCE_FORM = {
   dodijeljeno: '',
   rok: '',
   oznake: '',
+  procijenjeni_trosak: '',
+  stvarni_trosak: '',
 };
 
 
@@ -1122,6 +1350,12 @@ const MaintenanceBoard = ({
   const [commentForm, setCommentForm] = useState({ author: '', message: '' });
   const [commentSubmitting, setCommentSubmitting] = useState(false);
 
+  const {
+    logs: maintenanceAuditLogs,
+    loading: maintenanceAuditLoading,
+    error: maintenanceAuditError,
+  } = useAuditTimeline('maintenance', selectedTaskId, { limit: 20, enabled: detailOpen && Boolean(selectedTaskId) });
+
   const propertyMap = useMemo(() => {
     const map = {};
     for (const property of nekretnine) {
@@ -1312,6 +1546,17 @@ const MaintenanceBoard = ({
         }
         return value;
       };
+      const parseCost = (value) => {
+        if (value === null || value === undefined || value === '') {
+          return undefined;
+        }
+        if (typeof value === 'number') {
+          return Number.isFinite(value) ? value : undefined;
+        }
+        const normalised = value.replace(/[^0-9,.-]/g, '').replace(',', '.');
+        const parsed = Number(normalised);
+        return Number.isFinite(parsed) ? parsed : undefined;
+      };
 
       const payload = {
         naziv: formData.naziv.trim(),
@@ -1326,6 +1571,8 @@ const MaintenanceBoard = ({
         oznake: formData.oznake
           ? formData.oznake.split(',').map((item) => item.trim()).filter(Boolean)
           : [],
+        procijenjeni_trosak: parseCost(formData.procijenjeni_trosak),
+        stvarni_trosak: parseCost(formData.stvarni_trosak),
       };
       await api.createMaintenanceTask(payload);
       toast.success('Radni nalog je dodan');
@@ -1427,6 +1674,29 @@ const MaintenanceBoard = ({
       const second = new Date(b.timestamp || b.vrijeme || b.created_at || 0).getTime();
       return second - first;
     });
+  }, [selectedTask]);
+
+  const resolutionHours = useMemo(() => {
+    if (!selectedTask) {
+      return null;
+    }
+    if (!selectedTask.kreiran) {
+      return null;
+    }
+    const start = new Date(selectedTask.kreiran);
+    if (Number.isNaN(start.getTime())) {
+      return null;
+    }
+    const finishSource = selectedTask.zavrseno_na || selectedTask.azuriran;
+    if (!finishSource) {
+      return null;
+    }
+    const finish = new Date(finishSource);
+    if (Number.isNaN(finish.getTime())) {
+      return null;
+    }
+    const diff = (finish.getTime() - start.getTime()) / (1000 * 60 * 60);
+    return Number.isFinite(diff) && diff >= 0 ? diff : null;
   }, [selectedTask]);
 
   const activityLabels = {
@@ -1545,6 +1815,21 @@ const MaintenanceBoard = ({
                   #{label}
                 </Badge>
               ))}
+            </div>
+          )}
+
+          {(task.procijenjeni_trosak != null || task.stvarni_trosak != null) && (
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/90">
+              {task.procijenjeni_trosak != null && (
+                <span>
+                  Procjena: <span className="font-medium text-foreground">{formatCurrency(task.procijenjeni_trosak)}</span>
+                </span>
+              )}
+              {task.stvarni_trosak != null && (
+                <span>
+                  Trošak: <span className="font-medium text-foreground">{formatCurrency(task.stvarni_trosak)}</span>
+                </span>
+              )}
             </div>
           )}
 
@@ -1907,6 +2192,30 @@ const MaintenanceBoard = ({
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Procijenjeni trošak</p>
+                  <p className="text-sm text-foreground">
+                    {selectedTask.procijenjeni_trosak != null ? formatCurrency(selectedTask.procijenjeni_trosak) : '—'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Stvarni trošak</p>
+                  <p className="text-sm text-foreground">
+                    {selectedTask.stvarni_trosak != null ? formatCurrency(selectedTask.stvarni_trosak) : '—'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Završeno</p>
+                  <p className="text-sm text-foreground">
+                    {selectedTask.zavrseno_na ? formatDateTime(selectedTask.zavrseno_na) : '—'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Vrijeme rješavanja</p>
+                  <p className="text-sm text-foreground">
+                    {resolutionHours != null ? `${resolutionHours.toFixed(1)} h` : '—'}
+                  </p>
+                </div>
                 {selectedTask.oznake && selectedTask.oznake.length > 0 && (
                   <div className="space-y-1 md:col-span-2">
                     <p className="text-xs font-semibold uppercase text-muted-foreground">Oznake</p>
@@ -1968,6 +2277,15 @@ const MaintenanceBoard = ({
                   </ul>
                 )}
               </div>
+
+              <AuditTimelinePanel
+                className="border-t border-border/60 pt-4"
+                title="Audit zapis naloga"
+                logs={maintenanceAuditLogs}
+                loading={maintenanceAuditLoading}
+                error={maintenanceAuditError}
+                emptyMessage="Još nema audit zapisa za ovaj nalog."
+              />
 
               <div className="space-y-3">
                 <h4 className="text-sm font-semibold text-foreground">Dodaj komentar</h4>
@@ -2158,6 +2476,33 @@ const MaintenanceBoard = ({
               </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="task-procjena">Procijenjeni trošak (€)</Label>
+                <Input
+                  id="task-procjena"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.procijenjeni_trosak}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, procijenjeni_trosak: event.target.value }))}
+                  placeholder="npr. 250"
+                />
+              </div>
+              <div>
+                <Label htmlFor="task-trosak">Stvarni trošak (€)</Label>
+                <Input
+                  id="task-trosak"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.stvarni_trosak}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, stvarni_trosak: event.target.value }))}
+                  placeholder="npr. 220"
+                />
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="task-opis">Opis naloga</Label>
               <Textarea
@@ -2222,6 +2567,18 @@ const Dashboard = () => {
   const [remindersFilter, setRemindersFilter] = useState('svi');
   const [reminderSearch, setReminderSearch] = useState('');
   const { dokumenti, nekretnine, ugovori, zakupnici } = useEntityStore();
+
+  const maintenanceKpi = dashboard?.maintenance_kpi || null;
+  const formatHours = useCallback((value) => {
+    if (value === null || value === undefined) {
+      return '—';
+    }
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return '—';
+    }
+    return `${parsed.toFixed(1)} h`;
+  }, []);
 
   useEffect(() => {
     fetchDashboard();
@@ -2668,18 +3025,18 @@ const Dashboard = () => {
       <MaintenanceBoard />
 
       {portfolioBreakdown.length > 0 && (
-        <Card className="shadow-shell" data-testid="portfolio-breakdown">
-          <CardHeader className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold">Segmenti portfelja</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Sumarni pogled po vrsti nekretnine s vrijednošću, prinosom i popunjenošću.
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
+      <Card className="shadow-shell" data-testid="portfolio-breakdown">
+        <CardHeader className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">Segmenti portfelja</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Sumarni pogled po vrsti nekretnine s vrijednošću, prinosom i popunjenošću.
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
                 <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Segment</th>
@@ -2710,6 +3067,46 @@ const Dashboard = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+        </CardContent>
+      </Card>
+    )}
+
+      {maintenanceKpi && (
+        <Card className="shadow-shell" data-testid="maintenance-kpi-card">
+          <CardHeader className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">KPI održavanja</CardTitle>
+              <p className="text-sm text-muted-foreground">Praćenje radnih naloga, SLA i troškova.</p>
+            </div>
+            <Badge variant="outline" className="border-primary/40 bg-primary/5 text-primary">
+              {maintenanceKpi.open_workorders} otvorenih naloga
+            </Badge>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">Otvoreni nalozi</p>
+              <p className="text-lg font-semibold text-foreground">{maintenanceKpi.open_workorders}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">Nalozi u kašnjenju</p>
+              <p className="text-lg font-semibold text-foreground">{maintenanceKpi.overdue_workorders}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">Prosječno vrijeme rješavanja</p>
+              <p className="text-lg font-semibold text-foreground">{formatHours(maintenanceKpi.avg_resolution_hours)}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">Procijenjeni trošak</p>
+              <p className="text-lg font-semibold text-foreground">{formatCurrency(maintenanceKpi.estimated_cost_total)}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">Stvarni trošak</p>
+              <p className="text-lg font-semibold text-foreground">{formatCurrency(maintenanceKpi.actual_cost_total)}</p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
+              <p className="text-xs text-muted-foreground uppercase">SLA prekoračenja</p>
+              <p className="text-lg font-semibold text-foreground">{maintenanceKpi.sla_breaches}</p>
             </div>
           </CardContent>
         </Card>
@@ -3652,6 +4049,12 @@ const Nekretnine = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const { dokumenti, ugovori, zakupnici, propertyUnitsByProperty, refresh: refreshEntities } = useEntityStore();
   const navigate = useNavigate();
+
+  const {
+    logs: propertyAuditLogs,
+    loading: propertyAuditLoading,
+    error: propertyAuditError,
+  } = useAuditTimeline('property', selectedNekretnina?.id, { limit: 25, enabled: Boolean(selectedNekretnina?.id) });
 
   const documentsByProperty = useMemo(() => {
     return dokumenti.reduce((acc, dokument) => {
@@ -4725,6 +5128,15 @@ const Nekretnine = () => {
                 </Card>
               </TabsContent>
             </Tabs>
+
+            <AuditTimelinePanel
+              className="mt-6 border-t border-border/60 pt-4"
+              title="Audit zapisi"
+              logs={propertyAuditLogs}
+              loading={propertyAuditLoading}
+              error={propertyAuditError}
+              emptyMessage="Nema audit zapisa za ovu nekretninu."
+            />
           </DialogContent>
         )}
       </Dialog>
@@ -5315,6 +5727,12 @@ const Zakupnici = () => {
   const [editingZakupnik, setEditingZakupnik] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const {
+    logs: tenantAuditLogs,
+    loading: tenantAuditLoading,
+    error: tenantAuditError,
+  } = useAuditTimeline('tenant', editingZakupnik?.id, { limit: 20, enabled: Boolean(editingZakupnik?.id) });
+
   const activeCount = useMemo(
     () => zakupnici.filter((tenant) => (tenant.status || 'aktivan') !== 'arhiviran').length,
     [zakupnici]
@@ -5601,12 +6019,22 @@ const Zakupnici = () => {
           <div id="uredi-zakupnik-form-description" className="sr-only">
             Forma za ažuriranje postojećeg zakupnika
           </div>
-          <ZakupnikForm
-            zakupnik={editingZakupnik}
-            onSubmit={handleUpdateZakupnik}
-            onCancel={() => setEditingZakupnik(null)}
-            submitting={submitting}
-          />
+          <div className="space-y-6">
+            <ZakupnikForm
+              zakupnik={editingZakupnik}
+              onSubmit={handleUpdateZakupnik}
+              onCancel={() => setEditingZakupnik(null)}
+              submitting={submitting}
+            />
+            <AuditTimelinePanel
+              className="border-t border-border/60 pt-4"
+              title="Audit zapis zakupnika"
+              logs={tenantAuditLogs}
+              loading={tenantAuditLoading}
+              error={tenantAuditError}
+              emptyMessage="Još nema audit zapisa za ovog zakupnika."
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -5783,6 +6211,12 @@ const Ugovori = () => {
   const [previewDocument, setPreviewDocument] = useState(null);
   const [editingContract, setEditingContract] = useState(null);
 
+  const {
+    logs: contractAuditLogs,
+    loading: contractAuditLoading,
+    error: contractAuditError,
+  } = useAuditTimeline('lease', editingContract?.id, { limit: 20, enabled: Boolean(editingContract?.id) });
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     if (urlParams.get('action') === 'renew') {
@@ -5794,6 +6228,8 @@ const Ugovori = () => {
       }
     }
   }, [location]);
+
+  
 
   const nekretnineById = useMemo(() => Object.fromEntries(nekretnine.map((item) => [item.id, item])), [nekretnine]);
   const zakupniciById = useMemo(() => Object.fromEntries(zakupnici.map((item) => [item.id, item])), [zakupnici]);
@@ -6169,6 +6605,9 @@ const Ugovori = () => {
             }}
             renewalTemplate={renewalTemplate}
             contract={editingContract}
+            auditTimeline={contractAuditLogs}
+            auditLoading={contractAuditLoading}
+            auditError={contractAuditError}
           />
         </DialogContent>
       </Dialog>
@@ -6260,7 +6699,20 @@ const Ugovori = () => {
 };
 
 // Ugovor Form Component
-const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, propertyUnitsById = {}, onSubmit, onCancel, renewalTemplate, contract = null, refreshEntities = async () => {} }) => {
+const UgovorForm = ({
+  nekretnine,
+  zakupnici,
+  propertyUnitsByProperty = {},
+  propertyUnitsById = {},
+  onSubmit,
+  onCancel,
+  renewalTemplate,
+  contract = null,
+  refreshEntities = async () => {},
+  auditTimeline = [],
+  auditLoading = false,
+  auditError = null,
+}) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isParsing, setIsParsing] = useState(false);
   const [formData, setFormData] = useState({
@@ -7010,6 +7462,17 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
           </div>
         </TabsContent>
       </Tabs>
+
+      {contract && (
+        <AuditTimelinePanel
+          className="mt-6 border-t border-border/60 pt-4"
+          title="Povijest aktivnosti"
+          logs={auditTimeline}
+          loading={auditLoading}
+          error={auditError}
+          emptyMessage="Nema dostupnih audit zapisa za ovaj ugovor."
+        />
+      )}
 
       <div className="flex space-x-2 pt-4">
         <Button type="submit" data-testid="potvrdi-ugovor-form">

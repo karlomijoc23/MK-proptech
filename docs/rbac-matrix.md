@@ -1,74 +1,153 @@
 # RBAC Matrix and API Scope Mapping
 
-| Role | Description | Core Scopes | Key API Endpoints |
-| --- | --- | --- | --- |
-| `admin` | Full platform administrator (internal ops) | `*` (all scopes) | All endpoints, including `/api/users`, `/api/settings`, auditing exports |
-| `owner_exec` | Portfolio owner / investor dashboard viewer | `kpi:read`, `properties:read`, `leases:read`, `tenants:read`, `financials:read` | `GET /api/dashboard`, `GET /api/nekretnine`, `GET /api/ugovori`, `GET /api/zakupnici`, reporting exports |
-| `property_manager` | Primary operator managing assets, leases, tenants, maintenance | `properties:*`, `tenants:*`, `leases:*`, `maintenance:*`, `documents:*`, `vendors:read`, `financials:read` | CRUD on `/api/nekretnine`, `/api/zakupnici`, `/api/ugovori`, `/api/maintenance-tasks`, `/api/dokumenti` |
-| `leasing_agent` | Handles leasing pipeline and tenant onboarding | `tenants:*`, `leases:read`, `leases:update`, `documents:read`, `documents:create`, `maintenance:read` | `GET/POST /api/zakupnici`, `POST /api/ugovori`, `GET /api/maintenance-tasks` |
-| `maintenance_coordinator` | Oversees maintenance operations | `maintenance:*`, `vendors:read`, `properties:read`, `tenants:read` | `/api/maintenance-tasks` CRUD, `/api/nekretnine` read, `/api/zakupnici` read |
-| `accountant` | Finance / payments role | `financials:*`, `tenants:read`, `leases:read`, `vendors:*`, `documents:read`, `reports:*` | Billing & payments APIs (future), read on leases/tenants, vendor mgmt |
-| `vendor` | External contractor | `maintenance:assigned`, `documents:upload` | `/api/maintenance-tasks` (limited to assigned), `/api/dokumenti` upload endpoint |
-| `tenant` | Occupant portal user | `self:read`, `self:maintenance`, `self:documents` | `/api/maintenance-tasks` (self-request), `/api/dokumenti` (self), `/api/ugovori` (read own) |
+## Stakeholder Roles
+
+| Stakeholder Persona | Role ID | Description | Default Scopes | Primary API Domains |
+| --- | --- | --- | --- | --- |
+| Platform Operations | `admin` | Internal platform administrator with unrestricted access. | `*` (all scopes) | All APIs including `/api/users`, `/api/settings`, audit exports. |
+| Automation / Integrations | `system` | Non-interactive service accounts used by integrations. | `*` (all scopes) | Same as `admin`, typically authenticated via API token. |
+| Portfolio Leadership | `owner_exec` | Owner / asset manager focused on insights and governance. | `kpi:read`, `properties:read`, `leases:read`, `tenants:read`, `financials:read`, `reports:read`, `users:assign` | `/api/dashboard`, analytics, read-only entity APIs, reminder triage. |
+| Property Management | `property_manager` | Operates portfolio, edits entities, oversees maintenance execution. | `properties:*`, `tenants:*`, `leases:*`, `maintenance:*`, `documents:*`, `vendors:read`, `financials:read`, `reports:read`, `users:assign`, `kpi:read` | CRUD on properties, units, tenants, leases, documents, maintenance; dashboards; reminders. |
+| Leasing & Onboarding | `leasing_agent` | Manages leasing pipeline, renewals, and tenant onboarding. | `tenants:*`, `leases:read`, `leases:create`, `leases:update`, `documents:read`, `documents:create`, `maintenance:read` | `/api/zakupnici`, `/api/ugovori`, AI contract helpers, document intake. |
+| Maintenance Coordination | `maintenance_coordinator` | Oversees work orders, vendor assignments, and compliance docs. | `maintenance:*`, `properties:read`, `tenants:read`, `documents:read`, `vendors:read`, `users:assign` | `/api/maintenance-tasks`, vendor picklists, maintenance documents. |
+| Finance & Accounting | `accountant` | Handles billing, vendor payments, and financial reporting. | `financials:*`, `tenants:read`, `leases:read`, `properties:read`, `vendors:*`, `documents:read`, `reports:*`, `kpi:read` | `/api/racuni`, vendor APIs, financial dashboards, audit exports. |
+| External Vendor | `vendor` | External contractor collaborating on assigned maintenance tasks. | `maintenance:assigned`, `documents:create`, `documents:read` | Assigned `/api/maintenance-tasks` subset, document uploads/downloads. |
+| Tenant Portal User | `tenant` | Occupant self-service access to own records. | `self:read`, `self:maintenance`, `self:documents` | Self-scoped maintenance requests, lease/document access. |
+
+> Default scopes are always expanded through `role_scopes` plus any explicit grants attached to the principal.
 
 ## Scope Classification
 
 | Scope Prefix | Description |
 | --- | --- |
-| `properties` | Property inventory CRUD |
+| `users` | User administration and assignment picklists |
+| `properties` | Property inventory CRUD, property units |
 | `tenants` | Tenant records, contacts, communications |
 | `leases` | Lease contracts, renewals, status updates |
-| `maintenance` | Work orders, statuses, comments, cost tracking |
 | `documents` | Upload, download, metadata updates |
+| `maintenance` | Work orders, statuses, comments, cost tracking |
 | `vendors` | Vendor catalog, compliance, contact info |
-| `financials` | Billing, payments, AR/AP, KPIs |
-| `reports` | KPI dashboards, exports |
-| `kpi` | Portfolio dashboards & analytics |
+| `financials` | Billing, payments, AR/AP, KPI cost inputs |
+| `reports` | KPI dashboards, exports, audit feeds |
+| `kpi` | Portfolio dashboards & analytics (dashboard aggregates) |
 | `self` | Tenant-facing scoped actions |
+| `ai` *(virtual)* | Not a dedicated scope; AI helpers inherit underlying domain scopes (leases/documents). |
 
-## Endpoint-to-Scope Mapping (current API)
+**Inference rules**
+- `role_scopes` map roles to explicit scopes. Additional scopes from tokens/users are appended.
+- `*` denotes super-user access (admin/system).
+- Any scope ending with `:*` grants read/write/delete for that resource.
+- A granted write scope implies read for the same prefix (e.g., `properties:update` allows read).
+- Vendor `maintenance:assigned` and tenant `self:*` scopes enforce row-level filters in service logic.
 
-| Endpoint | Method(s) | Required Scope(s) |
-| --- | --- | --- |
-| `/api/dashboard` | GET | `kpi:read` |
-| `/api/nekretnine` | GET | `properties:read` |
-| `/api/nekretnine` | POST | `properties:create` |
-| `/api/nekretnine/{id}` | PUT | `properties:update` |
-| `/api/nekretnine/{id}` | DELETE | `properties:delete` |
-| `/api/nekretnine/{id}/units` | GET | `properties:read` |
-| `/api/nekretnine/{id}/units` | POST | `properties:update` |
-| `/api/units/{id}` | PUT | `properties:update` |
-| `/api/units/{id}` | DELETE | `properties:delete` |
-| `/api/zakupnici` | GET | `tenants:read` |
-| `/api/zakupnici` | POST | `tenants:create` |
-| `/api/zakupnici/{id}` | PUT | `tenants:update` |
-| `/api/ugovori` | GET | `leases:read` |
-| `/api/ugovori` | POST | `leases:create` |
-| `/api/ugovori/{id}` | PUT | `leases:update` |
-| `/api/ugovori/{id}/status` | PUT | `leases:update` |
-| `/api/dokumenti` | GET | `documents:read` |
-| `/api/dokumenti` | POST | `documents:create` |
-| `/api/dokumenti/{id}` | PUT/DELETE | `documents:update` / `documents:delete` |
-| `/api/maintenance-tasks` | GET | `maintenance:read` |
-| `/api/maintenance-tasks` | POST | `maintenance:create` |
-| `/api/maintenance-tasks/{id}` | PATCH/DELETE | `maintenance:update` / `maintenance:delete` |
-| `/api/maintenance-tasks/{id}/comments` | POST | `maintenance:update` |
-| `/api/podsjetnici` | GET | `properties:read` or `leases:read` (depending on usage) |
-| `/api/podsjetnici/aktivni` | GET | `properties:read` |
-| `/api/podsjetnici/{id}/oznaci-poslan` | PUT | `properties:update` |
-| `/api/pretraga` | GET | Combined: `properties:read`, `tenants:read`, `leases:read` |
-| `/api/ai/*` | POST | `documents:create`, `leases:update` (depending on generation) |
+## Endpoint-to-Scope Matrix
 
-> _Note_: Vendor-facing scope `maintenance:assigned` resolves to read/update limited to tasks where `assigned_vendor_id == principal_id`. Tenant-facing scope `self:*` resolves to filtering by `tenant_id`.
+### Authentication & Identity
 
-## Scope Inference Rules
-- `role_scopes` map roles to explicit scopes.
-- `*` denotes super-user access (admin).
-- Any scope ending with `:*` grants read/write/delete for that resource, resolved by suffix.
-- If both `properties:update` and `properties:delete` granted, UI enables destructive actions; auditing always logs actual scopes used.
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/auth/login` | POST | Public (rate limited) | Everyone |
+| `/api/auth/register` | POST | `users:create` once bootstrap complete | `admin`, `property_manager`, `owner_exec` |
+| `/api/auth/me` | GET | Any authenticated session | All authenticated roles |
+| `/api/users` | GET | `users:read` | `admin`, `property_manager`, `owner_exec`, `maintenance_coordinator` |
+| `/api/users/assignees` | GET | `users:assign` | `admin`, `owner_exec`, `property_manager`, `maintenance_coordinator` |
+
+### Properties & Units
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/nekretnine` | GET | `properties:read` | `admin`, `owner_exec`, `property_manager`, `maintenance_coordinator`, `accountant` |
+| `/api/nekretnine` | POST | `properties:create` | `admin`, `property_manager` |
+| `/api/nekretnine/{id}` | GET | `properties:read` | Same as list |
+| `/api/nekretnine/{id}` | PUT | `properties:update` | `admin`, `property_manager` |
+| `/api/nekretnine/{id}` | DELETE | `properties:delete` | `admin`, `property_manager` |
+| `/api/nekretnine/{id}/units` | GET | `properties:read` | Same as list |
+| `/api/nekretnine/{id}/units` | POST | `properties:update` | `admin`, `property_manager` |
+| `/api/units` & `/api/units/{id}` | GET | `properties:read` | Same as list |
+| `/api/units/{id}` | PUT | `properties:update` | `admin`, `property_manager` |
+| `/api/units/{id}` | DELETE | `properties:delete` | `admin`, `property_manager` |
+| `/api/units/bulk-update` | POST | `properties:update` | `admin`, `property_manager` |
+
+### Tenants & Contacts
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/zakupnici` | GET | `tenants:read` | `admin`, `owner_exec`, `property_manager`, `leasing_agent`, `maintenance_coordinator`, `accountant` |
+| `/api/zakupnici` | POST | `tenants:create` | `admin`, `property_manager`, `leasing_agent` |
+| `/api/zakupnici/{id}` | GET | `tenants:read` | Same as list |
+| `/api/zakupnici/{id}` | PUT | `tenants:update` | `admin`, `property_manager`, `leasing_agent` |
+
+### Leases & Renewals
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/ugovori` | GET | `leases:read` | `admin`, `owner_exec`, `property_manager`, `leasing_agent`, `accountant` |
+| `/api/ugovori` | POST | `leases:create` | `admin`, `property_manager`, `leasing_agent` |
+| `/api/ugovori/{id}` | GET | `leases:read` | Same as list |
+| `/api/ugovori/{id}` | PUT | `leases:update` | `admin`, `property_manager`, `leasing_agent` |
+| `/api/ugovori/{id}/status` | PUT | `leases:update` | Same as update |
+
+### Documents & Templates
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/dokumenti` | GET | `documents:read` | `admin`, `property_manager`, `leasing_agent`, `maintenance_coordinator`, `accountant`, `vendor` (own), `tenant` (self) |
+| `/api/dokumenti` | POST | `documents:create` | `admin`, `property_manager`, `leasing_agent`, `vendor` |
+| `/api/dokumenti/{id}` | PUT/DELETE | `documents:update` / `documents:delete` | `admin`, `property_manager` |
+| `/api/dokumenti/nekretnina/{id}` | GET | `documents:read` | Same as list |
+| `/api/dokumenti/zakupnik/{id}` | GET | `documents:read` | Same as list |
+| `/api/dokumenti/ugovor/{id}` | GET | `documents:read` | Same as list |
+| `/api/templates/aneks` | GET | `documents:read` | `admin`, `property_manager`, `leasing_agent`, `accountant` |
+| `/api/templates/ugovor` | GET | `documents:read` | Same as above |
+
+### Maintenance & Vendors
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/maintenance-tasks` | GET | `maintenance:read` | `admin`, `property_manager`, `leasing_agent`, `maintenance_coordinator`, `vendor` (filtered) |
+| `/api/maintenance-tasks` | POST | `maintenance:create` | `admin`, `property_manager`, `maintenance_coordinator` |
+| `/api/maintenance-tasks/{id}` | PATCH | `maintenance:update` | `admin`, `property_manager`, `maintenance_coordinator`, `vendor` (assigned) |
+| `/api/maintenance-tasks/{id}` | DELETE | `maintenance:delete` | `admin`, `property_manager` |
+| `/api/maintenance-tasks/{id}/comments` | POST | `maintenance:update` | `admin`, `property_manager`, `maintenance_coordinator`, `vendor` (assigned) |
+
+### Financials & Billing
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/racuni` | GET | `financials:read` | `admin`, `owner_exec`, `property_manager`, `accountant` |
+| `/api/racuni` | POST | `financials:create` | `admin`, `property_manager`, `accountant` |
+| `/api/racuni/{id}` | GET | `financials:read` | Same as list |
+| `/api/racuni/{id}` | PUT | `financials:update` | `admin`, `property_manager`, `accountant` |
+| `/api/racuni/{id}` | DELETE | `financials:delete` | `admin`, `property_manager`, `accountant` |
+
+### Reminders, Search & Helpers
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/podsjetnici` | GET | `properties:read` | `admin`, `owner_exec`, `property_manager`, `maintenance_coordinator`, `accountant` |
+| `/api/podsjetnici/aktivni` | GET | `properties:read` | Same as above |
+| `/api/podsjetnici/{id}/oznaci-poslan` | PUT | `properties:update` | `admin`, `property_manager` |
+| `/api/pretraga` | GET | Combined `properties:read`, `tenants:read`, `leases:read` | Roles holding all three scopes (typically `admin`, `owner_exec`, `property_manager`, `accountant`) |
+
+### Analytics, Reporting & Audit
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/dashboard` | GET | `kpi:read` | `admin`, `owner_exec`, `property_manager`, `accountant` |
+| `/api/activity-logs` | GET | `reports:read` | `admin`, `property_manager`, `accountant` |
+| `/api/audit/logs` | GET | `reports:read` | Same as above |
+
+### AI Assisted Workflows
+
+| Endpoint | Method(s) | Required Scope(s) | Default Roles |
+| --- | --- | --- | --- |
+| `/api/ai/generate-contract-annex` | POST | `leases:update`, `documents:create` | `admin`, `property_manager`, `leasing_agent` |
+| `/api/ai/generate-contract` | POST | `leases:create`, `documents:create` | `admin`, `property_manager`, `leasing_agent` |
+| `/api/ai/parse-pdf-contract` | POST | `documents:create` | `admin`, `property_manager`, `leasing_agent`, `accountant` |
 
 ## Implementation Checklist
-1. Inject principal identity with `user.id`, `user.role`, `user.scopes` from API token / session.
-2. Decorate endpoints with scope dependencies (`require_scope("leases:read")`).
-3. Enhance audit middleware to capture scope set and request payload diffs.
-4. Add data filters in services for tenant/vendor roles.
+1. Inject principal identity (`user.id`, `user.role`, `user.scopes`) through API token/session middleware.
+2. Decorate endpoints with scope dependencies via `Depends(require_scopes(...))` so that enforcement matches the matrix.
+3. Enrich audit middleware to capture active scopes, request context, entity hints, and persist entries for timeline queries.
+4. Apply row-level filters for vendor (`maintenance:assigned`) and tenant (`self:*`) scopes in service functions.
+5. Keep `ROLE_SCOPE_MAP` aligned with the matrix above and adjust when introducing new personas or endpoints.

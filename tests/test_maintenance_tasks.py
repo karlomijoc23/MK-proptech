@@ -1,10 +1,12 @@
 import os
 import uuid
 from datetime import datetime, date, timedelta
+from typing import Dict, Optional
 
 import pytest
 from fastapi.testclient import TestClient
 
+os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
@@ -20,15 +22,76 @@ def _clear_collections():
         "zakupnici",
         "ugovori",
         "maintenance_tasks",
+        "users",
+        "activity_logs",
     ):
         collection = getattr(db, name, None)
         if collection and hasattr(collection, "_documents"):
             collection._documents.clear()  # type: ignore[attr-defined]
 
 
+ADMIN_HEADERS: Dict[str, str] = {}
+PM_HEADERS: Dict[str, str] = {}
+PM_USER_ID: Optional[str] = None
+
+
+def _bootstrap_users():
+    global ADMIN_HEADERS, PM_HEADERS, PM_USER_ID
+
+    admin_payload = {
+        "email": "admin@example.com",
+        "password": "AdminPass123!",
+        "full_name": "Admin User",
+        "role": "admin",
+        "scopes": ["users:create", "users:read"],
+    }
+    response = client.post("/api/auth/register", json=admin_payload)
+    assert response.status_code == 200, response.text
+
+    login_resp = client.post(
+        "/api/auth/login",
+        json={"email": admin_payload["email"], "password": admin_payload["password"]},
+    )
+    assert login_resp.status_code == 200, login_resp.text
+    admin_token = login_resp.json()["access_token"]
+    ADMIN_HEADERS = {"Authorization": f"Bearer {admin_token}"}
+
+    pm_payload = {
+        "email": "pm@example.com",
+        "password": "PmPass123!",
+        "full_name": "Property Manager",
+        "role": "property_manager",
+    }
+    response = client.post("/api/auth/register", json=pm_payload, headers=ADMIN_HEADERS)
+    assert response.status_code == 200, response.text
+    pm_user = response.json()
+    PM_USER_ID = pm_user["id"]
+
+    pm_login = client.post(
+        "/api/auth/login",
+        json={"email": pm_payload["email"], "password": pm_payload["password"]},
+    )
+    assert pm_login.status_code == 200, pm_login.text
+    pm_token = pm_login.json()["access_token"]
+    PM_HEADERS = {"Authorization": f"Bearer {pm_token}"}
+
+
+def _register_user(email: str, password: str, role: str, full_name: str = ''):
+    payload = {
+        "email": email,
+        "password": password,
+        "full_name": full_name or email.split('@')[0].title(),
+        "role": role,
+    }
+    response = client.post("/api/auth/register", json=payload, headers=ADMIN_HEADERS)
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
 @pytest.fixture(autouse=True)
 def reset_db():
     _clear_collections()
+    _bootstrap_users()
     yield
     _clear_collections()
 
@@ -47,6 +110,7 @@ def _create_property(naziv="Poslovna zgrada"):  # helper
             "vlasnik": "Riforma d.o.o.",
             "udio_vlasnistva": "1/1",
         },
+        headers=PM_HEADERS,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
@@ -60,6 +124,7 @@ def _create_unit(nekretnina_id, oznaka="A1"):
             "status": "dostupno",
             "povrsina_m2": 120.0,
         },
+        headers=PM_HEADERS,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
@@ -76,7 +141,7 @@ def _create_zakupnik(naziv="Tenant d.o.o."):
         "kontakt_telefon": "+385123456",
         "iban": "HR1210010051863000160",
     }
-    response = client.post("/api/zakupnici", json=payload)
+    response = client.post("/api/zakupnici", json=payload, headers=PM_HEADERS)
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -100,13 +165,16 @@ def _create_contract(nekretnina_id, zakupnik_id, property_unit_id=None):
         "indeksacija": False,
         "rok_otkaza_dani": 30,
     }
-    response = client.post("/api/ugovori", json=payload)
+    response = client.post("/api/ugovori", json=payload, headers=PM_HEADERS)
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
 def _create_task(payload):
-    response = client.post("/api/maintenance-tasks", json=payload)
+    assert PM_USER_ID is not None
+    payload = dict(payload)
+    payload.setdefault("dodijeljeno_user_id", PM_USER_ID)
+    response = client.post("/api/maintenance-tasks", json=payload, headers=PM_HEADERS)
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -121,6 +189,7 @@ def test_create_maintenance_task_records_initial_activity():
     })
 
     assert task["naziv"] == "Servis lifta"
+    assert task["dodijeljeno_user_id"] == PM_USER_ID
     activities = task.get("aktivnosti", [])
     assert len(activities) == 1
     assert activities[0]["tip"] == "kreiran"
@@ -137,7 +206,9 @@ def test_create_task_with_mismatched_unit_and_property():
             "naziv": "Popravak instalacija",
             "nekretnina_id": property_b,
             "property_unit_id": unit_id,
+            "dodijeljeno_user_id": PM_USER_ID,
         },
+        headers=PM_HEADERS,
     )
     assert response.status_code == 400
     assert "podprostor" in response.json()["detail"].lower()
@@ -156,7 +227,9 @@ def test_create_task_with_contract_from_other_property_is_rejected():
             "naziv": "Koordinacija izvođača",
             "nekretnina_id": property_b,
             "ugovor_id": contract_id,
+            "dodijeljeno_user_id": PM_USER_ID,
         },
+        headers=PM_HEADERS,
     )
     assert response.status_code == 400
     assert "ugovor" in response.json()["detail"].lower()
@@ -176,6 +249,29 @@ def test_create_task_infers_relations_from_contract():
 
     assert task["nekretnina_id"] == property_id
     assert task["property_unit_id"] == unit_id
+    assert task["dodijeljeno_user_id"] == PM_USER_ID
+
+
+def test_assignment_requires_manager_role():
+    property_id = _create_property("Upravna zgrada")
+    unauthorized_user = _register_user(
+        email="user@example.com",
+        password="UserPass123!",
+        role="tenant",
+        full_name="Regular User",
+    )
+
+    response = client.post(
+        "/api/maintenance-tasks",
+        json={
+            "naziv": "Servis kotla",
+            "nekretnina_id": property_id,
+            "dodijeljeno_user_id": unauthorized_user["id"],
+        },
+        headers=PM_HEADERS,
+    )
+    assert response.status_code == 400
+    assert "Voditelj naloga" in response.json()["detail"]
 
 
 def test_status_update_adds_activity():
@@ -188,6 +284,7 @@ def test_status_update_adds_activity():
     response = client.patch(
         f"/api/maintenance-tasks/{task['id']}",
         json={"status": "u_tijeku"},
+        headers=PM_HEADERS,
     )
     assert response.status_code == 200, response.text
     payload = response.json()
@@ -207,6 +304,7 @@ def test_comment_endpoint_adds_activity():
     response = client.post(
         f"/api/maintenance-tasks/{task['id']}/comments",
         json={"poruka": "Kontaktiran izvođač", "autor": "Voditelj"},
+        headers=PM_HEADERS,
     )
     assert response.status_code == 200, response.text
     payload = response.json()
@@ -244,6 +342,7 @@ def test_list_filters_by_priority_property_and_due_date():
             "rok_do": "2024-06-01",
             "oznaka": "elektrika",
         },
+        headers=PM_HEADERS,
     )
     assert response.status_code == 200, response.text
     results = response.json()
@@ -251,7 +350,11 @@ def test_list_filters_by_priority_property_and_due_date():
     assert results[0]["naziv"] == "Hitna intervencija"
     assert results[0]["prioritet"] == "kriticno"
 
-    response = client.get("/api/maintenance-tasks", params={"q": "servis"})
+    response = client.get(
+        "/api/maintenance-tasks",
+        params={"q": "servis"},
+        headers=PM_HEADERS,
+    )
     assert response.status_code == 200
     results = response.json()
     assert {item["naziv"] for item in results} == {"Plin godišnji servis"}

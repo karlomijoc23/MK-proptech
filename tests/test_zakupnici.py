@@ -1,10 +1,11 @@
 import os
-from typing import Iterable
+from typing import Dict, Iterable
 
 import pytest
 from fastapi.testclient import TestClient
 
 # Ensure the backend uses the in-memory database for tests
+os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 
 from backend.server import app, db  # noqa: E402
@@ -20,11 +21,36 @@ def _clear_collections(collection_names: Iterable[str]) -> None:
             collection._documents.clear()  # type: ignore[attr-defined]
 
 
+AUTH_HEADERS: Dict[str, str] = {}
+
+
+def _bootstrap_auth():
+    global AUTH_HEADERS
+    admin_payload = {
+        "email": "admin@example.com",
+        "password": "AdminPass123!",
+        "full_name": "Admin User",
+        "role": "admin",
+        "scopes": ["users:create", "users:read"],
+    }
+    response = client.post("/api/auth/register", json=admin_payload)
+    assert response.status_code == 200, response.text
+
+    login_resp = client.post(
+        "/api/auth/login",
+        json={"email": admin_payload["email"], "password": admin_payload["password"]},
+    )
+    assert login_resp.status_code == 200, login_resp.text
+    token = login_resp.json()["access_token"]
+    AUTH_HEADERS = {"Authorization": f"Bearer {token}"}
+
+
 @pytest.fixture(autouse=True)
 def cleanup_database():
-    _clear_collections(["zakupnici"])
+    _clear_collections(["zakupnici", "users", "activity_logs"])
+    _bootstrap_auth()
     yield
-    _clear_collections(["zakupnici"])
+    _clear_collections(["zakupnici", "users", "activity_logs"])
 
 
 def _create_zakupnik(**overrides):
@@ -39,7 +65,7 @@ def _create_zakupnik(**overrides):
         "iban": "HR1210010051863000160",
     }
     payload.update(overrides)
-    response = client.post("/api/zakupnici", json=payload)
+    response = client.post("/api/zakupnici", json=payload, headers=AUTH_HEADERS)
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -54,14 +80,14 @@ def test_search_zakupnici_matches_multiple_fields():
     )
 
     # Search by partial company name (case-insensitive)
-    response = client.get("/api/zakupnici", params={"search": "beta"})
+    response = client.get("/api/zakupnici", params={"search": "beta"}, headers=AUTH_HEADERS)
     assert response.status_code == 200
     results = response.json()
     assert len(results) == 1
     assert results[0]["naziv_firme"] == "Beta LLC"
 
     # Search by email fragment
-    response = client.get("/api/zakupnici", params={"search": "@beta.hr"})
+    response = client.get("/api/zakupnici", params={"search": "@beta.hr"}, headers=AUTH_HEADERS)
     assert response.status_code == 200
     results = response.json()
     assert len(results) == 1
@@ -70,7 +96,7 @@ def test_search_zakupnici_matches_multiple_fields():
 
 def test_search_zakupnici_returns_all_without_query():
     created = [_create_zakupnik(naziv_firme=f"Tenant {i}", oib=f"{i:011d}") for i in range(3)]
-    response = client.get("/api/zakupnici")
+    response = client.get("/api/zakupnici", headers=AUTH_HEADERS)
     assert response.status_code == 200
     results = response.json()
     obtained_ids = {item["id"] for item in results}
@@ -92,7 +118,7 @@ def test_update_zakupnik_applies_changes():
         "iban": "HR6623400091110623200",
     }
 
-    response = client.put(f"/api/zakupnici/{created['id']}", json=update_payload)
+    response = client.put(f"/api/zakupnici/{created['id']}", json=update_payload, headers=AUTH_HEADERS)
     assert response.status_code == 200, response.text
     updated = response.json()
     assert updated["naziv_firme"] == "Gamma Consulting"
@@ -100,7 +126,7 @@ def test_update_zakupnik_applies_changes():
     assert updated["kontakt_ime"] == "Marija"
 
     # Fetch again to ensure persistence
-    fetch_response = client.get("/api/zakupnici", params={"search": "Gamma"})
+    fetch_response = client.get("/api/zakupnici", params={"search": "Gamma"}, headers=AUTH_HEADERS)
     assert fetch_response.status_code == 200
     results = fetch_response.json()
     assert results
@@ -119,7 +145,7 @@ def test_update_zakupnik_returns_404_for_missing_entity():
         "iban": None,
     }
 
-    response = client.put("/api/zakupnici/missing-id", json=missing_payload)
+    response = client.put("/api/zakupnici/missing-id", json=missing_payload, headers=AUTH_HEADERS)
     assert response.status_code == 404
     body = response.json()
     assert body["detail"] == "Zakupnik nije pronađen"

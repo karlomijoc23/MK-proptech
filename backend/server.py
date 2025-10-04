@@ -8,8 +8,9 @@ import os
 import logging
 from pathlib import Path
 import calendar
-from pydantic import BaseModel, Field, ValidationError, ConfigDict
-from typing import List, Optional, Dict, Any
+import time
+from pydantic import BaseModel, Field, ValidationError, ConfigDict, EmailStr
+from typing import List, Optional, Dict, Any, Set
 import uuid
 from datetime import datetime, timezone, date, timedelta
 from enum import Enum
@@ -24,6 +25,8 @@ import copy
 import re
 from types import SimpleNamespace
 from fastapi.staticfiles import StaticFiles
+from jose import jwt, JWTError
+from passlib.context import CryptContext
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -74,11 +77,20 @@ def _parse_api_tokens() -> Dict[str, Dict[str, Any]]:
 
 API_TOKENS = _parse_api_tokens()
 DEFAULT_ROLE = os.environ.get('DEFAULT_ROLE', 'admin')
+AUTH_SECRET = os.environ.get('AUTH_SECRET', 'change-me')
+AUTH_ALGORITHM = os.environ.get('AUTH_ALGORITHM', 'HS256')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', '120'))
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+OPEN_ENDPOINTS = {
+    '/api/auth/login',
+    '/api/auth/register',
+}
+ALLOWED_MAINTENANCE_ASSIGN_ROLES = {'property_manager', 'owner_exec'}
 
 ROLE_SCOPE_MAP: Dict[str, List[str]] = {
     'admin': ['*'],
     'system': ['*'],
-    'owner_exec': ['kpi:read', 'properties:read', 'leases:read', 'tenants:read', 'financials:read', 'reports:read'],
+    'owner_exec': ['kpi:read', 'properties:read', 'leases:read', 'tenants:read', 'financials:read', 'reports:read', 'users:assign', 'users:read'],
     'property_manager': [
         'properties:*',
         'tenants:*',
@@ -88,6 +100,9 @@ ROLE_SCOPE_MAP: Dict[str, List[str]] = {
         'vendors:read',
         'financials:read',
         'reports:read',
+        'users:assign',
+        'users:read',
+        'kpi:read',
     ],
     'leasing_agent': [
         'tenants:*',
@@ -104,6 +119,8 @@ ROLE_SCOPE_MAP: Dict[str, List[str]] = {
         'tenants:read',
         'documents:read',
         'vendors:read',
+        'users:assign',
+        'users:read',
     ],
     'accountant': [
         'financials:*',
@@ -113,6 +130,7 @@ ROLE_SCOPE_MAP: Dict[str, List[str]] = {
         'vendors:*',
         'documents:read',
         'reports:*',
+        'kpi:read',
     ],
     'vendor': ['maintenance:assigned', 'documents:create', 'documents:read'],
     'tenant': ['self:read', 'self:maintenance', 'self:documents'],
@@ -162,7 +180,97 @@ def require_scopes(*scopes: str):
 
     return _dependency
 
+
+def set_audit_context(
+    request: Request,
+    *,
+    entity_type: str,
+    entity_id: Optional[str] = None,
+    parent_id: Optional[str] = None,
+    changes: Optional[Dict[str, Any]] = None,
+) -> None:
+    context: Dict[str, Any] = {"entity_type": entity_type}
+    if entity_id:
+        context["entity_id"] = entity_id
+    if parent_id:
+        context["parent_id"] = parent_id
+    if changes:
+        context["changes"] = changes
+    request.state.audit_context = context
+
+
+def diff_dict(
+    before: Dict[str, Any],
+    after: Dict[str, Any],
+    *,
+    ignore: Optional[Set[str]] = None,
+) -> Dict[str, Dict[str, Any]]:
+    ignore = ignore or set()
+    changes: Dict[str, Dict[str, Any]] = {}
+    keys = set(before.keys()) | set(after.keys())
+    for key in keys:
+        if key in ignore:
+            continue
+        before_value = before.get(key)
+        after_value = after.get(key)
+        if before_value != after_value:
+            changes[key] = {"before": before_value, "after": after_value}
+    return changes
+
 # In-memory fallback implementations -------------------------------------------------
+
+
+def hash_password(password: str) -> str:
+    if not password:
+        raise ValueError('Password must not be empty')
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, password_hash: str) -> bool:
+    if not password_hash:
+        return False
+    try:
+        return pwd_context.verify(plain_password, password_hash)
+    except ValueError:
+        return False
+
+
+def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire, "iat": now})
+    return jwt.encode(to_encode, AUTH_SECRET, algorithm=AUTH_ALGORITHM)
+
+
+async def _get_user_by_email(email: str) -> Optional[User]:
+    if not email:
+        return None
+    doc = await db.users.find_one({"email": email.lower()})
+    if not doc:
+        return None
+    return User(**parse_from_mongo(doc))
+
+
+async def _get_user_or_404(user_id: str) -> User:
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Korisnik nije pronađen")
+    return User(**parse_from_mongo(user_doc))
+
+
+def _user_to_public(user: User) -> UserPublic:
+    return UserPublic(
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        scopes=user.scopes,
+        active=user.active,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
+
 
 def _deepcopy(data: Dict[str, Any]) -> Dict[str, Any]:
     return copy.deepcopy(data)
@@ -184,6 +292,11 @@ def _value_matches(doc_value, condition_value, options: Dict[str, Any]) -> bool:
             return doc_value is not None and doc_value < condition_value['$lt']
         if '$ne' in condition_value:
             return doc_value != condition_value['$ne']
+        if '$in' in condition_value:
+            candidates = condition_value['$in']
+            if isinstance(candidates, list):
+                return doc_value in candidates
+            return False
         # default fallback equality for other operators if present
         return doc_value == condition_value
     return doc_value == condition_value
@@ -288,6 +401,7 @@ class InMemoryDatabase:
         self.racuni = InMemoryCollection()
         self.activity_logs = InMemoryCollection()
         self.maintenance_tasks = InMemoryCollection()
+        self.users = InMemoryCollection()
 
 
 # MongoDB connection with optional in-memory fallback
@@ -313,6 +427,11 @@ async def log_activity(
     ip_address: Optional[str] = None,
     request_id: Optional[str] = None,
     message: Optional[str] = None,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[str] = None,
+    entity_parent_id: Optional[str] = None,
+    changes: Optional[Dict[str, Any]] = None,
+    duration_ms: Optional[float] = None,
 ):
     try:
         log = ActivityLog(
@@ -328,42 +447,94 @@ async def log_activity(
             ip_address=ip_address,
             request_id=request_id or str(uuid.uuid4()),
             message=message,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            entity_parent_id=entity_parent_id,
+            changes=changes or None,
+            duration_ms=duration_ms,
         )
         await db.activity_logs.insert_one(prepare_for_mongo(log.model_dump()))
     except Exception as exc:
         logger.error("Failed to log activity: %s", exc)
 
 
-def get_current_user(request: Request) -> Dict[str, Any]:
-    if not API_TOKENS:
-        scopes = _resolve_role_scopes(DEFAULT_ROLE)
+async def get_current_user(request: Request) -> Dict[str, Any]:
+    path = request.url.path
+
+    auth_header = request.headers.get("Authorization", "")
+    token_value: Optional[str] = None
+    if auth_header.startswith("Bearer "):
+        token_value = auth_header.split(" ", 1)[1].strip()
+    elif auth_header:
+        token_value = auth_header.strip()
+
+    if path in OPEN_ENDPOINTS and not token_value:
         principal = {
-            "id": "anonymous",
-            "name": "anonymous",
+            "id": "guest",
+            "name": "guest",
             "role": DEFAULT_ROLE,
+            "scopes": _resolve_role_scopes(DEFAULT_ROLE),
+        }
+        request.state.current_user = principal
+        return principal
+
+    if not token_value:
+        if API_TOKENS:
+            raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
+        # fallback if legacy mode without tokens and explicit auth disabled
+        raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
+
+    api_token_entry = API_TOKENS.get(token_value)
+    if api_token_entry:
+        role = api_token_entry.get("role", DEFAULT_ROLE)
+        explicit_scopes = api_token_entry.get("scopes", [])
+        scopes = _resolve_role_scopes(role, explicit_scopes)
+        principal = {
+            "id": token_value,
+            "name": api_token_entry.get("name", token_value),
+            "role": role,
             "scopes": scopes,
         }
         request.state.current_user = principal
         return principal
 
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header.split(" ", 1)[1].strip()
-        entry = API_TOKENS.get(token)
-        if entry:
-            role = entry.get("role", DEFAULT_ROLE)
-            explicit_scopes = entry.get("scopes", [])
-            scopes = _resolve_role_scopes(role, explicit_scopes)
-            principal = {
-                "id": token,
-                "name": entry.get("name", token),
-                "role": role,
-                "scopes": scopes,
-            }
-            request.state.current_user = principal
-            return principal
+    try:
+        payload = jwt.decode(token_value, AUTH_SECRET, algorithms=[AUTH_ALGORITHM])
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"}) from exc
 
-    raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
+    user_id = payload.get('sub')
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
+
+    user_doc = await db.users.find_one({"id": user_id})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
+
+    user = User(**parse_from_mongo(user_doc))
+    if not user.active:
+        raise HTTPException(status_code=403, detail="Korisnički račun je deaktiviran")
+
+    token_scopes = payload.get('scopes', [])
+    scopes = _resolve_role_scopes(user.role, token_scopes or user.scopes)
+    principal = {
+        "id": user.id,
+        "name": user.full_name or user.email,
+        "role": user.role,
+        "scopes": scopes,
+    }
+    request.state.current_user = principal
+    return principal
+
+
+async def get_current_user_optional(request: Request) -> Optional[Dict[str, Any]]:
+    try:
+        return await get_current_user(request)
+    except HTTPException as exc:
+        if exc.status_code == 401:
+            request.state.current_user = None
+            return None
+        raise
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -374,6 +545,9 @@ async def activity_logger(request: Request, call_next):
     request_id = str(uuid.uuid4())
     request_payload: Optional[Dict[str, Any]] = None
     body_bytes: bytes = b''
+    start_time = time.perf_counter()
+
+    setattr(request.state, "audit_context", {})
 
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         try:
@@ -403,15 +577,23 @@ async def activity_logger(request: Request, call_next):
     query_params = dict(request.query_params.multi_items())
     client_ip = request.client.host if request.client else None
 
+    if request_payload and request.url.path in {'/api/auth/login', '/api/auth/register'}:
+        if isinstance(request_payload, dict):
+            for key in ('password', 'password_confirm'):
+                if key in request_payload:
+                    request_payload[key] = '***'
+
     try:
         response = await call_next(request)
         status_code = response.status_code
+        duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
         principal = getattr(request.state, "current_user", None) or {
             "id": "guest",
             "name": "guest",
             "role": DEFAULT_ROLE,
             "scopes": _resolve_role_scopes(DEFAULT_ROLE),
         }
+        audit_context = getattr(request.state, "audit_context", {})
         await log_activity(
             principal,
             request.method,
@@ -421,16 +603,23 @@ async def activity_logger(request: Request, call_next):
             request_payload=request_payload,
             ip_address=client_ip,
             request_id=request_id,
+            entity_type=audit_context.get("entity_type"),
+            entity_id=audit_context.get("entity_id"),
+            entity_parent_id=audit_context.get("parent_id"),
+            changes=audit_context.get("changes"),
+            duration_ms=duration_ms,
         )
         return response
     except Exception as exc:
         status_code = getattr(exc, 'status_code', 500)
+        duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
         principal = getattr(request.state, "current_user", None) or {
             "id": "guest",
             "name": "guest",
             "role": DEFAULT_ROLE,
             "scopes": _resolve_role_scopes(DEFAULT_ROLE),
         }
+        audit_context = getattr(request.state, "audit_context", {})
         await log_activity(
             principal,
             request.method,
@@ -441,6 +630,11 @@ async def activity_logger(request: Request, call_next):
             ip_address=client_ip,
             request_id=request_id,
             message=str(exc),
+            entity_type=audit_context.get("entity_type"),
+            entity_id=audit_context.get("entity_id"),
+            entity_parent_id=audit_context.get("parent_id"),
+            changes=audit_context.get("changes"),
+            duration_ms=duration_ms,
         )
         raise
 
@@ -1444,12 +1638,16 @@ class MaintenanceTask(BaseModel):
     ugovor_id: Optional[str] = None
     prijavio: Optional[str] = None
     dodijeljeno: Optional[str] = None
+    dodijeljeno_user_id: Optional[str] = None
     rok: Optional[date] = None
     oznake: List[str] = Field(default_factory=list)
     napomena: Optional[str] = None
     kreiran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     azuriran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     aktivnosti: List[MaintenanceActivity] = Field(default_factory=list)
+    procijenjeni_trosak: Optional[float] = None
+    stvarni_trosak: Optional[float] = None
+    zavrseno_na: Optional[datetime] = None
 
 
 class MaintenanceTaskCreate(BaseModel):
@@ -1464,9 +1662,12 @@ class MaintenanceTaskCreate(BaseModel):
     ugovor_id: Optional[str] = None
     prijavio: Optional[str] = None
     dodijeljeno: Optional[str] = None
+    dodijeljeno_user_id: Optional[str] = None
     rok: Optional[date] = None
     oznake: List[str] = Field(default_factory=list)
     napomena: Optional[str] = None
+    procijenjeni_trosak: Optional[float] = None
+    stvarni_trosak: Optional[float] = None
 
 
 class MaintenanceTaskUpdate(BaseModel):
@@ -1481,14 +1682,67 @@ class MaintenanceTaskUpdate(BaseModel):
     ugovor_id: Optional[str] = None
     prijavio: Optional[str] = None
     dodijeljeno: Optional[str] = None
+    dodijeljeno_user_id: Optional[str] = None
     rok: Optional[date] = None
     oznake: Optional[List[str]] = None
     napomena: Optional[str] = None
+    procijenjeni_trosak: Optional[float] = None
+    stvarni_trosak: Optional[float] = None
 
 
 class MaintenanceCommentCreate(BaseModel):
     poruka: str
     autor: Optional[str] = None
+
+
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: EmailStr
+    full_name: Optional[str] = None
+    role: str = DEFAULT_ROLE
+    scopes: List[str] = Field(default_factory=list)
+    password_hash: str
+    active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class UserPublic(BaseModel):
+    id: str
+    email: EmailStr
+    full_name: Optional[str] = None
+    role: str
+    scopes: List[str]
+    active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+    role: str = 'tenant'
+    scopes: Optional[List[str]] = None
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    scopes: Optional[List[str]] = None
+    active: Optional[bool] = None
+    password: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = 'bearer'
+    user: UserPublic
 
 
 class ActivityLog(BaseModel):
@@ -1506,6 +1760,108 @@ class ActivityLog(BaseModel):
     request_payload: Optional[Dict[str, Any]] = None
     ip_address: Optional[str] = None
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    entity_type: Optional[str] = None
+    entity_id: Optional[str] = None
+    entity_parent_id: Optional[str] = None
+    changes: Optional[Dict[str, Any]] = None
+    duration_ms: Optional[float] = None
+
+
+# Authentication routes -----------------------------------------------------------------
+
+
+@api_router.post("/auth/register", response_model=UserPublic)
+async def register_user(
+    payload: UserCreate,
+    request: Request,
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional),
+):
+    existing_count = await db.users.count_documents({})
+    if existing_count > 0:
+        if not current_user or current_user.get('id') == 'guest':
+            raise HTTPException(status_code=403, detail="Nedostaju ovlasti za registraciju")
+        if not _scope_matches(current_user.get('scopes', []), 'users:create') and not _scope_matches(current_user.get('scopes', []), 'users:*') and '*' not in current_user.get('scopes', []):
+            raise HTTPException(status_code=403, detail="Nedostaju ovlasti za registraciju")
+
+    existing_user = await _get_user_by_email(payload.email.lower())
+    if existing_user:
+        raise HTTPException(status_code=409, detail="Korisnik s navedenim emailom već postoji")
+
+    role = payload.role or DEFAULT_ROLE
+    explicit_scopes = payload.scopes or []
+    user = User(
+        email=payload.email.lower(),
+        full_name=payload.full_name,
+        role=role,
+        scopes=explicit_scopes,
+        password_hash=hash_password(payload.password),
+    )
+    await db.users.insert_one(prepare_for_mongo(user.model_dump()))
+    request.state.audit_context = {"entity_type": "user", "entity_id": user.id}
+    return _user_to_public(user)
+
+
+@api_router.post("/auth/login", response_model=TokenResponse)
+async def login_user(payload: LoginRequest, request: Request):
+    user = await _get_user_by_email(payload.email.lower())
+    if not user or not user.active or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Pogrešan email ili lozinka")
+
+    scopes = _resolve_role_scopes(user.role, user.scopes)
+    access_token = create_access_token({"sub": user.id, "role": user.role, "scopes": scopes})
+    request.state.audit_context = {"entity_type": "user", "entity_id": user.id}
+    return TokenResponse(access_token=access_token, user=_user_to_public(user))
+
+
+@api_router.get("/auth/me", response_model=UserPublic)
+async def get_me(current_user: Dict[str, Any] = Depends(get_current_user)):
+    try:
+        user = await _get_user_or_404(current_user.get('id'))
+        return _user_to_public(user)
+    except HTTPException:
+        # fallback for API token based principals
+        return UserPublic(
+            id=current_user.get('id', 'unknown'),
+            email=current_user.get('name', 'unknown'),
+            full_name=current_user.get('name'),
+            role=current_user.get('role', DEFAULT_ROLE),
+            scopes=current_user.get('scopes', []),
+            active=True,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+
+
+@api_router.get(
+    "/users",
+    response_model=List[UserPublic],
+    dependencies=[Depends(require_scopes("users:read"))],
+)
+async def list_users():
+    raw_users = await db.users.find().to_list(1000)
+    rezultat: List[UserPublic] = []
+    for raw in raw_users:
+        try:
+            rezultat.append(_user_to_public(User(**parse_from_mongo(raw))))
+        except ValidationError:
+            continue
+    return rezultat
+
+
+@api_router.get(
+    "/users/assignees",
+    response_model=List[UserPublic],
+    dependencies=[Depends(require_scopes("users:assign"))],
+)
+async def list_assignable_users():
+    raw_users = await db.users.find({"role": {"$in": list(ALLOWED_MAINTENANCE_ASSIGN_ROLES)}}).to_list(500)
+    rezultat: List[UserPublic] = []
+    for raw in raw_users:
+        try:
+            rezultat.append(_user_to_public(User(**parse_from_mongo(raw))))
+        except ValidationError:
+            continue
+    return rezultat
 
 
 # Routes
@@ -1522,10 +1878,11 @@ async def root():
     status_code=201,
     dependencies=[Depends(require_scopes("properties:create"))],
 )
-async def create_nekretnina(nekretnina: NekretninarCreate):
+async def create_nekretnina(nekretnina: NekretninarCreate, request: Request):
     nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     nekretnina_obj = Nekretnina(**nekretnina_dict)
     await db.nekretnine.insert_one(prepare_for_mongo(nekretnina_obj.model_dump()))
+    request.state.audit_context = {"entity_type": "property", "entity_id": nekretnina_obj.id}
     return nekretnina_obj
 
 @api_router.get(
@@ -1553,7 +1910,7 @@ async def get_nekretnina(nekretnina_id: str):
     response_model=Nekretnina,
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate):
+async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate, request: Request):
     nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     result = await db.nekretnine.update_one(
         {"id": nekretnina_id}, 
@@ -1563,13 +1920,14 @@ async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate):
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
     
     updated_nekretnina = await db.nekretnine.find_one({"id": nekretnina_id})
+    request.state.audit_context = {"entity_type": "property", "entity_id": nekretnina_id}
     return Nekretnina(**parse_from_mongo(updated_nekretnina))
 
 @api_router.delete(
     "/nekretnine/{nekretnina_id}",
     dependencies=[Depends(require_scopes("properties:delete"))],
 )
-async def delete_nekretnina(nekretnina_id: str):
+async def delete_nekretnina(nekretnina_id: str, request: Request):
     result = await db.nekretnine.delete_one({"id": nekretnina_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
@@ -1578,6 +1936,7 @@ async def delete_nekretnina(nekretnina_id: str):
     povezane_jedinice = await db.property_units.find({"nekretnina_id": nekretnina_id}).to_list(1000)
     for jedinica in povezane_jedinice:
         await db.property_units.delete_one({"id": jedinica.get("id")})
+    request.state.audit_context = {"entity_type": "property", "entity_id": nekretnina_id}
     return {"poruka": "Nekretnina je uspješno obrisana"}
 
 
@@ -1601,7 +1960,7 @@ async def list_property_units(nekretnina_id: str):
     status_code=201,
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate):
+async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate, request: Request):
     await _get_property_or_404(nekretnina_id)
 
     jedinica_payload = jedinica.model_dump(mode="json")
@@ -1626,6 +1985,7 @@ async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate)
     jedinica_obj.azuriran = datetime.now(timezone.utc)
 
     await db.property_units.insert_one(prepare_for_mongo(jedinica_obj.model_dump()))
+    request.state.audit_context = {"entity_type": "unit", "entity_id": jedinica_obj.id, "parent_id": nekretnina_id}
     return jedinica_obj
 
 
@@ -1662,7 +2022,7 @@ async def get_property_unit(property_unit_id: str):
     response_model=PropertyUnit,
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpdate):
+async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpdate, request: Request):
     existing = await db.property_units.find_one({"id": property_unit_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
@@ -1720,6 +2080,7 @@ async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpda
     updated = await db.property_units.find_one({"id": property_unit_id})
     if not updated:
         raise HTTPException(status_code=500, detail="Ažuriranje podprostora nije uspjelo")
+    request.state.audit_context = {"entity_type": "unit", "entity_id": property_unit_id}
     return PropertyUnit(**parse_from_mongo(updated))
 
 
@@ -1727,7 +2088,7 @@ async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpda
     "/units/{property_unit_id}",
     dependencies=[Depends(require_scopes("properties:delete"))],
 )
-async def delete_property_unit(property_unit_id: str):
+async def delete_property_unit(property_unit_id: str, request: Request):
     existing = await db.property_units.find_one({"id": property_unit_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
@@ -1736,6 +2097,7 @@ async def delete_property_unit(property_unit_id: str):
         raise HTTPException(status_code=400, detail="Podprostor je povezan s ugovorom i ne može se obrisati")
 
     await db.property_units.delete_one({"id": property_unit_id})
+    request.state.audit_context = {"entity_type": "unit", "entity_id": property_unit_id}
     return {"poruka": "Podprostor je uspješno obrisan"}
 
 
@@ -1743,7 +2105,7 @@ async def delete_property_unit(property_unit_id: str):
     "/units/bulk-update",
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def bulk_update_property_units(payload: PropertyUnitBulkUpdate):
+async def bulk_update_property_units(payload: PropertyUnitBulkUpdate, request: Request):
     if not payload.unit_ids:
         raise HTTPException(status_code=400, detail="Odaberite barem jedan podprostor za ažuriranje")
 
@@ -1759,6 +2121,11 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate):
         except Exception as exc:  # pragma: no cover - defensive fallback
             errors[unit_id] = str(exc)
 
+    request.state.audit_context = {
+        "entity_type": "unit_bulk",
+        "entity_id": ','.join(payload.unit_ids),
+    }
+
     return {
         "updated_count": len(updated_units),
         "errors": errors,
@@ -1772,10 +2139,11 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate):
     status_code=201,
     dependencies=[Depends(require_scopes("tenants:create"))],
 )
-async def create_zakupnik(zakupnik: ZakupnikCreate):
+async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
     zakupnik_dict = prepare_for_mongo(zakupnik.model_dump())
     zakupnik_obj = Zakupnik(**zakupnik_dict)
     await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.model_dump()))
+    request.state.audit_context = {"entity_type": "tenant", "entity_id": zakupnik_obj.id}
     return zakupnik_obj
 
 @api_router.get(
@@ -1850,7 +2218,7 @@ async def get_zakupnik(zakupnik_id: str):
     response_model=Zakupnik,
     dependencies=[Depends(require_scopes("tenants:update"))],
 )
-async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
+async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: Request):
     existing = await db.zakupnici.find_one({"id": zakupnik_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
@@ -1862,6 +2230,7 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
     if not updated:
         raise HTTPException(status_code=500, detail="Ažuriranje zakupnika nije uspjelo")
     try:
+        request.state.audit_context = {"entity_type": "tenant", "entity_id": zakupnik_id}
         return _build_zakupnik_model(updated)
     except ValidationError as exc:
         logger.error('Zakupnik %s se ne može učitati nakon ažuriranja: %s', zakupnik_id, exc)
@@ -1874,7 +2243,7 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
     status_code=201,
     dependencies=[Depends(require_scopes("leases:create"))],
 )
-async def create_ugovor(ugovor: UgovorCreate):
+async def create_ugovor(ugovor: UgovorCreate, request: Request):
     jedinica: Optional[PropertyUnit] = None
     if ugovor.property_unit_id:
         jedinica = await _get_property_unit_or_404(ugovor.property_unit_id)
@@ -1915,6 +2284,7 @@ async def create_ugovor(ugovor: UgovorCreate):
             })}
         )
 
+    request.state.audit_context = {"entity_type": "lease", "entity_id": ugovor_obj.id}
     return ugovor_obj
 
 @api_router.get(
@@ -1956,7 +2326,7 @@ async def get_ugovor(ugovor_id: str):
     response_model=Ugovor,
     dependencies=[Depends(require_scopes("leases:update"))],
 )
-async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate):
+async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Request):
     existing_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not existing_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
@@ -1969,6 +2339,8 @@ async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate):
 
     previous_unit_id = existing.property_unit_id
     new_unit_id = ugovor_update.property_unit_id
+
+    request.state.audit_context = {"entity_type": "lease", "entity_id": ugovor_id}
 
     new_unit: Optional[PropertyUnit] = None
     if new_unit_id:
@@ -2044,10 +2416,12 @@ class StatusUpdate(BaseModel):
     "/ugovori/{ugovor_id}/status",
     dependencies=[Depends(require_scopes("leases:update"))],
 )
-async def update_status_ugovora(ugovor_id: str, status_data: StatusUpdate):
+async def update_status_ugovora(ugovor_id: str, status_data: StatusUpdate, request: Request):
     ugovor_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not ugovor_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+
+    request.state.audit_context = {"entity_type": "lease", "entity_id": ugovor_id}
 
     await db.ugovori.update_one(
         {"id": ugovor_id},
@@ -2157,6 +2531,7 @@ async def create_dokument(request: Request):
     dokument_dict = prepare_for_mongo(dokument_payload)
     dokument_obj = Dokument(**dokument_dict, putanja_datoteke=file_path, velicina_datoteke=file_size)
     await db.dokumenti.insert_one(prepare_for_mongo(dokument_obj.model_dump()))
+    request.state.audit_context = {"entity_type": "document", "entity_id": dokument_obj.id}
     return dokument_obj
 
 @api_router.get(
@@ -2230,8 +2605,13 @@ def _enrich_racun_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
-@api_router.post("/racuni", response_model=Racun, status_code=201)
-async def create_racun(racun: RacunCreate):
+@api_router.post(
+    "/racuni",
+    response_model=Racun,
+    status_code=201,
+    dependencies=[Depends(require_scopes("financials:create"))],
+)
+async def create_racun(racun: RacunCreate, request: Request):
     racun_payload = racun.model_dump()
 
     if racun_payload.get('property_unit_id'):
@@ -2245,10 +2625,24 @@ async def create_racun(racun: RacunCreate):
     racun_dict = _enrich_racun_payload(racun_payload)
     racun_obj = Racun(**racun_dict)
     await db.racuni.insert_one(prepare_for_mongo(racun_obj.model_dump()))
+
+    changes = diff_dict({}, racun_obj.model_dump(mode="json"), ignore={'id'})
+    set_audit_context(
+        request,
+        entity_type="invoice",
+        entity_id=racun_obj.id,
+        parent_id=racun_obj.nekretnina_id,
+        changes=changes or {"created": {"before": None, "after": True}},
+    )
+
     return racun_obj
 
 
-@api_router.get("/racuni", response_model=List[Racun])
+@api_router.get(
+    "/racuni",
+    response_model=List[Racun],
+    dependencies=[Depends(require_scopes("financials:read"))],
+)
 async def list_racuni(
     nekretnina_id: Optional[str] = None,
     ugovor_id: Optional[str] = None,
@@ -2282,7 +2676,11 @@ async def list_racuni(
     return racuni
 
 
-@api_router.get("/racuni/{racun_id}", response_model=Racun)
+@api_router.get(
+    "/racuni/{racun_id}",
+    response_model=Racun,
+    dependencies=[Depends(require_scopes("financials:read"))],
+)
 async def get_racun(racun_id: str):
     racun = await db.racuni.find_one({"id": racun_id})
     if not racun:
@@ -2290,11 +2688,21 @@ async def get_racun(racun_id: str):
     return Racun(**parse_from_mongo(racun))
 
 
-@api_router.put("/racuni/{racun_id}", response_model=Racun)
-async def update_racun(racun_id: str, racun_update: RacunUpdate):
+@api_router.put(
+    "/racuni/{racun_id}",
+    response_model=Racun,
+    dependencies=[Depends(require_scopes("financials:update"))],
+)
+async def update_racun(racun_id: str, racun_update: RacunUpdate, request: Request):
+    existing_doc = await db.racuni.find_one({"id": racun_id})
+    if not existing_doc:
+        raise HTTPException(status_code=404, detail="Račun nije pronađen")
+
+    postojece = Racun(**parse_from_mongo(existing_doc))
+
     update_data = {k: v for k, v in racun_update.dict(exclude_unset=True).items()}
     if not update_data:
-        return await get_racun(racun_id)
+        return postojece
 
     if 'property_unit_id' in update_data:
         if update_data['property_unit_id']:
@@ -2315,18 +2723,61 @@ async def update_racun(racun_id: str, racun_update: RacunUpdate):
     updated = await db.racuni.find_one({"id": racun_id})
     if not updated:
         raise HTTPException(status_code=404, detail="Račun nije pronađen")
-    return Racun(**parse_from_mongo(updated))
+
+    racun_obj = Racun(**parse_from_mongo(updated))
+
+    changes = diff_dict(
+        postojece.model_dump(mode="json"),
+        racun_obj.model_dump(mode="json"),
+        ignore={'id', 'kreiran'}
+    )
+    if changes:
+        set_audit_context(
+            request,
+            entity_type="invoice",
+            entity_id=racun_obj.id,
+            parent_id=racun_obj.nekretnina_id,
+            changes=changes,
+        )
+
+    return racun_obj
 
 
-@api_router.delete("/racuni/{racun_id}")
-async def delete_racun(racun_id: str):
+@api_router.delete(
+    "/racuni/{racun_id}",
+    dependencies=[Depends(require_scopes("financials:delete"))],
+)
+async def delete_racun(racun_id: str, request: Request):
+    existing_doc = await db.racuni.find_one({"id": racun_id})
+    if not existing_doc:
+        raise HTTPException(status_code=404, detail="Račun nije pronađen")
+
     result = await db.racuni.delete_one({"id": racun_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Račun nije pronađen")
+
+    postojece = Racun(**parse_from_mongo(existing_doc))
+    deleted_changes = diff_dict(
+        postojece.model_dump(mode="json"),
+        {},
+        ignore={'id'}
+    )
+    set_audit_context(
+        request,
+        entity_type="invoice",
+        entity_id=racun_id,
+        parent_id=postojece.nekretnina_id,
+        changes=deleted_changes or {"deleted": {"before": True, "after": None}},
+    )
+
     return {"poruka": "Račun je uspješno obrisan"}
 
 
-@api_router.get("/activity-logs", response_model=List[ActivityLog])
+@api_router.get(
+    "/activity-logs",
+    response_model=List[ActivityLog],
+    dependencies=[Depends(require_scopes("reports:read"))],
+)
 async def get_activity_logs(limit: int = 100):
     raw_logs = await db.activity_logs.find().to_list(limit)
     logs = [ActivityLog(**parse_from_mongo(log)) for log in raw_logs]
@@ -2368,6 +2819,45 @@ async def oznaci_podsjetnik_poslan(podsjetnik_id: str):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Podsjetnik nije pronađen")
     return {"poruka": "Podsjetnik je označen kao riješen"}
+
+
+@api_router.get(
+    "/audit/logs",
+    response_model=List[ActivityLog],
+    dependencies=[Depends(require_scopes("reports:read"))],
+)
+async def list_audit_logs(
+    entity_type: Optional[str] = None,
+    entity_id: Optional[str] = None,
+    parent_id: Optional[str] = None,
+    path: Optional[str] = None,
+    limit: int = 100,
+):
+    limit = max(1, min(limit, 500))
+    query: Dict[str, Any] = {}
+    if entity_type:
+        query['entity_type'] = entity_type
+    if entity_id:
+        query['entity_id'] = entity_id
+    if parent_id:
+        query['entity_parent_id'] = parent_id
+    if path:
+        query['path'] = {"$regex": re.escape(path), "$options": "i"}
+
+    cursor = db.activity_logs.find(query) if query else db.activity_logs.find()
+
+    if hasattr(cursor, 'sort'):
+        cursor = cursor.sort('timestamp', -1)
+    raw_logs = await cursor.to_list(limit)
+    raw_logs.sort(key=lambda entry: entry.get('timestamp', ''), reverse=True)
+
+    rezultat: List[ActivityLog] = []
+    for raw in raw_logs:
+        try:
+            rezultat.append(ActivityLog(**parse_from_mongo(raw)))
+        except ValidationError:
+            continue
+    return rezultat
 
 
 # Maintenance tasks (radni nalozi)
@@ -2434,7 +2924,7 @@ async def get_maintenance_task(task_id: str):
     status_code=201,
     dependencies=[Depends(require_scopes("maintenance:create"))],
 )
-async def create_maintenance_task(payload: MaintenanceTaskCreate):
+async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Request):
     data = payload.model_dump()
     labels = _normalise_labels(data.pop("oznake", []))
 
@@ -2467,6 +2957,15 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate):
         if not data.get("property_unit_id") and ugovor.property_unit_id:
             data["property_unit_id"] = ugovor.property_unit_id
 
+    assignee_id = data.get("dodijeljeno_user_id")
+    if not assignee_id:
+        raise HTTPException(status_code=400, detail="Voditelj naloga je obavezan")
+    assignee = await _get_user_or_404(assignee_id)
+    if assignee.role not in ALLOWED_MAINTENANCE_ASSIGN_ROLES:
+        raise HTTPException(status_code=400, detail="Voditelj naloga mora biti Property Manager ili Owner Exec")
+    data["dodijeljeno_user_id"] = assignee.id
+    data["dodijeljeno"] = assignee.full_name or assignee.email
+
     data["oznake"] = labels
     task = MaintenanceTask(**data)
     initial_activity = MaintenanceActivity(
@@ -2478,7 +2977,10 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate):
     )
     task.aktivnosti.append(initial_activity)
     task.azuriran = task.kreiran
+    if task.status in {MaintenanceStatus.ZAVRSENO, MaintenanceStatus.ARHIVIRANO}:
+        task.zavrseno_na = task.kreiran
     await db.maintenance_tasks.insert_one(prepare_for_mongo(task.model_dump()))
+    request.state.audit_context = {"entity_type": "maintenance", "entity_id": task.id}
     return task
 
 
@@ -2487,9 +2989,10 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate):
     response_model=MaintenanceTask,
     dependencies=[Depends(require_scopes("maintenance:update"))],
 )
-async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate):
+async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate, request: Request):
     task = await _get_task_or_404(task_id)
     update_data = payload.model_dump(exclude_unset=True)
+    request.state.audit_context = {"entity_type": "maintenance", "entity_id": task_id}
 
     if "oznake" in update_data and update_data["oznake"] is not None:
         update_data["oznake"] = _normalise_labels(update_data["oznake"])
@@ -2521,6 +3024,16 @@ async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate):
         if not update_data.get("property_unit_id") and ugovor.property_unit_id:
             update_data["property_unit_id"] = ugovor.property_unit_id
 
+    if "dodijeljeno_user_id" in update_data:
+        assignee_id = update_data["dodijeljeno_user_id"]
+        if not assignee_id:
+            raise HTTPException(status_code=400, detail="Voditelj naloga je obavezan")
+        assignee = await _get_user_or_404(assignee_id)
+        if assignee.role not in ALLOWED_MAINTENANCE_ASSIGN_ROLES:
+            raise HTTPException(status_code=400, detail="Voditelj naloga mora biti Property Manager ili Owner Exec")
+        update_data["dodijeljeno_user_id"] = assignee.id
+        update_data["dodijeljeno"] = assignee.full_name or assignee.email
+
     original_data = task.model_dump()
     merged = copy.deepcopy(original_data)
     merged.update(update_data)
@@ -2549,6 +3062,10 @@ async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate):
             timestamp=datetime.now(timezone.utc),
         ).model_dump())
         merged["status"] = new_status
+        if new_status in {MaintenanceStatus.ZAVRSENO, MaintenanceStatus.ARHIVIRANO}:
+            merged["zavrseno_na"] = datetime.now(timezone.utc)
+        else:
+            merged["zavrseno_na"] = None
 
     if changed_fields:
         fields_label = ', '.join(field.replace('_', ' ') for field in changed_fields)
@@ -2570,7 +3087,7 @@ async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate):
     response_model=MaintenanceTask,
     dependencies=[Depends(require_scopes("maintenance:update"))],
 )
-async def add_maintenance_comment(task_id: str, payload: MaintenanceCommentCreate):
+async def add_maintenance_comment(task_id: str, payload: MaintenanceCommentCreate, request: Request):
     task = await _get_task_or_404(task_id)
     message = (payload.poruka or '').strip()
     if not message:
@@ -2590,6 +3107,7 @@ async def add_maintenance_comment(task_id: str, payload: MaintenanceCommentCreat
     merged["azuriran"] = datetime.now(timezone.utc)
     updated = MaintenanceTask(**merged)
     await db.maintenance_tasks.update_one({"id": task_id}, {"$set": prepare_for_mongo(updated.model_dump())})
+    request.state.audit_context = {"entity_type": "maintenance", "entity_id": task_id}
     return updated
 
 
@@ -2597,9 +3115,10 @@ async def add_maintenance_comment(task_id: str, payload: MaintenanceCommentCreat
     "/maintenance-tasks/{task_id}",
     dependencies=[Depends(require_scopes("maintenance:delete"))],
 )
-async def delete_maintenance_task(task_id: str):
+async def delete_maintenance_task(task_id: str, request: Request):
     task = await _get_task_or_404(task_id)
     await db.maintenance_tasks.delete_one({"id": task.id})
+    request.state.audit_context = {"entity_type": "maintenance", "entity_id": task_id}
     return {"poruka": "Radni nalog je obrisan"}
 
 # Dashboard i analitika
@@ -2812,6 +3331,32 @@ async def get_dashboard():
         if unit.status == PropertyUnitStatus.REZERVIRANO
     ]
 
+    maintenance_docs = await db.maintenance_tasks.find().to_list(1000)
+    maintenance_items = [
+        MaintenanceTask(**parse_from_mongo(doc)) for doc in maintenance_docs
+    ]
+    open_maintenance = [
+        task for task in maintenance_items
+        if task.status not in {MaintenanceStatus.ZAVRSENO, MaintenanceStatus.ARHIVIRANO}
+    ]
+    overdue_maintenance = [
+        task for task in maintenance_items
+        if task.rok and task.status not in {MaintenanceStatus.ZAVRSENO, MaintenanceStatus.ARHIVIRANO} and task.rok < datetime.now(timezone.utc).date()
+    ]
+    resolution_hours: List[float] = []
+    sla_breaches = 0
+    for task in maintenance_items:
+        if task.status in {MaintenanceStatus.ZAVRSENO, MaintenanceStatus.ARHIVIRANO}:
+            finish_time = task.zavrseno_na or task.azuriran
+            delta = (finish_time - task.kreiran).total_seconds() / 3600
+            if delta >= 0:
+                resolution_hours.append(delta)
+            if task.rok and finish_time.date() > task.rok:
+                sla_breaches += 1
+    avg_resolution = round(sum(resolution_hours) / len(resolution_hours), 2) if resolution_hours else None
+    estimated_cost_total = round(sum(task.procijenjeni_trosak or 0 for task in maintenance_items), 2)
+    actual_cost_total = round(sum(task.stvarni_trosak or 0 for task in maintenance_items), 2)
+
     najamni_kapacitet = {
         "total_units": total_units,
         "occupied_units": leased_units,
@@ -2840,6 +3385,14 @@ async def get_dashboard():
         },
         "portfolio_breakdown": portfolio_by_type,
         "najamni_kapacitet": najamni_kapacitet,
+        "maintenance_kpi": {
+            "open_workorders": len(open_maintenance),
+            "overdue_workorders": len(overdue_maintenance),
+            "avg_resolution_hours": avg_resolution,
+            "sla_breaches": sla_breaches,
+            "estimated_cost_total": estimated_cost_total,
+            "actual_cost_total": actual_cost_total,
+        },
     }
 
 @api_router.get(
