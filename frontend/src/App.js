@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './components/ui/textarea';
 import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './components/ui/dialog';
 import { Checkbox } from './components/ui/checkbox';
 import { Progress } from './components/ui/progress';
 import { toast } from 'sonner';
-import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2, Search, Bell, Download, Sparkles, ArrowRight, Printer, Phone, Mail, MapPin, Archive, ArchiveRestore } from 'lucide-react';
+import { Home, Building, Users, FileText, DollarSign, Calendar, Plus, Eye, Edit, Trash2, Search, Bell, Download, Sparkles, ArrowRight, Printer, Phone, Mail, MapPin, Archive, ArchiveRestore, Wrench } from 'lucide-react';
 import logoMain from './assets/riforma-logo.png';
 import './App.css';
 
@@ -53,6 +53,7 @@ const api = {
   // Ugovori
   getUgovori: () => axios.get(`${API}/ugovori`),
   createUgovor: (data) => axios.post(`${API}/ugovori`, data),
+  updateUgovor: (id, data) => axios.put(`${API}/ugovori/${id}`, data),
   updateStatusUgovora: (id, status) => axios.put(`${API}/ugovori/${id}/status`, { novi_status: status }),
   
   // Dokumenti
@@ -119,10 +120,13 @@ const api = {
     });
   },
 
-  generateContractAnnex: (data) => axios.post(`${API}/ai/generate-contract-annex`, data),
-  generateContract: (data) => axios.post(`${API}/ai/generate-contract`, data),
-  getAnnexTemplate: () => axios.get(`${API}/templates/aneks`),
-  getContractTemplate: () => axios.get(`${API}/templates/ugovor`),
+  // Maintenance
+  getMaintenanceTasks: (params = {}) => axios.get(`${API}/maintenance-tasks`, { params }),
+  getMaintenanceTask: (id) => axios.get(`${API}/maintenance-tasks/${id}`),
+  createMaintenanceTask: (payload) => axios.post(`${API}/maintenance-tasks`, payload),
+  updateMaintenanceTask: (id, payload) => axios.patch(`${API}/maintenance-tasks/${id}`, payload),
+  deleteMaintenanceTask: (id) => axios.delete(`${API}/maintenance-tasks/${id}`),
+  addMaintenanceComment: (id, payload) => axios.post(`${API}/maintenance-tasks/${id}/comments`, payload),
 
   // Podsjetnici actions
   markReminderAsSent: (id) => axios.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
@@ -175,119 +179,6 @@ const formatDeltaPercentage = (value) => {
   return `${sign}${rounded} %`;
 };
 
-const computeSeriesDelta = (series) => {
-  if (!Array.isArray(series) || series.length === 0) {
-    return { latest: 0, previous: null, delta: null, absolute: null };
-  }
-
-  const latestRaw = series[series.length - 1]?.value;
-  const previousRaw = series.length > 1 ? series[series.length - 2]?.value : null;
-
-  const latest = parseNumericValue(latestRaw) ?? 0;
-  const previous = previousRaw !== null && previousRaw !== undefined ? parseNumericValue(previousRaw) : null;
-
-  let absolute = null;
-  let delta = null;
-
-  if (previous !== null) {
-    absolute = latest - previous;
-    if (previous !== 0) {
-      delta = (absolute / Math.abs(previous)) * 100;
-    }
-  }
-
-  return { latest, previous, delta, absolute };
-};
-
-const TrendSparkline = ({ data, stroke = 'hsl(var(--chart-2))', fill = 'hsl(var(--chart-2) / 0.15)', width = 160, height = 64 }) => {
-  if (!Array.isArray(data) || data.length === 0) {
-    return <div className="text-xs text-muted-foreground">Nema podataka</div>;
-  }
-
-  const values = data.map((point) => parseNumericValue(point.value) ?? 0);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1;
-  const padding = 4;
-  const drawableWidth = width - padding * 2;
-  const drawableHeight = height - padding * 2;
-
-  const coordinates = values.map((value, index) => {
-    const x = values.length === 1 ? drawableWidth / 2 + padding : (index / (values.length - 1)) * drawableWidth + padding;
-    const ratio = range === 0 ? 0.5 : (value - min) / range;
-    const y = padding + (drawableHeight - ratio * drawableHeight);
-    return { x, y };
-  });
-
-  const linePoints = coordinates.map(({ x, y }) => `${x},${y}`).join(' ');
-  const areaPoints = [
-    `${padding},${height - padding}`,
-    ...coordinates.map(({ x, y }) => `${x},${y}`),
-    `${padding + drawableWidth},${height - padding}`,
-  ].join(' ');
-
-  return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="none" role="img">
-      <polygon points={areaPoints} fill={fill} />
-      <polyline points={linePoints} fill="none" stroke={stroke} strokeWidth={2.2} strokeLinecap="round" />
-    </svg>
-  );
-};
-
-const DeltaBadge = ({ delta, absolute }) => {
-  if ((delta === null || Number.isNaN(delta)) && (absolute === null || Number.isNaN(absolute))) {
-    return <span className="text-xs text-muted-foreground">—</span>;
-  }
-
-  const deltaLabel = delta !== null && !Number.isNaN(delta)
-    ? `${formatDeltaPercentage(delta)} vs. prošli mjesec`
-    : `${absolute >= 0 ? '+' : ''}${formatCurrency(absolute)} vs. prošli mjesec`;
-
-  const isPositive = (delta ?? absolute ?? 0) >= 0;
-  const classes = isPositive
-    ? 'border-emerald-400/40 bg-emerald-50 text-emerald-700'
-    : 'border-red-400/40 bg-red-50 text-red-600';
-
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium tracking-wide ${classes}`}>
-      {deltaLabel}
-    </span>
-  );
-};
-
-const TrendCard = ({
-  title,
-  icon: Icon,
-  series,
-  stroke,
-  fill,
-  formatter = formatCurrency,
-  testId,
-  className = '',
-  sparklineHeight = 64,
-}) => {
-  const { latest, delta, absolute } = computeSeriesDelta(series);
-  const tonePositive = (delta ?? absolute ?? 0) >= 0;
-  const resolvedStroke = stroke || (tonePositive ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-1))');
-  const resolvedFill = fill || (tonePositive ? 'hsl(var(--chart-2) / 0.18)' : 'hsl(var(--chart-1) / 0.18)');
-
-  return (
-    <Card data-testid={testId} className={`card-hover shadow-shell ${className}`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-3">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
-          {Icon ? <Icon className="h-5 w-5 text-primary/70" /> : null}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
-        <div className="text-3xl font-semibold text-foreground">{formatter(latest)}</div>
-        <DeltaBadge delta={delta} absolute={absolute} />
-        <TrendSparkline data={series} stroke={resolvedStroke} fill={resolvedFill} height={sparklineHeight} />
-      </CardContent>
-    </Card>
-  );
-};
-
 const formatDate = (value) => {
   if (!value) {
     return '—';
@@ -297,6 +188,23 @@ const formatDate = (value) => {
     return value;
   }
   return date.toLocaleDateString('hr-HR');
+};
+
+const formatDateTime = (value) => {
+  if (!value) {
+    return '—';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString('hr-HR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 const formatPropertyType = (value) => {
@@ -311,6 +219,8 @@ const formatPropertyType = (value) => {
   };
   return map[value] || value;
 };
+
+
 
 const UNIT_STATUS_CONFIG = {
   dostupno: {
@@ -334,6 +244,89 @@ const UNIT_STATUS_CONFIG = {
     dot: 'bg-slate-500',
   },
 };
+
+const MAINTENANCE_STATUS_META = {
+  novi: {
+    title: 'Novi',
+    description: 'Prijave koje čekaju trijažu',
+    cardBorderClass: 'border-l-4 border-sky-500',
+    badgeClass: 'border border-sky-200 bg-sky-100 text-sky-700',
+  },
+  planiran: {
+    title: 'Planiran',
+    description: 'Termin i resursi su definirani',
+    cardBorderClass: 'border-l-4 border-amber-500',
+    badgeClass: 'border border-amber-200 bg-amber-100 text-amber-700',
+  },
+  u_tijeku: {
+    title: 'U tijeku',
+    description: 'Radovi su u tijeku',
+    cardBorderClass: 'border-l-4 border-blue-500',
+    badgeClass: 'border border-blue-200 bg-blue-100 text-blue-700',
+  },
+  ceka_dobavljaca: {
+    title: 'Čeka dobavljača',
+    description: 'Blokirano dok ne stigne dobavljač',
+    cardBorderClass: 'border-l-4 border-purple-500',
+    badgeClass: 'border border-purple-200 bg-purple-100 text-purple-700',
+  },
+  potrebna_odluka: {
+    title: 'Potrebna odluka',
+    description: 'Čeka odobrenje ili dodatni input',
+    cardBorderClass: 'border-l-4 border-rose-500',
+    badgeClass: 'border border-rose-200 bg-rose-100 text-rose-700',
+  },
+  zavrseno: {
+    title: 'Završeno',
+    description: 'Radni nalog je izvršen',
+    cardBorderClass: 'border-l-4 border-emerald-500',
+    badgeClass: 'border border-emerald-200 bg-emerald-100 text-emerald-700',
+  },
+  arhivirano: {
+    title: 'Arhivirano',
+    description: 'Ostavljeno za evidenciju',
+    cardBorderClass: 'border-l-4 border-slate-400',
+    badgeClass: 'border border-slate-200 bg-slate-100 text-slate-600',
+  },
+};
+
+const MAINTENANCE_STATUS_ORDER = ['novi', 'planiran', 'u_tijeku', 'ceka_dobavljaca', 'potrebna_odluka', 'zavrseno'];
+const ALL_MAINTENANCE_STATUSES = [...MAINTENANCE_STATUS_ORDER, 'arhivirano'];
+
+const MAINTENANCE_PRIORITY_CONFIG = {
+  nisko: {
+    label: 'Nizak prioritet',
+    className: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
+  },
+  srednje: {
+    label: 'Srednji prioritet',
+    className: 'border border-sky-200 bg-sky-50 text-sky-700',
+  },
+  visoko: {
+    label: 'Visok prioritet',
+    className: 'border border-orange-200 bg-orange-50 text-orange-700',
+  },
+  kriticno: {
+    label: 'Kritično',
+    className: 'border border-red-200 bg-red-50 text-red-700',
+  },
+};
+
+const MAINTENANCE_PRIORITY_ORDER = ['kriticno', 'visoko', 'srednje', 'nisko'];
+
+const EMPTY_MAINTENANCE_FORM = {
+  naziv: '',
+  opis: '',
+  prioritet: 'srednje',
+  status: 'novi',
+  nekretnina_id: '',
+  property_unit_id: '',
+  prijavio: '',
+  dodijeljeno: '',
+  rok: '',
+  oznake: '',
+};
+
 
 const formatUnitStatus = (status) => {
   if (!status) {
@@ -398,6 +391,48 @@ const sortUnitsByPosition = (units = []) => {
     }
     return (a.oznaka || '').localeCompare(b.oznaka || '');
   });
+};
+
+const convertUnitDraftToPayload = (unitDraft = {}) => {
+  const trimOrNull = (value) => {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (typeof value !== 'string') {
+      return value;
+    }
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  };
+
+  const payload = {
+    oznaka: trimOrNull(unitDraft.oznaka) || '',
+    naziv: trimOrNull(unitDraft.naziv),
+    kat: trimOrNull(unitDraft.kat),
+    povrsina_m2: parseNumericValue(unitDraft.povrsina_m2),
+    status: unitDraft.status || 'dostupno',
+    osnovna_zakupnina: parseNumericValue(unitDraft.osnovna_zakupnina),
+    zakupnik_id: unitDraft.zakupnik_id || null,
+    ugovor_id: unitDraft.ugovor_id || null,
+    raspolozivo_od: unitDraft.raspolozivo_od || null,
+    layout_ref: trimOrNull(unitDraft.layout_ref),
+    napomena: trimOrNull(unitDraft.napomena),
+    opis: trimOrNull(unitDraft.opis),
+    metadata: unitDraft.metadata || null,
+  };
+
+  return payload;
+};
+
+const normaliseNekretninaPayload = (formPayload = {}) => {
+  const property = { ...(formPayload.nekretnina || {}) };
+  const units = Array.isArray(formPayload.units)
+    ? formPayload.units
+        .map((unit) => convertUnitDraftToPayload(unit))
+        .filter((unit) => unit.oznaka)
+    : [];
+
+  return { property, units };
 };
 
 const resolveUnitTenantName = (unit, tenantsById) => {
@@ -550,252 +585,6 @@ const resolveDocumentType = (value) => {
   return 'ostalo';
 };
 
-const ANNEX_BRAND = {
-  name: process.env.REACT_APP_BRAND_NAME || 'MK Proptech',
-  subtitle: process.env.REACT_APP_BRAND_SUBTITLE || 'Property Management Platform',
-  footer: process.env.REACT_APP_BRAND_FOOTER || 'Dokument je generiran putem MK Proptech sustava.',
-  landlordLabel: process.env.REACT_APP_LANDLORD_LABEL || 'Zakupodavac',
-  tenantLabel: process.env.REACT_APP_TENANT_LABEL || 'Zakupnik',
-};
-
-const FALLBACK_ANNEX_TEMPLATE = `<!DOCTYPE html>
-<html lang="hr">
-  <head>
-    <meta charset="utf-8" />
-    <title>Aneks ugovora</title>
-    <style>
-      body { margin: 0; padding: 48px 56px 60px; font-family: Helvetica, Arial, sans-serif; color: #1c1c1c; line-height: 1.6; }
-      header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1d3557; padding-bottom: 14px; margin-bottom: 32px; }
-      .brand-block { display: flex; flex-direction: column; gap: 4px; }
-      .brand-name { font-weight: 700; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; color: #1d3557; }
-      .brand-subtitle { font-size: 11px; color: #6c757d; letter-spacing: 0.08em; text-transform: uppercase; }
-      .document-meta { text-align: right; font-size: 11px; color: #6c757d; }
-      h1 { font-size: 24px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 8px; color: #1d3557; }
-      .intro { font-size: 13px; color: #6c757d; margin-bottom: 28px; }
-      .section { margin-top: 24px; }
-      .section__title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 12px; color: #457b9d; }
-      .section__content p { margin: 0 0 8px; }
-      .section__content ul { margin: 0; padding-left: 18px; }
-      .section__content li { margin-bottom: 6px; }
-      .signature-block { display: flex; justify-content: space-between; gap: 48px; margin-top: 56px; }
-      .signature { flex: 1; text-align: center; font-size: 12px; }
-      .signature::before { content: ''; display: block; height: 56px; border-bottom: 1px solid #dfe6ed; margin-bottom: 10px; }
-      footer { margin-top: 64px; font-size: 10px; color: #6c757d; border-top: 1px solid #dfe6ed; padding-top: 12px; }
-      .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #457b9d; color: #457b9d; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="brand-block">
-        <div class="brand-name">{{BRAND_NAME}}</div>
-        <div class="brand-subtitle">{{BRAND_SUBTITLE}}</div>
-      </div>
-      <div class="document-meta">
-        <div class="badge">Aneks ugovora</div>
-        <div>Generirano: {{GENERATED_AT}}</div>
-        <div>Referenca ugovora: {{CONTRACT_REFERENCE}}</div>
-      </div>
-    </header>
-    <main>
-      <h1>{{TITLE}}</h1>
-      <p class="intro">{{INTRO}}</p>
-      <section class="section">
-        <h2 class="section__title">Sažetak izvornog ugovora</h2>
-        <div class="section__content">{{CONTRACT_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2 class="section__title">Nekretnina</h2>
-        <div class="section__content">{{PROPERTY_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2 class="section__title">Zakupnik</h2>
-        <div class="section__content">{{TENANT_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2 class="section__title">Izmjene i dopune</h2>
-        <div class="section__content">{{CHANGES}}</div>
-      </section>
-      <section class="section">
-        <h2 class="section__title">Ključne odredbe</h2>
-        <div class="section__content">{{BODY}}</div>
-      </section>
-      <div class="signature-block">
-        <div class="signature">{{LANDLORD_LABEL}}</div>
-        <div class="signature">{{TENANT_LABEL}}</div>
-      </div>
-    </main>
-    <footer>{{FOOTER}}</footer>
-  </body>
-</html>`;
-
-const FALLBACK_CONTRACT_TEMPLATE = `<!DOCTYPE html>
-<html lang="hr">
-  <head>
-    <meta charset="utf-8" />
-    <title>Ugovor o zakupu</title>
-    <style>
-      body { margin: 0; padding: 48px 56px 60px; font-family: Helvetica, Arial, sans-serif; color: #1c1c1c; line-height: 1.6; }
-      header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1d3557; padding-bottom: 14px; margin-bottom: 32px; }
-      .brand-block { display: flex; flex-direction: column; gap: 4px; }
-      .brand-name { font-weight: 700; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; color: #1d3557; }
-      .brand-subtitle { font-size: 11px; color: #6c757d; letter-spacing: 0.08em; text-transform: uppercase; }
-      .document-meta { text-align: right; font-size: 11px; color: #6c757d; }
-      .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #457b9d; color: #457b9d; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
-      h1 { font-size: 26px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 12px; color: #1d3557; }
-      h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin: 28px 0 12px; color: #457b9d; }
-      p { margin: 0 0 10px; }
-      ul { margin: 0 0 12px 24px; }
-      .section { margin-top: 20px; }
-      .signature-block { display: flex; justify-content: space-between; gap: 56px; margin-top: 60px; }
-      .signature { flex: 1; text-align: center; font-size: 12px; }
-      .signature::before { content: ''; display: block; height: 56px; border-bottom: 1px solid #dfe6ed; margin-bottom: 10px; }
-      footer { margin-top: 64px; font-size: 10px; color: #6c757d; border-top: 1px solid #dfe6ed; padding-top: 12px; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="brand-block">
-        <div class="brand-name">{{BRAND_NAME}}</div>
-        <div class="brand-subtitle">{{BRAND_SUBTITLE}}</div>
-      </div>
-      <div class="document-meta">
-        <div class="badge">Ugovor o zakupu</div>
-        <div>Referenca: {{CONTRACT_REFERENCE}}</div>
-        <div>Generirano: {{GENERATED_AT}}</div>
-      </div>
-    </header>
-    <main>
-      <h1>{{TITLE}}</h1>
-      <p>{{INTRO}}</p>
-      <section class="section">
-        <h2>Strane</h2>
-        <div>{{PARTIES}}</div>
-      </section>
-      <section class="section">
-        <h2>Nekretnina</h2>
-        <div>{{PROPERTY_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2>Uvjeti zakupa</h2>
-        <div>{{TERM_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2>Financijski uvjeti</h2>
-        <div>{{FINANCIAL_SUMMARY}}</div>
-      </section>
-      <section class="section">
-        <h2>Obveze i odgovornosti</h2>
-        <div>{{OBLIGATIONS}}</div>
-      </section>
-      <section class="section">
-        <h2>Posebne odredbe</h2>
-        <div>{{SPECIAL_PROVISIONS}}</div>
-      </section>
-      <section class="section">
-        <h2>Detaljni ugovor</h2>
-        <div>{{BODY}}</div>
-      </section>
-      <section class="section">
-        <h2>Potvrda</h2>
-        <p>{{CONFIRMATION}}</p>
-      </section>
-      <div class="signature-block">
-        <div class="signature">{{LANDLORD_LABEL}}</div>
-        <div class="signature">{{TENANT_LABEL}}</div>
-      </div>
-    </main>
-    <footer>{{FOOTER}}</footer>
-  </body>
-</html>`;
-
-const normaliseTextBlock = (value) => (value || '').toString().replace(/\r\n/g, '\n').trim();
-
-const escapeHtml = (value = '') => value
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
-
-const renderSummaryHtml = (text) => {
-  const normalised = normaliseTextBlock(text);
-  if (!normalised) {
-    return '<p>Podaci nisu dostupni.</p>';
-  }
-  return normalised.split('\n').filter(Boolean).map((line) => {
-    const [label, value] = line.split(/:\s*/, 2);
-    if (value !== undefined) {
-      return `<p><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`;
-    }
-    return `<p>${escapeHtml(line)}</p>`;
-  }).join('');
-};
-
-const renderChangesHtml = (context = {}) => {
-  const items = Array.isArray(context.promjene) ? context.promjene : [];
-  if (items.length > 0) {
-    const listItems = items.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
-    return `<ul>${listItems}</ul>`;
-  }
-  const fallback = normaliseTextBlock(context.promjene_text);
-  if (fallback) {
-    return fallback.split('\n').filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join('');
-  }
-  return '<p>Nema dodatnih promjena specificiranih.</p>';
-};
-
-const renderParagraphHtml = (text) => {
-  const normalised = normaliseTextBlock(text);
-  if (!normalised) {
-    return '<p>—</p>';
-  }
-  return normalised.split('\n').filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join('');
-};
-
-const convertAnnexContent = (content) => {
-  const normalised = normaliseTextBlock(content);
-  if (!normalised) {
-    return { introText: '', bodyHtml: '' };
-  }
-  const blocks = normalised.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
-  if (blocks.length === 0) {
-    return { introText: '', bodyHtml: '' };
-  }
-
-  const renderBlock = (block) => {
-    const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
-    if (lines.length === 0) {
-      return '';
-    }
-    const isList = lines.every((line) => /^(-|\u2022|\*|\d+\.)\s+/.test(line));
-    if (isList) {
-      const listItems = lines.map((line) => {
-        const text = line.replace(/^(-|\u2022|\*|\d+\.)\s+/, '');
-        return `<li>${escapeHtml(text)}</li>`;
-      }).join('');
-      return `<ul>${listItems}</ul>`;
-    }
-    return `<p>${escapeHtml(lines.join(' '))}</p>`;
-  };
-
-  const [introBlock, ...restBlocks] = blocks;
-  const introText = introBlock ? introBlock.replace(/\s+/g, ' ') : '';
-  const bodyBlocks = restBlocks.length > 0 ? restBlocks : [introBlock];
-  const bodyHtml = bodyBlocks.map((block) => renderBlock(block)).join('');
-
-  return {
-    introText,
-    bodyHtml,
-  };
-};
-
-const applyTemplatePlaceholders = (template, replacements) => {
-  return Object.entries(replacements).reduce((acc, [token, value]) => {
-    const replacement = value == null ? '' : value;
-    return acc.split(token).join(replacement);
-  }, template);
-};
-
 const InfoField = ({ label, value, fallback = '—' }) => (
   <div className="space-y-1.5">
     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
@@ -837,6 +626,7 @@ const EntityStoreProvider = ({ children }) => {
     ugovori: [],
     dokumenti: [],
     propertyUnits: [],
+    maintenanceTasks: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -844,12 +634,13 @@ const EntityStoreProvider = ({ children }) => {
   const loadEntities = useCallback(async () => {
     setLoading(true);
     try {
-      const [nekRes, zakRes, ugRes, dokRes, unitRes] = await Promise.all([
+      const [nekRes, zakRes, ugRes, dokRes, unitRes, maintenanceRes] = await Promise.all([
         api.getNekretnine(),
         api.getZakupnici(),
         api.getUgovori(),
         api.getDokumenti(),
         api.getUnits(),
+        api.getMaintenanceTasks(),
       ]);
 
       setState({
@@ -858,6 +649,7 @@ const EntityStoreProvider = ({ children }) => {
         ugovori: ugRes.data,
         dokumenti: dokRes.data,
         propertyUnits: unitRes.data,
+        maintenanceTasks: maintenanceRes.data,
       });
       setError(null);
     } catch (err) {
@@ -865,6 +657,15 @@ const EntityStoreProvider = ({ children }) => {
       setError(err);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const refreshMaintenanceTasks = useCallback(async () => {
+    try {
+      const response = await api.getMaintenanceTasks();
+      setState((prev) => ({ ...prev, maintenanceTasks: response.data }));
+    } catch (err) {
+      console.error('Greška pri učitavanju radnih naloga:', err);
     }
   }, []);
 
@@ -908,7 +709,8 @@ const EntityStoreProvider = ({ children }) => {
     loading,
     error,
     refresh: loadEntities,
-  }), [state, propertyUnitsById, propertyUnitsByProperty, loading, error, loadEntities]);
+    refreshMaintenanceTasks,
+  }), [state, propertyUnitsById, propertyUnitsByProperty, loading, error, loadEntities, refreshMaintenanceTasks]);
 
   return (
     <EntityStoreContext.Provider value={value}>
@@ -934,6 +736,7 @@ const Navigation = () => {
     { path: '/nekretnine', icon: Building, label: 'Nekretnine' },
     { path: '/zakupnici', icon: Users, label: 'Zakupnici' },
     { path: '/ugovori', icon: Calendar, label: 'Ugovori' },
+    { path: '/odrzavanje', icon: Wrench, label: 'Održavanje' },
     { path: '/dokumenti', icon: FileText, label: 'Dokumenti' },
   ];
 
@@ -1032,8 +835,6 @@ const ClickableReminder = ({ podsjetnik }) => {
         datum_pocetka: noviDatumPocetka.toISOString().split('T')[0],
         datum_zavrsetka: noviDatumZavrsetka.toISOString().split('T')[0],
         trajanje_mjeseci: godina * 12,
-        opcija_produljenja: trenutniUgovor.opcija_produljenja,
-        uvjeti_produljenja: trenutniUgovor.uvjeti_produljenja,
         rok_otkaza_dani: trenutniUgovor.rok_otkaza_dani,
         osnovna_zakupnina: trenutniUgovor.osnovna_zakupnina * (1 + 0.03 * godina), // 3% godišnje povećanje
         zakupnina_po_m2: trenutniUgovor.zakupnina_po_m2 ? trenutniUgovor.zakupnina_po_m2 * (1 + 0.03 * godina) : null,
@@ -1286,6 +1087,1133 @@ const ClickableReminder = ({ podsjetnik }) => {
 };
 
 // Dashboard Component
+const MaintenanceBoard = ({
+  enableFilters = false,
+  enableList = false,
+  enableDetails = true,
+  title = 'Radni nalozi održavanja',
+  description = 'Kanban pregled naloga kako bi odjel upravljanja nekretninama imao jasan uvid.',
+}) => {
+  const {
+    maintenanceTasks,
+    nekretnine,
+    propertyUnitsById,
+    propertyUnitsByProperty,
+    refreshMaintenanceTasks,
+    loading: storeLoading,
+  } = useEntityStore();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState(EMPTY_MAINTENANCE_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(null);
+  const [filters, setFilters] = useState({
+    search: '',
+    prioritet: 'all',
+    nekretnina: 'all',
+    status: 'all',
+    dueFrom: '',
+    dueTo: '',
+    oznaka: '',
+  });
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [commentForm, setCommentForm] = useState({ author: '', message: '' });
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+
+  const propertyMap = useMemo(() => {
+    const map = {};
+    for (const property of nekretnine) {
+      if (property?.id) {
+        map[property.id] = property;
+      }
+    }
+    return map;
+  }, [nekretnine]);
+
+  const filteredTasks = useMemo(() => {
+    const searchTerm = filters.search.trim().toLowerCase();
+    const labelTerms = filters.oznaka
+      ? filters.oznaka
+          .split(',')
+          .map((item) => item.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+    let dueFromDate = filters.dueFrom ? new Date(filters.dueFrom) : null;
+    let dueToDate = filters.dueTo ? new Date(filters.dueTo) : null;
+
+    if (dueFromDate && Number.isNaN(dueFromDate.getTime())) {
+      dueFromDate = null;
+    }
+    if (dueToDate && Number.isNaN(dueToDate.getTime())) {
+      dueToDate = null;
+    }
+    if (dueToDate) {
+      dueToDate.setHours(23, 59, 59, 999);
+    }
+
+    return (maintenanceTasks || []).filter((task) => {
+      if (filters.prioritet !== 'all' && task.prioritet !== filters.prioritet) {
+        return false;
+      }
+      if (filters.status !== 'all' && task.status !== filters.status) {
+        return false;
+      }
+      if (filters.nekretnina !== 'all' && task.nekretnina_id !== filters.nekretnina) {
+        return false;
+      }
+
+      const dueDate = task.rok ? new Date(task.rok) : null;
+      const dueValid = dueDate && !Number.isNaN(dueDate.getTime());
+      if (dueFromDate && (!dueValid || dueDate < dueFromDate)) {
+        return false;
+      }
+      if (dueToDate && (!dueValid || dueDate > dueToDate)) {
+        return false;
+      }
+
+      if (labelTerms.length > 0) {
+        const labels = (task.oznake || []).map((item) => item.toLowerCase());
+        const matchesLabels = labelTerms.every((term) => labels.some((label) => label.includes(term)));
+        if (!matchesLabels) {
+          return false;
+        }
+      }
+
+      if (searchTerm) {
+        const property = propertyMap[task.nekretnina_id];
+        const haystack = [
+          task.naziv,
+          task.opis,
+          task.prijavio,
+          task.dodijeljeno,
+          property?.naziv,
+          property?.adresa,
+          ...(task.oznake || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        if (!haystack.includes(searchTerm)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [maintenanceTasks, filters, propertyMap]);
+
+  const groupedTasks = useMemo(() => {
+    const buckets = {};
+    for (const status of ALL_MAINTENANCE_STATUSES) {
+      buckets[status] = [];
+    }
+    for (const task of filteredTasks || []) {
+      const bucket = buckets[task.status] || (buckets[task.status] = []);
+      bucket.push(task);
+    }
+    Object.values(buckets).forEach((items) => {
+      items.sort((a, b) => {
+        const firstDue = a.rok ? new Date(a.rok) : null;
+        const secondDue = b.rok ? new Date(b.rok) : null;
+        const firstDueValue = firstDue && !Number.isNaN(firstDue.getTime()) ? firstDue.getTime() : Number.POSITIVE_INFINITY;
+        const secondDueValue = secondDue && !Number.isNaN(secondDue.getTime()) ? secondDue.getTime() : Number.POSITIVE_INFINITY;
+        if (firstDueValue !== secondDueValue) {
+          return firstDueValue - secondDueValue;
+        }
+        const firstUpdated = new Date(a.azuriran || a.kreiran || 0).getTime();
+        const secondUpdated = new Date(b.azuriran || b.kreiran || 0).getTime();
+        return secondUpdated - firstUpdated;
+      });
+    });
+    return buckets;
+  }, [filteredTasks]);
+
+  const columns = useMemo(() => (
+    MAINTENANCE_STATUS_ORDER.map((status) => ({
+      status,
+      meta: MAINTENANCE_STATUS_META[status],
+      tasks: groupedTasks[status] || [],
+    }))
+  ), [groupedTasks]);
+
+  const archivedTasks = groupedTasks.arhivirano || [];
+
+  const getPriorityRank = (value) => {
+    const index = MAINTENANCE_PRIORITY_ORDER.indexOf(value);
+    return index === -1 ? MAINTENANCE_PRIORITY_ORDER.length : index;
+  };
+
+  const listRows = useMemo(() => {
+    const rows = [...(filteredTasks || [])];
+    rows.sort((a, b) => {
+      const dueValue = (task) => {
+        if (!task.rok) {
+          return Number.POSITIVE_INFINITY;
+        }
+        const parsed = new Date(task.rok);
+        return Number.isNaN(parsed.getTime()) ? Number.POSITIVE_INFINITY : parsed.getTime();
+      };
+
+      const firstDue = dueValue(a);
+      const secondDue = dueValue(b);
+      if (firstDue !== secondDue) {
+        return firstDue - secondDue;
+      }
+
+      const priorityDiff = getPriorityRank(a.prioritet) - getPriorityRank(b.prioritet);
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+
+      const firstUpdated = new Date(a.azuriran || a.kreiran || 0).getTime();
+      const secondUpdated = new Date(b.azuriran || b.kreiran || 0).getTime();
+      return secondUpdated - firstUpdated;
+    });
+    return rows;
+  }, [filteredTasks]);
+
+  const unitsForSelectedProperty = useMemo(() => {
+    if (!formData.nekretnina_id) {
+      return [];
+    }
+    return propertyUnitsByProperty[formData.nekretnina_id] || [];
+  }, [formData.nekretnina_id, propertyUnitsByProperty]);
+
+  const resetForm = useCallback(() => {
+    setFormData(EMPTY_MAINTENANCE_FORM);
+  }, []);
+
+  const handleDialogOpenChange = useCallback((open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  }, [resetForm]);
+
+  const handleOpenDialog = useCallback(() => {
+    resetForm();
+    setIsDialogOpen(true);
+  }, [resetForm]);
+
+  const handleCreateTask = async (event) => {
+    event.preventDefault();
+    if (!formData.naziv.trim()) {
+      toast.error('Naziv radnog naloga je obavezan');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const normaliseRelation = (value) => {
+        if (!value || value === 'none') {
+          return undefined;
+        }
+        return value;
+      };
+
+      const payload = {
+        naziv: formData.naziv.trim(),
+        opis: formData.opis.trim() || undefined,
+        prioritet: formData.prioritet,
+        status: formData.status,
+        nekretnina_id: normaliseRelation(formData.nekretnina_id),
+        property_unit_id: normaliseRelation(formData.property_unit_id),
+        prijavio: formData.prijavio.trim() || undefined,
+        dodijeljeno: formData.dodijeljeno.trim() || undefined,
+        rok: formData.rok || undefined,
+        oznake: formData.oznake
+          ? formData.oznake.split(',').map((item) => item.trim()).filter(Boolean)
+          : [],
+      };
+      await api.createMaintenanceTask(payload);
+      toast.success('Radni nalog je dodan');
+      handleDialogOpenChange(false);
+      await refreshMaintenanceTasks();
+    } catch (error) {
+      console.error('Greška pri kreiranju radnog naloga:', error);
+      const message = error.response?.data?.detail || 'Greška pri kreiranju naloga';
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const fetchTaskDetails = useCallback(async (taskId) => {
+    setDetailLoading(true);
+    try {
+      const response = await api.getMaintenanceTask(taskId);
+      setSelectedTask(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Greška pri dohvaćanju detalja radnog naloga:', error);
+      toast.error('Greška pri dohvaćanju detalja naloga');
+      throw error;
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
+
+  const handleCardClick = useCallback((task) => {
+    if (!enableDetails) {
+      return;
+    }
+    setSelectedTaskId(task.id);
+    setSelectedTask(task);
+    setDetailOpen(true);
+    fetchTaskDetails(task.id);
+  }, [enableDetails, fetchTaskDetails]);
+
+  const handleDetailOpenChange = useCallback((open) => {
+    setDetailOpen(open);
+    if (!open) {
+      setSelectedTaskId(null);
+      setSelectedTask(null);
+      setCommentForm({ author: '', message: '' });
+    }
+  }, []);
+
+  const handleFilterChange = useCallback((field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleResetFilters = useCallback(() => {
+    setFilters({
+      search: '',
+      prioritet: 'all',
+      nekretnina: 'all',
+      status: 'all',
+      dueFrom: '',
+      dueTo: '',
+      oznaka: '',
+    });
+  }, []);
+
+  const handleCommentSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedTaskId) {
+      return;
+    }
+    if (!commentForm.message.trim()) {
+      toast.error('Komentar ne može biti prazan');
+      return;
+    }
+    setCommentSubmitting(true);
+    try {
+      await api.addMaintenanceComment(selectedTaskId, {
+        poruka: commentForm.message.trim(),
+        autor: commentForm.author.trim() || undefined,
+      });
+      toast.success('Komentar je dodan');
+      setCommentForm({ author: '', message: '' });
+      await refreshMaintenanceTasks();
+      await fetchTaskDetails(selectedTaskId);
+    } catch (error) {
+      console.error('Greška pri dodavanju komentara:', error);
+      const message = error.response?.data?.detail || 'Greška pri dodavanju komentara';
+      toast.error(message);
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  const activityItems = useMemo(() => {
+    if (!selectedTask || !selectedTask.aktivnosti) {
+      return [];
+    }
+    return [...selectedTask.aktivnosti].sort((a, b) => {
+      const first = new Date(a.timestamp || a.vrijeme || a.created_at || 0).getTime();
+      const second = new Date(b.timestamp || b.vrijeme || b.created_at || 0).getTime();
+      return second - first;
+    });
+  }, [selectedTask]);
+
+  const activityLabels = {
+    kreiran: 'Nalog kreiran',
+    promjena_statusa: 'Promjena statusa',
+    komentar: 'Komentar',
+    uredjeno: 'Ažuriranje naloga',
+  };
+
+  const handleStatusChange = useCallback(async (taskId, nextStatus) => {
+    setStatusUpdating(taskId);
+    try {
+      await api.updateMaintenanceTask(taskId, { status: nextStatus });
+      toast.success('Status radnog naloga je ažuriran');
+      await refreshMaintenanceTasks();
+      if (enableDetails && selectedTaskId === taskId) {
+        await fetchTaskDetails(taskId);
+      }
+    } catch (error) {
+      console.error('Greška pri promjeni statusa naloga:', error);
+      const message = error.response?.data?.detail || 'Ažuriranje statusa nije uspjelo';
+      toast.error(message);
+    } finally {
+      setStatusUpdating(null);
+    }
+  }, [refreshMaintenanceTasks, enableDetails, selectedTaskId, fetchTaskDetails]);
+
+  const today = useMemo(() => {
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    return base;
+  }, []);
+
+  const isLoading = storeLoading && maintenanceTasks.length === 0;
+
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(
+      filters.search.trim() ||
+      filters.oznaka.trim() ||
+      filters.prioritet !== 'all' ||
+      filters.status !== 'all' ||
+      filters.nekretnina !== 'all' ||
+      filters.dueFrom ||
+      filters.dueTo
+    );
+  }, [filters]);
+
+  const renderTaskCard = useCallback((task) => {
+    const statusMeta = MAINTENANCE_STATUS_META[task.status] || {};
+    const priorityMeta = MAINTENANCE_PRIORITY_CONFIG[task.prioritet] || MAINTENANCE_PRIORITY_CONFIG.srednje;
+    const property = propertyMap[task.nekretnina_id];
+    const unit = propertyUnitsById?.[task.property_unit_id];
+    const dueDate = task.rok ? new Date(task.rok) : null;
+    const validDueDate = dueDate && !Number.isNaN(dueDate.getTime()) ? dueDate : null;
+    const overdue = validDueDate && validDueDate < today && !['zavrseno', 'arhivirano'].includes(task.status);
+    const statusLabel = statusMeta.title || task.status;
+    const dueLabel = task.rok ? formatDate(task.rok) : 'Bez roka';
+    const isCompleted = task.status === 'zavrseno' || task.status === 'arhivirano';
+
+    const cardClasses = [
+      'border border-border/60 shadow-sm',
+      statusMeta.cardBorderClass || '',
+      enableDetails ? 'cursor-pointer transition hover:border-primary/60' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      <Card
+        key={task.id}
+        className={cardClasses}
+        onClick={() => {
+          if (enableDetails) {
+            handleCardClick(task);
+          }
+        }}
+        role={enableDetails ? 'button' : undefined}
+      >
+        <CardHeader className="space-y-1 pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <CardTitle className="text-base font-semibold text-foreground">{task.naziv}</CardTitle>
+              <p className="text-xs text-muted-foreground/80">
+                {property ? property.naziv : 'Nepovezana nekretnina'}
+                {unit ? ` • ${unit.naziv || unit.oznaka || unit.id}` : ''}
+              </p>
+            </div>
+            <Badge variant="outline" className={statusMeta.badgeClass || 'border border-border bg-muted text-muted-foreground'}>
+              {statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 pt-0">
+          {task.opis && <p className="text-sm text-muted-foreground">{task.opis}</p>}
+
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/90">
+            <Badge variant="outline" className={priorityMeta.className}>
+              {priorityMeta.label}
+            </Badge>
+            <div className={`flex items-center gap-1 ${overdue ? 'font-semibold text-red-600' : ''}`}>
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{dueLabel}</span>
+            </div>
+            {task.prijavio && (
+              <span>Prijavio: <span className="font-medium text-foreground">{task.prijavio}</span></span>
+            )}
+            {task.dodijeljeno && (
+              <span>Dodijeljeno: <span className="font-medium text-foreground">{task.dodijeljeno}</span></span>
+            )}
+          </div>
+
+          {task.oznake && task.oznake.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {task.oznake.map((label) => (
+                <Badge key={label} variant="outline" className="border-dashed border-border/50 text-muted-foreground">
+                  #{label}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-2 pt-2">
+            <Select
+              value={task.status}
+              onValueChange={(value) => handleStatusChange(task.id, value)}
+              disabled={statusUpdating === task.id}
+            >
+              <SelectTrigger className="h-8 w-full" onClick={(event) => event.stopPropagation()}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_MAINTENANCE_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {MAINTENANCE_STATUS_META[status]?.title || status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              {!isCompleted && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleStatusChange(task.id, 'zavrseno');
+                  }}
+                  disabled={statusUpdating === task.id}
+                >
+                  Označi dovršeno
+                </Button>
+              )}
+              {task.status !== 'arhivirano' && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleStatusChange(task.id, 'arhivirano');
+                  }}
+                  disabled={statusUpdating === task.id}
+                  title="Arhiviraj nalog"
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }, [enableDetails, handleCardClick, handleStatusChange, propertyMap, propertyUnitsById, statusUpdating, today]);
+
+  return (
+    <section className="space-y-4" id="maintenance-board">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <Button type="button" onClick={handleOpenDialog} className="md:w-auto" data-testid="add-maintenance-task">
+          <Plus className="mr-2 h-4 w-4" /> Dodaj radni nalog
+        </Button>
+      </div>
+
+      {enableFilters && (
+        <div className="space-y-4 rounded-xl border border-border/60 bg-white/80 p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-foreground">Filteri i pretraga</h3>
+            {hasActiveFilters && (
+              <Button type="button" variant="ghost" size="sm" onClick={handleResetFilters}>
+                Poništi filtre
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-3 md:grid-cols-6">
+            <div className="md:col-span-2">
+              <Label htmlFor="maintenance-search">Pretraži naloge</Label>
+              <Input
+                id="maintenance-search"
+                value={filters.search}
+                onChange={(event) => handleFilterChange('search', event.target.value)}
+                placeholder="npr. klima, lift, hitno"
+              />
+            </div>
+            <div>
+              <Label htmlFor="maintenance-prioritet-filter">Prioritet</Label>
+              <Select
+                value={filters.prioritet}
+                onValueChange={(value) => handleFilterChange('prioritet', value)}
+              >
+                <SelectTrigger id="maintenance-prioritet-filter">
+                  <SelectValue placeholder="Svi prioriteti" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Svi prioriteti</SelectItem>
+                  {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(([value, config]) => (
+                    <SelectItem key={value} value={value}>
+                      {config.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="maintenance-status-filter">Status</Label>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => handleFilterChange('status', value)}
+              >
+                <SelectTrigger id="maintenance-status-filter">
+                  <SelectValue placeholder="Svi statusi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Svi statusi</SelectItem>
+                  {ALL_MAINTENANCE_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {MAINTENANCE_STATUS_META[status]?.title || status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="maintenance-property-filter">Nekretnina</Label>
+              <Select
+                value={filters.nekretnina}
+                onValueChange={(value) => handleFilterChange('nekretnina', value)}
+              >
+                <SelectTrigger id="maintenance-property-filter">
+                  <SelectValue placeholder="Sve nekretnine" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Sve nekretnine</SelectItem>
+                  {nekretnine.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.naziv}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="maintenance-label-filter">Oznake</Label>
+              <Input
+                id="maintenance-label-filter"
+                value={filters.oznaka}
+                onChange={(event) => handleFilterChange('oznaka', event.target.value)}
+                placeholder="npr. elektrika, servis"
+              />
+            </div>
+            <div>
+              <Label htmlFor="maintenance-due-from">Rok od</Label>
+              <Input
+                id="maintenance-due-from"
+                type="date"
+                value={filters.dueFrom}
+                onChange={(event) => handleFilterChange('dueFrom', event.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="maintenance-due-to">Rok do</Label>
+              <Input
+                id="maintenance-due-to"
+                type="date"
+                value={filters.dueTo}
+                onChange={(event) => handleFilterChange('dueTo', event.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground/80">
+            Prikazano {filteredTasks.length} od {maintenanceTasks.length} naloga.
+          </p>
+        </div>
+      )}
+
+
+      <div className="overflow-x-auto pb-2">
+        <div className="flex min-w-max gap-4">
+          {columns.map(({ status, meta, tasks }) => (
+            <div key={status} className="w-72 flex-shrink-0">
+              <div className="rounded-xl border border-border/60 bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">{meta?.title || status}</h3>
+                    <p className="text-xs text-muted-foreground/80">{meta?.description}</p>
+                  </div>
+                  <Badge variant="outline" className={meta?.badgeClass || 'border border-border text-muted-foreground'}>
+                    {tasks.length}
+                  </Badge>
+                </div>
+                <div className="space-y-3 pt-3">
+                  {isLoading ? (
+                    <p className="text-xs text-muted-foreground/70">Učitavam radne naloge…</p>
+                  ) : tasks.length === 0 ? (
+                    <p className="text-xs text-muted-foreground/60">Nema naloga u ovoj fazi.</p>
+                  ) : (
+                    tasks.map((task) => renderTaskCard(task))
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {archivedTasks.length > 0 && (
+        <details className="rounded-lg border border-border/60 bg-white/80 p-4">
+          <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
+            Arhivirani nalozi ({archivedTasks.length})
+          </summary>
+          <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {archivedTasks.map((task) => renderTaskCard(task))}
+          </div>
+        </details>
+      )}
+
+      {enableList && (
+        <div className="rounded-xl border border-border/60 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Popis naloga</h3>
+              <p className="text-xs text-muted-foreground">Detaljni pregled s mogućnošću brzog otvaranja timeline prikaza.</p>
+            </div>
+            <Badge variant="outline" className="border-border text-muted-foreground">
+              {listRows.length}
+            </Badge>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border/60 text-sm">
+              <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left font-semibold">Nalog</th>
+                  <th className="px-4 py-2 text-left font-semibold">Status</th>
+                  <th className="px-4 py-2 text-left font-semibold">Prioritet</th>
+                  <th className="px-4 py-2 text-left font-semibold">Nekretnina</th>
+                  <th className="px-4 py-2 text-left font-semibold">Rok</th>
+                  <th className="px-4 py-2 text-left font-semibold">Dodijeljeno</th>
+                  <th className="px-4 py-2 text-right font-semibold">Akcija</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {listRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-4 text-center text-sm text-muted-foreground">
+                      Trenutno nema naloga koji odgovaraju odabranim filtrima.
+                    </td>
+                  </tr>
+                ) : (
+                  listRows.map((task) => {
+                    const statusMeta = MAINTENANCE_STATUS_META[task.status] || {};
+                    const priorityMeta = MAINTENANCE_PRIORITY_CONFIG[task.prioritet] || MAINTENANCE_PRIORITY_CONFIG.srednje;
+                    const property = propertyMap[task.nekretnina_id];
+                    const dueDate = task.rok ? new Date(task.rok) : null;
+                    const validDueDate = dueDate && !Number.isNaN(dueDate.getTime()) ? dueDate : null;
+                    const overdue = validDueDate && validDueDate < today && !['zavrseno', 'arhivirano'].includes(task.status);
+
+                    return (
+                      <tr key={task.id} className="transition hover:bg-muted/40">
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-foreground">{task.naziv}</span>
+                            {task.opis && <span className="text-xs text-muted-foreground">{task.opis}</span>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className={statusMeta.badgeClass || 'border border-border text-muted-foreground'}>
+                            {statusMeta.title || task.status}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className={priorityMeta.className}>
+                            {priorityMeta.label}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {property ? property.naziv : 'Nepovezana'}
+                        </td>
+                        <td className={`px-4 py-3 ${overdue ? 'font-semibold text-red-600' : 'text-muted-foreground'}`}>
+                          {task.rok ? formatDate(task.rok) : 'Bez roka'}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {task.dodijeljeno || '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button type="button" size="sm" variant="ghost" onClick={() => handleCardClick(task)}>
+                            Detalji
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <Dialog open={detailOpen} onOpenChange={handleDetailOpenChange}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedTask?.naziv || 'Detalji radnog naloga'}</DialogTitle>
+            {selectedTask && (
+              <p className="text-sm text-muted-foreground">
+                {(MAINTENANCE_STATUS_META[selectedTask.status]?.title || selectedTask.status)} • {(MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet]?.label || 'Prioritet')}
+              </p>
+            )}
+          </DialogHeader>
+
+          {detailLoading ? (
+            <p className="text-sm text-muted-foreground">Učitavam detalje naloga…</p>
+          ) : selectedTask ? (
+            <div className="space-y-6">
+              <div className="grid gap-4 rounded-lg border border-border/70 bg-muted/30 p-4 md:grid-cols-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Nekretnina</p>
+                  <p className="text-sm text-foreground">{propertyMap[selectedTask.nekretnina_id]?.naziv || 'Nije povezano'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Podprostor</p>
+                  <p className="text-sm text-foreground">
+                    {propertyUnitsById?.[selectedTask.property_unit_id]?.naziv ||
+                      propertyUnitsById?.[selectedTask.property_unit_id]?.oznaka ||
+                      'Nije odabrano'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Prijavio</p>
+                  <p className="text-sm text-foreground">{selectedTask.prijavio || '—'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Dodijeljeno</p>
+                  <p className="text-sm text-foreground">{selectedTask.dodijeljeno || '—'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Rok</p>
+                  <p className="text-sm text-foreground">{selectedTask.rok ? formatDate(selectedTask.rok) : 'Bez roka'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Status</p>
+                  <Select
+                    value={selectedTask.status}
+                    onValueChange={(value) => handleStatusChange(selectedTask.id, value)}
+                    disabled={statusUpdating === selectedTask.id}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ALL_MAINTENANCE_STATUSES.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {MAINTENANCE_STATUS_META[status]?.title || status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedTask.oznake && selectedTask.oznake.length > 0 && (
+                  <div className="space-y-1 md:col-span-2">
+                    <p className="text-xs font-semibold uppercase text-muted-foreground">Oznake</p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedTask.oznake.map((label) => (
+                        <Badge key={label} variant="outline" className="border-dashed border-border/50 text-muted-foreground">
+                          #{label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {selectedTask.opis && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-foreground">Opis naloga</h4>
+                  <p className="text-sm text-muted-foreground">{selectedTask.opis}</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Timeline aktivnosti</h4>
+                {activityItems.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Još nema zabilježenih aktivnosti za ovaj nalog.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {activityItems.map((activity) => {
+                      const label = activityLabels[activity.tip] || activity.tip;
+                      const statusLabel = activity.status ? (MAINTENANCE_STATUS_META[activity.status]?.title || activity.status) : null;
+                      const timestamp = formatDateTime(activity.timestamp || activity.vrijeme || activity.created_at);
+                      return (
+                        <li key={activity.id} className="relative flex gap-3">
+                          <div className="mt-1 h-full w-px bg-border" aria-hidden />
+                          <div className="flex-1 rounded-lg border border-border/60 bg-white/80 p-3 shadow-sm">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant="outline" className="border-border text-muted-foreground">{label}</Badge>
+                                {statusLabel && (
+                                  <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">
+                                    {statusLabel}
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground">{timestamp}</span>
+                            </div>
+                            {activity.autor && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Autor: <span className="font-medium text-foreground">{activity.autor}</span>
+                              </p>
+                            )}
+                            {activity.opis && (
+                              <p className="mt-2 text-sm text-foreground">{activity.opis}</p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Dodaj komentar</h4>
+                <form onSubmit={handleCommentSubmit} className="space-y-3">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="comment-author">Autor komentara</Label>
+                      <Input
+                        id="comment-author"
+                        value={commentForm.author}
+                        onChange={(event) => setCommentForm((prev) => ({ ...prev, author: event.target.value }))}
+                        placeholder="npr. Voditelj održavanja"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="comment-message">Komentar *</Label>
+                      <Textarea
+                        id="comment-message"
+                        rows={3}
+                        value={commentForm.message}
+                        onChange={(event) => setCommentForm((prev) => ({ ...prev, message: event.target.value }))}
+                        placeholder="Zapišite ažuriranje, dogovoreni termin ili povratnu informaciju izvođača"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCommentForm({ author: '', message: '' })}
+                      disabled={commentSubmitting}
+                    >
+                      Poništi
+                    </Button>
+                    <Button type="submit" size="sm" disabled={commentSubmitting}>
+                      {commentSubmitting ? 'Spremam…' : 'Dodaj komentar'}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Detalji naloga nisu dostupni.</p>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Dodaj radni nalog</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Zabilježite sve potrebne aktivnosti kako bi tim mogao reagirati na vrijeme.
+            </p>
+          </DialogHeader>
+          <form onSubmit={handleCreateTask} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="task-naziv">Naziv naloga *</Label>
+                <Input
+                  id="task-naziv"
+                  value={formData.naziv}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, naziv: event.target.value }))}
+                  placeholder="npr. Servis klima uređaja"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="task-prioritet">Prioritet</Label>
+                <Select
+                  value={formData.prioritet}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, prioritet: value }))}
+                >
+                  <SelectTrigger id="task-prioritet">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(([value, config]) => (
+                      <SelectItem key={value} value={value}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="task-status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
+                >
+                  <SelectTrigger id="task-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ALL_MAINTENANCE_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {MAINTENANCE_STATUS_META[status]?.title || status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="task-rok">Rok izvedbe</Label>
+                <Input
+                  id="task-rok"
+                  type="date"
+                  value={formData.rok}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, rok: event.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="task-nekretnina">Nekretnina</Label>
+                <Select
+                  value={formData.nekretnina_id || 'none'}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      nekretnina_id: value === 'none' ? '' : value,
+                      property_unit_id: '',
+                    }))
+                  }
+                >
+                  <SelectTrigger id="task-nekretnina">
+                    <SelectValue placeholder="Odaberite nekretninu" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Bez povezivanja</SelectItem>
+                    {nekretnine.map((property) => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.naziv}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="task-unit">Podprostor</Label>
+                <Select
+                  value={formData.property_unit_id || 'none'}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      property_unit_id: value === 'none' ? '' : value,
+                    }))
+                  }
+                  disabled={!formData.nekretnina_id || unitsForSelectedProperty.length === 0}
+                >
+                  <SelectTrigger id="task-unit">
+                    <SelectValue placeholder={formData.nekretnina_id ? 'Odaberite podprostor' : 'Prvo odaberite nekretninu'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Bez podprostora</SelectItem>
+                    {unitsForSelectedProperty.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>
+                        {unit.oznaka || unit.naziv || unit.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="task-prijavio">Prijavio</Label>
+                <Input
+                  id="task-prijavio"
+                  value={formData.prijavio}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, prijavio: event.target.value }))}
+                  placeholder="npr. Ana Perić"
+                />
+              </div>
+              <div>
+                <Label htmlFor="task-dodijeljeno">Voditelj naloga</Label>
+                <Input
+                  id="task-dodijeljeno"
+                  value={formData.dodijeljeno}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, dodijeljeno: event.target.value }))}
+                  placeholder="npr. Voditelj održavanja"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="task-opis">Opis naloga</Label>
+              <Textarea
+                id="task-opis"
+                value={formData.opis}
+                onChange={(event) => setFormData((prev) => ({ ...prev, opis: event.target.value }))}
+                rows={4}
+                placeholder="Detaljan opis problema, potrebni materijali ili upute za izvođača"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="task-oznake">Oznake</Label>
+              <Input
+                id="task-oznake"
+                value={formData.oznake}
+                onChange={(event) => setFormData((prev) => ({ ...prev, oznake: event.target.value }))}
+                placeholder="npr. elektrika, hitno"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">Razdvojite oznake zarezom kako biste brže filtrirali zadatke.</p>
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)} disabled={isSubmitting}>
+                Odustani
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Spremam…' : 'Spremi nalog'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+};
+
+const MaintenanceWorkspace = () => {
+  return (
+    <div className="space-y-6 px-4 py-6 md:px-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight text-primary">Održavanje</h1>
+        <p className="text-sm text-muted-foreground">
+          Centralizirani pregled radnih naloga, timeline aktivnosti i popis svih zadataka.
+        </p>
+      </div>
+      <MaintenanceBoard
+        enableFilters
+        enableList
+        title="Kanban i popis radnih naloga"
+        description="Filtrirajte, pratite timeline aktivnosti i upravljajte komentarima na jednom mjestu."
+      />
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [dashboard, setDashboard] = useState(null);
   const [activeReminders, setActiveReminders] = useState([]);
@@ -1496,16 +2424,45 @@ const Dashboard = () => {
     });
   }, [dashboard?.portfolio_breakdown]);
 
+  const formatCurrency = useCallback((value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return '—';
+    }
+    return numeric.toLocaleString('hr-HR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }, []);
+
   if (!dashboard) {
-    return <div className="p-8">Učitava...</div>;
+    return <div className="p-8 text-sm text-muted-foreground">Učitavam kontrolni centar…</div>;
   }
 
-  const documentsThisMonth = dokumenti.filter((doc) => {
-    if (!doc.kreiran) return false;
-    const created = new Date(doc.kreiran);
-    const now = new Date();
-    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-  }).length;
+  const monthlyRevenueSeries = revenueSeries
+    .map((point) => ({
+      month: point?.month,
+      value: typeof point?.value === 'number' ? point.value : Number(point?.value ?? 0),
+    }))
+    .filter((point) => Number.isFinite(point.value));
+  const currentMonthlyRevenueRaw = dashboard.mjesecni_prihod ?? (monthlyRevenueSeries.at(-1)?.value ?? 0);
+  const currentMonthlyRevenue = Number.isFinite(Number(currentMonthlyRevenueRaw)) ? Number(currentMonthlyRevenueRaw) : 0;
+  const previousMonthlyRevenue = monthlyRevenueSeries.length > 1 ? monthlyRevenueSeries.at(-2).value : null;
+
+  let monthlyRevenueTrend = 'Nema podataka za usporedbu.';
+  if (typeof previousMonthlyRevenue === 'number') {
+    if (previousMonthlyRevenue === 0) {
+      monthlyRevenueTrend = currentMonthlyRevenue === 0
+        ? 'Prihod je nepromijenjen u odnosu na prošli mjesec.'
+        : 'Prihod je ostvaren prvi put u odnosu na prošli mjesec.';
+    } else {
+      const deltaPercent = ((currentMonthlyRevenue - previousMonthlyRevenue) / previousMonthlyRevenue) * 100;
+      const formattedDelta = deltaPercent.toFixed(1);
+      monthlyRevenueTrend = deltaPercent >= 0
+        ? `+${formattedDelta}% u odnosu na prošli mjesec.`
+        : `${formattedDelta}% u odnosu na prošli mjesec.`;
+    }
+  }
 
   const summaryCards = [
     {
@@ -1527,11 +2484,12 @@ const Dashboard = () => {
       value: dashboard.ugovori_na_isteku,
     },
     {
-      id: 'dokumenti-mjesec',
-      label: 'Dokumenti ovaj mjesec',
+      id: 'mjesecni-prihod-card',
+      label: 'Mjesecni prihod',
       icon: FileText,
-      value: documentsThisMonth,
-      sublabel: 'Nova dokumenta u posljednjih 30 dana',
+      value: formatCurrency(currentMonthlyRevenue),
+      suffix: ' €',
+      sublabel: monthlyRevenueTrend,
     },
   ];
 
@@ -1555,7 +2513,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map(({ id, label, icon: Icon, value, sublabel }) => (
+        {summaryCards.map(({ id, label, icon: Icon, value, sublabel, suffix }) => (
           <Card key={id} data-testid={id} className="card-hover shadow-shell">
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-3">
@@ -1564,7 +2522,10 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="truncate text-3xl font-semibold text-foreground">{value}</div>
+              <div className="truncate text-3xl font-semibold text-foreground">
+                {value}
+                {suffix ? <span className="ml-1 text-base font-medium text-muted-foreground">{suffix}</span> : null}
+              </div>
               {sublabel && <p className="mt-1 text-xs font-medium text-muted-foreground/80">{sublabel}</p>}
             </CardContent>
           </Card>
@@ -1596,17 +2557,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid grid-cols-1 gap-4 max-w-xl">
-      <TrendCard
-        title="Mjesečni prihod"
-        icon={DollarSign}
-        series={revenueSeries}
-        testId="trend-monthly-revenue"
-        className="max-w-xl"
-        sparklineHeight={48}
-      />
-    </div>
 
       {rentalCapacity && (
         <Card className="shadow-shell" data-testid="rental-capacity-card">
@@ -1715,6 +2665,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       )}
+      <MaintenanceBoard />
 
       {portfolioBreakdown.length > 0 && (
         <Card className="shadow-shell" data-testid="portfolio-breakdown">
@@ -2793,16 +3744,15 @@ const Nekretnine = () => {
       const createdProperty = response.data;
 
       if (units && units.length) {
-        for (const unitDraft of units) {
-          const payload = convertUnitDraftToPayload(unitDraft);
-          if (!payload.oznaka) {
+        for (const unitPayload of units) {
+          if (!unitPayload.oznaka) {
             continue;
           }
           try {
-            await api.createUnit(createdProperty.id, payload);
+            await api.createUnit(createdProperty.id, unitPayload);
           } catch (error) {
             console.error('Neuspjelo kreiranje podprostora:', error);
-            toast.error(`Podprostor ${payload.oznaka} nije kreiran. Pokušajte ga dodati kasnije.`);
+            toast.error(`Podprostor ${unitPayload.oznaka} nije kreiran. Pokušajte ga dodati kasnije.`);
           }
         }
       }
@@ -2818,9 +3768,42 @@ const Nekretnine = () => {
   };
 
   const handleUpdateNekretnina = async (formPayload) => {
-    const { property } = normaliseNekretninaPayload(formPayload);
+    const { property, units } = normaliseNekretninaPayload(formPayload);
     try {
       await api.updateNekretnina(editingNekretnina.id, property);
+
+      if (units && units.length) {
+        const existing = propertyUnitsByProperty?.[editingNekretnina.id] || [];
+        const existingByOznaka = new Map(
+          existing
+            .filter((unit) => unit?.oznaka)
+            .map((unit) => [unit.oznaka.trim().toLowerCase(), unit])
+        );
+
+        const duplicates = [];
+
+        for (const unitPayload of units) {
+          if (!unitPayload.oznaka) {
+            continue;
+          }
+          const key = unitPayload.oznaka.trim().toLowerCase();
+          if (existingByOznaka.has(key)) {
+            duplicates.push(unitPayload.oznaka);
+            continue;
+          }
+          try {
+            await api.createUnit(editingNekretnina.id, unitPayload);
+          } catch (error) {
+            console.error('Neuspjelo kreiranje podprostora:', error);
+            toast.error(`Podprostor ${unitPayload.oznaka} nije kreiran. Pokušajte ga dodati kasnije.`);
+          }
+        }
+
+        if (duplicates.length) {
+          toast.warning(`Podprostor${duplicates.length > 1 ? 'i' : ''} ${duplicates.join(', ')} već postoji i nije ponovno kreiran.`);
+        }
+      }
+
       toast.success('Nekretnina je uspješno ažurirana');
       await fetchNekretnine();
       await refreshEntities();
@@ -3545,7 +4528,7 @@ const Nekretnine = () => {
 
               </TabsContent>
 
-              <TabsContent value="units" className="space-y-4">
+          <TabsContent value="units" className="space-y-4">
                 <PropertyUnitsPanel
                   property={selectedNekretnina}
                   units={sortUnitsByPosition(propertyUnitsByProperty[selectedNekretnina.id] || [])}
@@ -3771,6 +4754,7 @@ const Nekretnine = () => {
           </div>
           <NekretninarForm 
             nekretnina={editingNekretnina}
+            existingUnits={editingNekretnina ? propertyUnitsByProperty?.[editingNekretnina.id] || [] : []}
             onSubmit={handleUpdateNekretnina}
             onCancel={() => setEditingNekretnina(null)}
           />
@@ -3780,7 +4764,7 @@ const Nekretnine = () => {
   );
 };
 // Nekretnina Form Component
-const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
+const NekretninarForm = ({ nekretnina, onSubmit, onCancel, existingUnits = [] }) => {
   const [formData, setFormData] = useState({
     naziv: nekretnina?.naziv || '',
     adresa: nekretnina?.adresa || '',
@@ -3806,10 +4790,12 @@ const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
     napomene: nekretnina?.napomene || ''
   });
   const [unitsDraft, setUnitsDraft] = useState([]);
+  const isEditing = Boolean(nekretnina);
   const unitStatusOptions = useMemo(
     () => Object.entries(UNIT_STATUS_CONFIG).map(([value, config]) => ({ value, label: config.label })),
     []
   );
+  const existingUnitsList = useMemo(() => sortUnitsByPosition(existingUnits || []), [existingUnits]);
 
   const createDraftUnit = () => ({
     localId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `unit-${Date.now()}-${Math.random()}`,
@@ -3867,12 +4853,12 @@ const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" data-testid="nekretnina-form">
       <Tabs defaultValue="osnovni" className="w-full">
-        <TabsList className={`grid w-full ${nekretnina ? 'grid-cols-4' : 'grid-cols-5'}`}>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="osnovni">Osnovni podaci</TabsTrigger>
           <TabsTrigger value="financije">Financije</TabsTrigger>
           <TabsTrigger value="odrzavanje">Održavanje</TabsTrigger>
           <TabsTrigger value="rizici">Rizici</TabsTrigger>
-          {!nekretnina && <TabsTrigger value="units">Podprostori</TabsTrigger>}
+          <TabsTrigger value="units">Podprostori</TabsTrigger>
         </TabsList>
         
         <TabsContent value="osnovni" className="space-y-4">
@@ -4155,121 +5141,157 @@ const NekretninarForm = ({ nekretnina, onSubmit, onCancel }) => {
           </div>
         </TabsContent>
 
-        {!nekretnina && (
-          <TabsContent value="units" className="space-y-4">
-            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-foreground">Plan podprostora</h4>
-                <p className="text-xs text-muted-foreground">
-                  Dodajte podprostore koje želite kreirati odmah. Ovaj korak je opcionalan – jedinice se mogu dodati i kasnije u detalju nekretnine.
-                </p>
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddUnitDraft}>
-                <Plus className="w-4 h-4 mr-2" /> Dodaj jedinicu
-              </Button>
+        <TabsContent value="units" className="space-y-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">Plan podprostora</h4>
+              <p className="text-xs text-muted-foreground">
+                {isEditing
+                  ? 'Dodajte nove podprostore koje želite kreirati odmah. Postojeće jedinice ostaju nepromijenjene dok ih ne uredite u kartici detalja.'
+                  : 'Dodajte podprostore koje želite kreirati odmah. Ovaj korak je opcionalan – jedinice se mogu dodati i kasnije u detalju nekretnine.'}
+              </p>
             </div>
+            <Button type="button" variant="outline" size="sm" onClick={handleAddUnitDraft}>
+              <Plus className="w-4 h-4 mr-2" /> Dodaj podprostor
+            </Button>
+          </div>
 
-            {unitsDraft.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-                Još niste dodali nijednu jedinicu. Nakon spremanja nekretnine podprostori se mogu uređivati u zasebnoj kartici.
+          {isEditing && (
+            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">Postojeći podprostori</p>
+                <Badge variant="outline">{existingUnitsList.length}</Badge>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {unitsDraft.map((unit, index) => (
-                  <div key={unit.localId} className="space-y-3 rounded-xl border border-border/60 bg-white/80 p-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-foreground">Jedinica {index + 1}</p>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveUnitDraft(unit.localId)}
-                        aria-label="Ukloni jedinicu"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <div>
-                        <Label>Oznaka *</Label>
-                        <Input
-                          value={unit.oznaka}
-                          onChange={(e) => handleUpdateUnitDraft(unit.localId, 'oznaka', e.target.value)}
-                          placeholder="npr. A2"
-                          required
-                        />
+              {existingUnitsList.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Trenutno nema podprostora kreiranih za ovu nekretninu.
+                </p>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {existingUnitsList.map((unit) => (
+                    <div key={unit.id} className="rounded-lg border border-border/50 bg-white/80 p-3">
+                      <div className="flex items-center justify-between text-sm font-medium text-foreground">
+                        <span>{getUnitDisplayName(unit)}</span>
+                        <Badge className={`rounded-full text-[11px] ${getUnitStatusBadgeClass(unit.status)}`}>
+                          {formatUnitStatus(unit.status)}
+                        </Badge>
                       </div>
-                      <div>
-                        <Label>Naziv</Label>
-                        <Input
-                          value={unit.naziv}
-                          onChange={(e) => handleUpdateUnitDraft(unit.localId, 'naziv', e.target.value)}
-                          placeholder="Ured A2"
-                        />
-                      </div>
-                      <div>
-                        <Label>Kat / zona</Label>
-                        <Input
-                          value={unit.kat}
-                          onChange={(e) => handleUpdateUnitDraft(unit.localId, 'kat', e.target.value)}
-                          placeholder="npr. Kat 3"
-                        />
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        {unit.oznaka && <span className="rounded-full bg-muted px-2 py-1">{unit.oznaka}</span>}
+                        {unit.kat && <span className="rounded-full bg-muted px-2 py-1">{unit.kat}</span>}
+                        {unit.povrsina_m2 != null && <span className="rounded-full bg-muted px-2 py-1">{`${unit.povrsina_m2} m²`}</span>}
                       </div>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <div>
-                        <Label>Površina (m²)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={unit.povrsina_m2}
-                          onChange={(e) => handleUpdateUnitDraft(unit.localId, 'povrsina_m2', e.target.value)}
-                          placeholder="npr. 120"
-                        />
-                      </div>
-                      <div>
-                        <Label>Status</Label>
-                        <Select
-                          value={unit.status}
-                          onValueChange={(value) => handleUpdateUnitDraft(unit.localId, 'status', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {unitStatusOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Osnovna zakupnina (€)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={unit.osnovna_zakupnina}
-                          onChange={(e) => handleUpdateUnitDraft(unit.localId, 'osnovna_zakupnina', e.target.value)}
-                          placeholder="npr. 1500"
-                        />
-                      </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Za uređivanje postojećih podprostora otvorite detalj nekretnine i koristite karticu "Podprostori".
+              </p>
+            </div>
+          )}
+
+          {unitsDraft.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+              {isEditing
+                ? 'Dodajte podprostor pomoću gumba iznad. Novi podprostori bit će kreirani nakon spremanja promjena.'
+                : 'Još niste dodali nijednu jedinicu. Nakon spremanja nekretnine podprostori se mogu uređivati u zasebnoj kartici.'}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {unitsDraft.map((unit, index) => (
+                <div key={unit.localId} className="space-y-3 rounded-xl border border-border/60 bg-white/80 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-foreground">Novi podprostor {index + 1}</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveUnitDraft(unit.localId)}
+                      aria-label="Ukloni podprostor"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div>
+                      <Label>Oznaka *</Label>
+                      <Input
+                        value={unit.oznaka}
+                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'oznaka', e.target.value)}
+                        placeholder="npr. A2"
+                        required
+                      />
                     </div>
                     <div>
-                      <Label>Napomena</Label>
-                      <Textarea
-                        value={unit.napomena}
-                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'napomena', e.target.value)}
-                        placeholder="Interna napomena, posebne specifikacije..."
+                      <Label>Naziv</Label>
+                      <Input
+                        value={unit.naziv}
+                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'naziv', e.target.value)}
+                        placeholder="npr. Ured A2"
+                      />
+                    </div>
+                    <div>
+                      <Label>Kat / zona</Label>
+                      <Input
+                        value={unit.kat}
+                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'kat', e.target.value)}
+                        placeholder="npr. Kat 3"
+                      />
+                    </div>
+                    <div>
+                      <Label>Površina (m²)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={unit.povrsina_m2}
+                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'povrsina_m2', e.target.value)}
+                        placeholder="npr. 120"
+                      />
+                    </div>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={unit.status}
+                        onValueChange={(value) => handleUpdateUnitDraft(unit.localId, 'status', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Odaberite status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {unitStatusOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Osnovna zakupnina (€)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={unit.osnovna_zakupnina}
+                        onChange={(e) => handleUpdateUnitDraft(unit.localId, 'osnovna_zakupnina', e.target.value)}
+                        placeholder="npr. 1500"
                       />
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        )}
+                  <div>
+                    <Label>Napomena</Label>
+                    <Textarea
+                      value={unit.napomena}
+                      onChange={(e) => handleUpdateUnitDraft(unit.localId, 'napomena', e.target.value)}
+                      placeholder="npr. open space ured, pogled na park"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
       </Tabs>
 
       <div className="flex space-x-2 pt-4">
@@ -4759,35 +5781,7 @@ const Ugovori = () => {
 
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewDocument, setPreviewDocument] = useState(null);
-  const [annexDialogOpen, setAnnexDialogOpen] = useState(false);
-  const [annexContract, setAnnexContract] = useState(null);
-  const [annexForm, setAnnexForm] = useState({
-    nova_zakupnina: '',
-    novi_datum_zavrsetka: '',
-    dodatne_promjene: '',
-    naziv: '',
-  });
-  const [annexGenerating, setAnnexGenerating] = useState(false);
-  const [annexSaving, setAnnexSaving] = useState(false);
-  const [annexResult, setAnnexResult] = useState(null);
-  const [annexTemplate, setAnnexTemplate] = useState(FALLBACK_ANNEX_TEMPLATE);
-  const [annexTemplateSource, setAnnexTemplateSource] = useState('ugrađeni predložak');
-  const [annexTemplateError, setAnnexTemplateError] = useState(null);
-  const [contractDialogOpen, setContractDialogOpen] = useState(false);
-  const [contractSource, setContractSource] = useState(null);
-  const [contractForm, setContractForm] = useState({
-    nova_interna_oznaka: '',
-    novo_trajanje_mjeseci: '',
-    nova_zakupnina: '',
-    dodatne_odredbe: '',
-    naziv: '',
-  });
-  const [contractGenerating, setContractGenerating] = useState(false);
-  const [contractSaving, setContractSaving] = useState(false);
-  const [contractResult, setContractResult] = useState(null);
-  const [contractTemplate, setContractTemplate] = useState(FALLBACK_CONTRACT_TEMPLATE);
-  const [contractTemplateSource, setContractTemplateSource] = useState('ugrađeni predložak');
-  const [contractTemplateError, setContractTemplateError] = useState(null);
+  const [editingContract, setEditingContract] = useState(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -4801,79 +5795,29 @@ const Ugovori = () => {
     }
   }, [location]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadTemplates = async () => {
-      try {
-        const response = await api.getAnnexTemplate();
-        if (isMounted) {
-          const data = response.data;
-          if (data?.template) {
-            setAnnexTemplate(data.template);
-            setAnnexTemplateSource(data.exists_on_disk && data.path ? data.path : 'ugrađeni predložak');
-            setAnnexTemplateError(null);
-          } else {
-            setAnnexTemplate(FALLBACK_ANNEX_TEMPLATE);
-            setAnnexTemplateSource('ugrađeni predložak');
-          }
-        }
-      } catch (error) {
-        console.error('Greška pri dohvaćanju predloška aneksa:', error);
-        if (isMounted) {
-          setAnnexTemplate(FALLBACK_ANNEX_TEMPLATE);
-          setAnnexTemplateSource('ugrađeni predložak');
-          setAnnexTemplateError('Predložak aneksa nije moguće učitati. Koristi se ugrađena verzija.');
-        }
-      }
-
-      try {
-        const response = await api.getContractTemplate();
-        if (isMounted) {
-          const data = response.data;
-          if (data?.template) {
-            setContractTemplate(data.template);
-            setContractTemplateSource(data.exists_on_disk && data.path ? data.path : 'ugrađeni predložak');
-            setContractTemplateError(null);
-          } else {
-            setContractTemplate(FALLBACK_CONTRACT_TEMPLATE);
-            setContractTemplateSource('ugrađeni predložak');
-          }
-        }
-      } catch (error) {
-        console.error('Greška pri dohvaćanju predloška ugovora:', error);
-        if (isMounted) {
-          setContractTemplate(FALLBACK_CONTRACT_TEMPLATE);
-          setContractTemplateSource('ugrađeni predložak');
-          setContractTemplateError('Predložak ugovora nije moguće učitati. Koristi se ugrađena verzija.');
-        }
-      }
-    };
-
-    loadTemplates();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const nekretnineById = useMemo(() => Object.fromEntries(nekretnine.map((item) => [item.id, item])), [nekretnine]);
   const zakupniciById = useMemo(() => Object.fromEntries(zakupnici.map((item) => [item.id, item])), [zakupnici]);
 
-  const handleCreateUgovor = async (formData) => {
+  const handleSubmitUgovor = async (formData) => {
     if (isMutating) {
       return;
     }
     setIsMutating(true);
     try {
-      await api.createUgovor(formData);
-      toast.success('Ugovor je uspješno kreiran');
+      if (editingContract) {
+        await api.updateUgovor(editingContract.id, formData);
+        toast.success('Ugovor je uspješno ažuriran');
+      } else {
+        await api.createUgovor(formData);
+        toast.success('Ugovor je uspješno kreiran');
+      }
       await refreshEntities();
       setShowCreateForm(false);
       setRenewalTemplate(null);
+      setEditingContract(null);
     } catch (error) {
-      console.error('Greška pri kreiranju ugovora:', error);
-      toast.error('Greška pri kreiranju ugovora');
+      console.error('Greška pri spremanju ugovora:', error);
+      toast.error('Spremanje ugovora nije uspjelo');
     } finally {
       setIsMutating(false);
     }
@@ -4927,521 +5871,6 @@ const Ugovori = () => {
   const handlePreviewContractDocument = (dokument) => {
     setPreviewDocument(dokument);
     setShowPreviewDialog(true);
-  };
-
-  const handleOpenAnnexDialog = (ugovor) => {
-    setAnnexContract(ugovor);
-    setAnnexForm({
-      nova_zakupnina: ugovor.osnovna_zakupnina != null ? ugovor.osnovna_zakupnina.toString() : '',
-      novi_datum_zavrsetka: ugovor.datum_zavrsetka || '',
-      dodatne_promjene: '',
-      naziv: `Aneks - ${ugovor.interna_oznaka}`,
-    });
-    setAnnexResult(null);
-    setAnnexDialogOpen(true);
-  };
-
-  const handleCloseAnnexDialog = () => {
-    if (annexGenerating || annexSaving) {
-      return;
-    }
-    setAnnexDialogOpen(false);
-    setAnnexContract(null);
-    setAnnexResult(null);
-  };
-
-  const handleOpenContractDialog = (ugovor) => {
-    setContractSource(ugovor);
-    setContractForm({
-      nova_interna_oznaka: ugovor.interna_oznaka ? `${ugovor.interna_oznaka}-nova` : '',
-      novo_trajanje_mjeseci: ugovor.trajanje_mjeseci != null ? ugovor.trajanje_mjeseci.toString() : '',
-      nova_zakupnina: ugovor.osnovna_zakupnina != null ? ugovor.osnovna_zakupnina.toString() : '',
-      dodatne_odredbe: '',
-      naziv: ugovor.interna_oznaka ? `Ugovor - ${ugovor.interna_oznaka}` : 'AI ugovor',
-    });
-    setContractResult(null);
-    setContractDialogOpen(true);
-  };
-
-  const handleCloseContractDialog = () => {
-    if (contractGenerating || contractSaving) {
-      return;
-    }
-    setContractDialogOpen(false);
-    setContractSource(null);
-    setContractResult(null);
-  };
-
-  const normaliseAmount = (value) => {
-    if (!value) {
-      return null;
-    }
-    const numeric = value.replace(/[^0-9,.-]/g, '').replace(/,/g, '.');
-    const parsed = Number(numeric);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  const handleGenerateAnnex = async () => {
-    if (!annexContract || annexGenerating) {
-      return;
-    }
-    setAnnexGenerating(true);
-    try {
-      const response = await api.generateContractAnnex({
-        ugovor_id: annexContract.id,
-        nova_zakupnina: normaliseAmount(annexForm.nova_zakupnina),
-        novi_datum_zavrsetka: annexForm.novi_datum_zavrsetka || null,
-        dodatne_promjene: annexForm.dodatne_promjene || null,
-      });
-      const data = response.data;
-      if (!data || data.success === false) {
-        const message = data?.message || 'Generiranje aneksa nije uspjelo';
-        toast.error(message);
-        return;
-      }
-      setAnnexResult(data);
-      if (data.metadata?.source === 'fallback') {
-        toast.success('Aneks je generiran koristeći lokalni predložak. Provjerite sadržaj prije spremanja.');
-      } else {
-        toast.success('AI aneks je generiran');
-      }
-    } catch (error) {
-      console.error('Greška pri generiranju AI aneksa:', error);
-      const message = error.response?.data?.detail || 'Generiranje aneksa nije uspjelo';
-      toast.error(message);
-    } finally {
-      setAnnexGenerating(false);
-    }
-  };
-
-  const handleGenerateContract = async () => {
-    if (!contractSource || contractGenerating) {
-      return;
-    }
-
-    const novaOznaka = contractForm.nova_interna_oznaka.trim();
-    if (!novaOznaka) {
-      toast.error('Unesite novu internu oznaku ugovora');
-      return;
-    }
-
-    const trajanje = Number.parseInt(contractForm.novo_trajanje_mjeseci, 10);
-    if (!Number.isFinite(trajanje) || trajanje <= 0) {
-      toast.error('Trajanje mora biti pozitivan broj mjeseci');
-      return;
-    }
-
-    const novaZakupnina = normaliseAmount(contractForm.nova_zakupnina);
-    if (novaZakupnina === null || novaZakupnina <= 0) {
-      toast.error('Nova zakupnina mora biti veća od nule');
-      return;
-    }
-
-    setContractGenerating(true);
-    try {
-      const response = await api.generateContract({
-        ugovor_id: contractSource.id,
-        nova_interna_oznaka: novaOznaka,
-        novo_trajanje_mjeseci: trajanje,
-        nova_zakupnina: novaZakupnina,
-        dodatne_odredbe: contractForm.dodatne_odredbe || null,
-      });
-      const data = response.data;
-      if (!data || data.success === false) {
-        const message = data?.message || 'Generiranje ugovora nije uspjelo';
-        toast.error(message);
-        return;
-      }
-      setContractResult(data);
-      if (data.metadata?.source === 'fallback') {
-        toast.success('Ugovor je generiran koristeći lokalni predložak. Provjerite sadržaj prije spremanja.');
-      } else {
-        toast.success('AI ugovor je generiran');
-      }
-    } catch (error) {
-      console.error('Greška pri generiranju AI ugovora:', error);
-      const message = error.response?.data?.detail || 'Generiranje ugovora nije uspjelo';
-      toast.error(message);
-    } finally {
-      setContractGenerating(false);
-    }
-  };
-
-  const renderTemplateToPdf = useCallback(async ({ templateHtml, placeholders, fallbackDocFactory }) => {
-    const filledTemplate = applyTemplatePlaceholders(templateHtml, placeholders);
-
-    const renderFallback = () => {
-      if (typeof fallbackDocFactory === 'function') {
-        return fallbackDocFactory();
-      }
-      return null;
-    };
-
-    if (typeof document === 'undefined') {
-      return renderFallback();
-    }
-
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.left = '-10000px';
-    container.style.top = '0';
-    container.style.width = '794px';
-    container.style.padding = '0';
-    container.innerHTML = filledTemplate;
-
-    document.body.appendChild(container);
-    let htmlRendered = false;
-    try {
-      const scale = typeof window !== 'undefined' && window.devicePixelRatio > 1 ? 1 : 0.95;
-      await new Promise((resolve) => {
-        doc.html(container, {
-          autoPaging: 'text',
-          margin: [0, 0, 0, 0],
-          html2canvas: {
-            scale,
-            useCORS: true,
-          },
-          callback: () => {
-            htmlRendered = true;
-            resolve();
-          },
-          x: 0,
-          y: 0,
-          windowWidth: 794,
-        });
-      });
-    } catch (error) {
-      console.error('Greška pri renderiranju PDF predloška:', error);
-    } finally {
-      document.body.removeChild(container);
-    }
-
-    if (!htmlRendered) {
-      return renderFallback();
-    }
-
-    return doc;
-  }, []);
-
-  const buildAnnexPdf = useCallback(async (title, content, options = {}) => {
-    const { context = {}, metadata = {}, contract } = options;
-    const templateHtml = annexTemplate || FALLBACK_ANNEX_TEMPLATE;
-    const { introText, bodyHtml } = convertAnnexContent(content);
-    const contractSummaryHtml = renderSummaryHtml(context.contract_summary);
-    const propertySummaryHtml = renderSummaryHtml(context.property_summary);
-    const tenantSummaryHtml = renderSummaryHtml(context.tenant_summary);
-    const changesHtml = renderChangesHtml(context);
-
-    const landlordLabel = context.landlord_label || ANNEX_BRAND.landlordLabel;
-    const tenantLabel = context.tenant_label || ANNEX_BRAND.tenantLabel;
-
-    const generatedAtDate = (() => {
-      if (metadata?.generated_at) {
-        const parsed = new Date(metadata.generated_at);
-        if (!Number.isNaN(parsed.getTime())) {
-          return parsed;
-        }
-      }
-      return new Date();
-    })();
-    const generatedAt = generatedAtDate.toLocaleString('hr-HR');
-
-    const contractReference = contract?.interna_oznaka || contract?.oznaka || contract?.broj_ugovora || '—';
-
-    const placeholders = {
-      '{{TITLE}}': escapeHtml(title || 'Aneks ugovora'),
-      '{{INTRO}}': escapeHtml(introText || context.promjene_text || ''),
-      '{{BODY}}': bodyHtml || `<p>${escapeHtml(context.promjene_text || introText || '')}</p>`,
-      '{{CONTRACT_SUMMARY}}': contractSummaryHtml,
-      '{{PROPERTY_SUMMARY}}': propertySummaryHtml,
-      '{{TENANT_SUMMARY}}': tenantSummaryHtml,
-      '{{CHANGES}}': changesHtml,
-      '{{LANDLORD_LABEL}}': escapeHtml(landlordLabel),
-      '{{TENANT_LABEL}}': escapeHtml(tenantLabel),
-      '{{GENERATED_AT}}': escapeHtml(generatedAt),
-      '{{CONTRACT_REFERENCE}}': escapeHtml(contractReference),
-      '{{BRAND_NAME}}': escapeHtml(ANNEX_BRAND.name),
-      '{{BRAND_SUBTITLE}}': escapeHtml(ANNEX_BRAND.subtitle),
-      '{{FOOTER}}': escapeHtml(ANNEX_BRAND.footer),
-      '{{META}}': escapeHtml(`Generirano: ${generatedAt}`),
-    };
-
-    const fallbackDocFactory = () => {
-      const plainDoc = new jsPDF();
-      const pageHeight = plainDoc.internal.pageSize.getHeight();
-      const marginX = 20;
-      let cursorY = 30;
-
-      plainDoc.setFont('helvetica', 'bold');
-      plainDoc.setFontSize(16);
-      plainDoc.text(title || 'Aneks ugovora', marginX, cursorY);
-      cursorY += 15;
-
-      plainDoc.setFont('helvetica', 'normal');
-      plainDoc.setFontSize(11);
-      const lines = plainDoc.splitTextToSize(content || '', 170);
-      lines.forEach((line) => {
-        if (cursorY > pageHeight - 30) {
-          plainDoc.addPage();
-          cursorY = 30;
-        }
-        plainDoc.text(line, marginX, cursorY);
-        cursorY += 14;
-      });
-
-      plainDoc.setFontSize(9);
-      plainDoc.text(`Generirano: ${generatedAt}`, marginX, Math.min(cursorY + 10, pageHeight - 15));
-      return plainDoc;
-    };
-    return renderTemplateToPdf({
-      templateHtml,
-      placeholders,
-      fallbackDocFactory,
-    });
-  }, [annexTemplate, renderTemplateToPdf]);
-
-  const handleAnnexDownload = async () => {
-    if (!annexResult || !annexContract) {
-      return;
-    }
-    try {
-      const title = annexResult.title || `Aneks - ${annexContract.interna_oznaka}`;
-      const doc = await buildAnnexPdf(title, annexResult.content || '', {
-        context: annexResult.context,
-        metadata: annexResult.metadata,
-        contract: annexContract,
-      });
-      if (!doc) {
-        toast.error('Generiranje PDF-a nije uspjelo');
-        return;
-      }
-      const safeName = (annexForm.naziv || title).replace(/[^a-z0-9]/gi, '_');
-      doc.save(`${safeName || 'aneks'}.pdf`);
-    } catch (error) {
-      console.error('Greška pri preuzimanju PDF-a aneksa:', error);
-      toast.error('Preuzimanje aneksa nije uspjelo');
-    }
-  };
-
-  const handleAnnexSaveAsDocument = async () => {
-    if (!annexResult || !annexContract || annexSaving) {
-      return;
-    }
-    setAnnexSaving(true);
-    try {
-      const title = annexForm.naziv || annexResult.title || `Aneks - ${annexContract.interna_oznaka}`;
-      const doc = await buildAnnexPdf(title, annexResult.content || '', {
-        context: annexResult.context,
-        metadata: annexResult.metadata,
-        contract: annexContract,
-      });
-      if (!doc) {
-        throw new Error('Generiranje PDF-a nije uspjelo');
-      }
-      const blob = doc.output('blob');
-      const fileName = `${title.replace(/[^a-z0-9]/gi, '_') || 'aneks'}.pdf`;
-      const FileCtor = typeof File !== 'undefined' ? File : class extends Blob {
-        constructor(parts, filename, options) {
-          super(parts, options);
-          this.name = filename;
-          this.lastModified = Date.now();
-        }
-      };
-      const file = new FileCtor([blob], fileName, { type: 'application/pdf' });
-
-      await api.createDokument({
-        naziv: title,
-        tip: 'aneks',
-        opis: annexForm.dodatne_promjene || 'AI generirani aneks ugovora',
-        ugovor_id: annexContract.id,
-        nekretnina_id: annexContract.nekretnina_id,
-        zakupnik_id: annexContract.zakupnik_id,
-        file,
-      });
-
-      await refreshEntities();
-      toast.success('Aneks je spremljen kao dokument');
-      handleCloseAnnexDialog();
-    } catch (error) {
-      console.error('Greška pri spremanju AI aneksa:', error);
-      const message = error.response?.data?.detail || 'Spremanje aneksa nije uspjelo';
-      toast.error(message);
-    } finally {
-      setAnnexSaving(false);
-    }
-  };
-
-  const buildContractPdf = useCallback(async (title, content, options = {}) => {
-    const { context = {}, metadata = {}, contract } = options;
-    const templateHtml = contractTemplate || FALLBACK_CONTRACT_TEMPLATE;
-    const { introText, bodyHtml } = convertAnnexContent(content);
-
-    const tenantSummaryHtml = renderSummaryHtml(context.tenant_summary);
-    const partiesHtml = [
-      `<p><strong>${escapeHtml(ANNEX_BRAND.landlordLabel)}:</strong> ____________________</p>`,
-      tenantSummaryHtml,
-    ].filter(Boolean).join('');
-    const propertySummaryHtml = renderSummaryHtml(context.property_summary);
-    const termSummaryHtml = renderSummaryHtml(context.term_summary);
-    const financialSummaryHtml = renderSummaryHtml(context.financial_summary);
-    const obligationsHtml = renderParagraphHtml(context.obligations_summary);
-    const specialProvisionsHtml = renderParagraphHtml(context.special_provisions);
-
-    const landlordLabel = context.landlord_label || ANNEX_BRAND.landlordLabel;
-    const tenantLabel = context.tenant_label || ANNEX_BRAND.tenantLabel;
-
-    const generatedAtDate = (() => {
-      if (metadata?.generated_at) {
-        const parsed = new Date(metadata.generated_at);
-        if (!Number.isNaN(parsed.getTime())) {
-          return parsed;
-        }
-      }
-      return new Date();
-    })();
-    const generatedAt = generatedAtDate.toLocaleString('hr-HR');
-
-    const contractReference = context.nova_interna_oznaka || contract?.interna_oznaka || '—';
-    const confirmationText = metadata?.confirmation || 'Strane potvrđuju da prihvaćaju sve odredbe ovog ugovora.';
-
-    const placeholders = {
-      '{{TITLE}}': escapeHtml(title || 'Ugovor o zakupu'),
-      '{{INTRO}}': escapeHtml(introText || ''),
-      '{{BODY}}': bodyHtml || `<p>${escapeHtml(content || '')}</p>`,
-      '{{PARTIES}}': partiesHtml,
-      '{{PROPERTY_SUMMARY}}': propertySummaryHtml,
-      '{{TERM_SUMMARY}}': termSummaryHtml,
-      '{{FINANCIAL_SUMMARY}}': financialSummaryHtml,
-      '{{OBLIGATIONS}}': obligationsHtml,
-      '{{SPECIAL_PROVISIONS}}': specialProvisionsHtml,
-      '{{CONFIRMATION}}': escapeHtml(confirmationText),
-      '{{LANDLORD_LABEL}}': escapeHtml(landlordLabel),
-      '{{TENANT_LABEL}}': escapeHtml(tenantLabel),
-      '{{GENERATED_AT}}': escapeHtml(generatedAt),
-      '{{CONTRACT_REFERENCE}}': escapeHtml(contractReference),
-      '{{BRAND_NAME}}': escapeHtml(ANNEX_BRAND.name),
-      '{{BRAND_SUBTITLE}}': escapeHtml(ANNEX_BRAND.subtitle),
-      '{{FOOTER}}': escapeHtml(ANNEX_BRAND.footer),
-    };
-
-    const fallbackDocFactory = () => {
-      const plainDoc = new jsPDF();
-      plainDoc.setFont('helvetica', 'bold');
-      plainDoc.setFontSize(16);
-      plainDoc.text(title || 'Ugovor o zakupu', 20, 25);
-
-      plainDoc.setFont('helvetica', 'normal');
-      plainDoc.setFontSize(11);
-      let cursorY = 40;
-
-      const appendBlock = (heading, text) => {
-        plainDoc.setFont('helvetica', 'bold');
-        plainDoc.text(heading, 20, cursorY);
-        cursorY += 10;
-        plainDoc.setFont('helvetica', 'normal');
-        const lines = plainDoc.splitTextToSize(text, 170);
-        lines.forEach((line) => {
-          if (cursorY > 260) {
-            plainDoc.addPage();
-            cursorY = 20;
-          }
-          plainDoc.text(line, 20, cursorY);
-          cursorY += 7;
-        });
-        cursorY += 8;
-      };
-
-      appendBlock('Strane', context.tenant_summary || 'Zakupnik: —');
-      appendBlock('Nekretnina', context.property_summary || 'N/A');
-      appendBlock('Uvjeti zakupa', context.term_summary || 'N/A');
-      appendBlock('Financijski uvjeti', context.financial_summary || 'N/A');
-      appendBlock('Obveze', context.obligations_summary || 'Prema izvornom ugovoru');
-      appendBlock('Posebne odredbe', context.special_provisions || 'Nema dodatnih odredbi');
-      appendBlock('Sadržaj ugovora', content || 'Ugovor je generiran lokalnim predloškom.');
-
-      plainDoc.setFontSize(9);
-      plainDoc.text(`Generirano: ${generatedAt}`, 20, Math.min(cursorY + 10, 285));
-      return plainDoc;
-    };
-
-    return renderTemplateToPdf({
-      templateHtml,
-      placeholders,
-      fallbackDocFactory,
-    });
-  }, [contractTemplate, renderTemplateToPdf]);
-
-  const handleContractDownload = async () => {
-    if (!contractResult || !contractSource) {
-      return;
-    }
-    try {
-      const title = contractResult.title || `Ugovor - ${contractSource.interna_oznaka}`;
-      const doc = await buildContractPdf(title, contractResult.content || '', {
-        context: contractResult.context,
-        metadata: contractResult.metadata,
-        contract: contractSource,
-      });
-      if (!doc) {
-        toast.error('Generiranje PDF-a nije uspjelo');
-        return;
-      }
-      const safeName = (contractForm.naziv || title).replace(/[^a-z0-9]/gi, '_');
-      doc.save(`${safeName || 'ugovor'}.pdf`);
-    } catch (error) {
-      console.error('Greška pri preuzimanju PDF-a ugovora:', error);
-      toast.error('Preuzimanje ugovora nije uspjelo');
-    }
-  };
-
-  const handleContractSaveAsDocument = async () => {
-    if (!contractResult || !contractSource || contractSaving) {
-      return;
-    }
-    setContractSaving(true);
-    try {
-      const title = contractForm.naziv || contractResult.title || `Ugovor - ${contractSource.interna_oznaka}`;
-      const doc = await buildContractPdf(title, contractResult.content || '', {
-        context: contractResult.context,
-        metadata: contractResult.metadata,
-        contract: contractSource,
-      });
-      if (!doc) {
-        throw new Error('Generiranje PDF-a nije uspjelo');
-      }
-
-      const blob = doc.output('blob');
-      const fileName = `${title.replace(/[^a-z0-9]/gi, '_') || 'ugovor'}.pdf`;
-      const FileCtor = typeof File !== 'undefined' ? File : class extends Blob {
-        constructor(parts, filename, options) {
-          super(parts, options);
-          this.name = filename;
-          this.lastModified = Date.now();
-        }
-      };
-      const file = new FileCtor([blob], fileName, { type: 'application/pdf' });
-
-      await api.createDokument({
-        naziv: title,
-        tip: 'ugovor',
-        opis: contractForm.dodatne_odredbe || 'AI generirani ugovor o zakupu',
-        ugovor_id: contractSource.id,
-        nekretnina_id: contractSource.nekretnina_id,
-        zakupnik_id: contractSource.zakupnik_id,
-        file,
-      });
-
-      await refreshEntities();
-      toast.success('Ugovor je spremljen kao dokument');
-      handleCloseContractDialog();
-    } catch (error) {
-      console.error('Greška pri spremanju AI ugovora:', error);
-      const message = error.response?.data?.detail || 'Spremanje ugovora nije uspjelo';
-      toast.error(message);
-    } finally {
-      setContractSaving(false);
-    }
   };
 
   const archivedStatuses = ARCHIVED_CONTRACT_STATUSES;
@@ -5509,7 +5938,11 @@ const Ugovori = () => {
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           </div>
           <Button 
-            onClick={() => setShowCreateForm(true)}
+            onClick={() => {
+              setEditingContract(null);
+              setRenewalTemplate(null);
+              setShowCreateForm(true);
+            }}
             data-testid="dodaj-ugovor-btn"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -5664,7 +6097,7 @@ const Ugovori = () => {
                 )}
                 
                 {/* Status change dropdown */}
-                <div className="flex items-center space-x-2 pt-2">
+                <div className="flex flex-wrap items-center gap-2 pt-2">
                   <Select 
                     value={ugovor.status} 
                     onValueChange={(value) => handleStatusChange(ugovor.id, value)}
@@ -5679,30 +6112,17 @@ const Ugovori = () => {
                       <SelectItem value="arhivirano">Arhivirano</SelectItem>
                     </SelectContent>
                   </Select>
-                  
-                  {ugovor.opcija_produljenja && (
-                    <Badge variant="outline" className="rounded-full text-[11px] uppercase tracking-wide text-primary">
-                      Opcija produljenja
-                    </Badge>
-                  )}
-                  
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     size="sm"
-                    onClick={() => handleOpenContractDialog(ugovor)}
-                    data-testid={`ai-contract-${ugovor.id}`}
-                    className="ml-2"
+                    onClick={() => {
+                      setEditingContract(ugovor);
+                      setRenewalTemplate(null);
+                      setShowCreateForm(true);
+                    }}
+                    data-testid={`uredi-ugovor-${ugovor.id}`}
                   >
-                    <FileText className="w-4 h-4 mr-1 text-primary" /> AI Ugovor
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleOpenAnnexDialog(ugovor)}
-                    data-testid={`ai-annex-${ugovor.id}`}
-                    className="ml-2"
-                  >
-                    <Sparkles className="w-4 h-4 mr-1 text-accent" /> AI Aneks
+                    <Edit className="w-4 h-4 mr-2" /> Uredi ugovor
                   </Button>
                 </div>
               </CardContent>
@@ -5712,167 +6132,44 @@ const Ugovori = () => {
       </div>
 
       {/* Create Contract Dialog */}
-      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+      <Dialog
+        open={showCreateForm}
+        onOpenChange={(open) => {
+          setShowCreateForm(open);
+          if (!open) {
+            setEditingContract(null);
+            setRenewalTemplate(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="ugovor-form-description">
           <DialogHeader>
             <DialogTitle>
-              {renewalTemplate ? 'Produžetak ugovora - Nova interna oznaka' : 'Dodaj novi ugovor'}
+              {editingContract
+                ? 'Uredi ugovor'
+                : renewalTemplate
+                  ? 'Produžetak ugovora - Nova interna oznaka'
+                  : 'Dodaj novi ugovor'}
             </DialogTitle>
           </DialogHeader>
           <div id="ugovor-form-description" className="sr-only">
-            Forma za kreiranje novog ugovora o zakupu
+            {editingContract ? 'Forma za uređivanje postojećeg ugovora o zakupu' : 'Forma za kreiranje novog ugovora o zakupu'}
           </div>
           <UgovorForm 
             nekretnine={nekretnine}
             zakupnici={zakupnici}
             propertyUnitsByProperty={propertyUnitsByProperty}
             propertyUnitsById={propertyUnitsById}
-            onSubmit={handleCreateUgovor}
+            refreshEntities={refreshEntities}
+            onSubmit={handleSubmitUgovor}
             onCancel={() => {
               setShowCreateForm(false);
               setRenewalTemplate(null);
+              setEditingContract(null);
             }}
             renewalTemplate={renewalTemplate}
+            contract={editingContract}
           />
-        </DialogContent>
-      </Dialog>
-
-      {/* AI Contract Dialog */}
-      <Dialog
-        open={contractDialogOpen}
-        onOpenChange={(open) => {
-          if (open) {
-            setContractDialogOpen(true);
-          } else {
-            handleCloseContractDialog();
-          }
-        }}
-      >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="ai-contract-description">
-          <DialogHeader>
-            <DialogTitle>
-              AI Ugovor o zakupu {contractSource?.interna_oznaka ? `(${contractSource.interna_oznaka})` : ''}
-            </DialogTitle>
-          </DialogHeader>
-          <div id="ai-contract-description" className="sr-only">
-            Generiranje novog ugovora o zakupu na temelju postojećeg ugovora s ažuriranim uvjetima.
-          </div>
-          {contractSource && (
-            <div className="space-y-6">
-              {contractTemplateError && (
-                <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
-                  {contractTemplateError}
-                </div>
-              )}
-              <div className="rounded-2xl border border-border/60 bg-primary/5 p-4">
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Sažetak izvornog ugovora</h3>
-                <div className="grid gap-3 text-sm text-foreground/90 md:grid-cols-2">
-                  <div>
-                    <span className="font-semibold text-primary">Interna oznaka:</span> {contractSource.interna_oznaka || '—'}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-primary">Zakupnina:</span> {contractSource.osnovna_zakupnina?.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—'} €
-                  </div>
-                  <div>
-                    <span className="font-semibold text-primary">Razdoblje:</span> {new Date(contractSource.datum_pocetka).toLocaleDateString('hr-HR')} – {new Date(contractSource.datum_zavrsetka).toLocaleDateString('hr-HR')}
-                  </div>
-                  <div>
-                    <span className="font-semibold text-primary">Trajanje:</span> {contractSource.trajanje_mjeseci} mjeseci
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="contract-nova-oznaka">Nova interna oznaka</Label>
-                    <Input
-                      id="contract-nova-oznaka"
-                      value={contractForm.nova_interna_oznaka}
-                      onChange={(e) => setContractForm((prev) => ({ ...prev, nova_interna_oznaka: e.target.value }))}
-                      placeholder="Npr. UG-2025-001"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="contract-nova-zakupnina">Nova zakupnina (€/mjesec)</Label>
-                    <Input
-                      id="contract-nova-zakupnina"
-                      value={contractForm.nova_zakupnina}
-                      onChange={(e) => setContractForm((prev) => ({ ...prev, nova_zakupnina: e.target.value }))}
-                      placeholder={contractSource.osnovna_zakupnina?.toString() || ''}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="contract-trajanje">Novo trajanje (mjeseci)</Label>
-                    <Input
-                      id="contract-trajanje"
-                      type="number"
-                      min="1"
-                      value={contractForm.novo_trajanje_mjeseci}
-                      onChange={(e) => setContractForm((prev) => ({ ...prev, novo_trajanje_mjeseci: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="contract-dodatne">Dodatne odredbe / napomene</Label>
-                    <Textarea
-                      id="contract-dodatne"
-                      value={contractForm.dodatne_odredbe}
-                      onChange={(e) => setContractForm((prev) => ({ ...prev, dodatne_odredbe: e.target.value }))}
-                      placeholder="Npr. indeksacija, posebni uvjeti, rokovi obnove"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground/80">
-                  AI će koristiti postojeće podatke ugovora i unesene vrijednosti kako bi pripremio cjeloviti prijedlog ugovora na hrvatskom jeziku.
-                </p>
-                <Button onClick={handleGenerateContract} disabled={contractGenerating}>
-                  {contractGenerating ? 'Generiram...' : 'Generiraj ugovor'}
-                </Button>
-              </div>
-
-              {contractResult && (
-                <div className="space-y-4">
-                  {contractResult.metadata?.source === 'fallback' && (
-                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
-                      Automatski predložak je korišten jer AI servis trenutno nije dostupan. Molimo pregledajte i prilagodite tekst prije spremanja.
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="contract-naziv">Naziv dokumenta</Label>
-                      <Input
-                        id="contract-naziv"
-                        value={contractForm.naziv}
-                        onChange={(e) => setContractForm((prev) => ({ ...prev, naziv: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Generirani ugovor</Label>
-                    <Textarea value={contractResult.content || ''} readOnly rows={16} className="mt-2" />
-                    <p className="mt-2 text-xs text-muted-foreground/70">
-                      Predložak: {contractTemplateSource}
-                      {contractTemplateError ? ` — ${contractTemplateError}` : ''}. Za prilagodbu uredite datoteku <code>brand/ugovor-template.html</code>.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <Button variant="outline" onClick={handleContractDownload}>
-                      <Download className="w-4 h-4 mr-2" /> Preuzmi PDF
-                    </Button>
-                    <Button onClick={handleContractSaveAsDocument} disabled={contractSaving}>
-                      {contractSaving ? 'Spremam...' : 'Spremi kao dokument'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 
@@ -5958,122 +6255,12 @@ const Ugovori = () => {
         </DialogContent>
       </Dialog>
 
-      {/* AI Annex Dialog */}
-      <Dialog
-        open={annexDialogOpen}
-        onOpenChange={(open) => {
-          if (open) {
-            setAnnexDialogOpen(true);
-          } else {
-            handleCloseAnnexDialog();
-          }
-        }}
-      >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="ai-annex-description">
-          <DialogHeader>
-            <DialogTitle>AI Aneks ugovora {annexContract?.interna_oznaka ? `(${annexContract.interna_oznaka})` : ''}</DialogTitle>
-          </DialogHeader>
-          <div id="ai-annex-description" className="sr-only">
-            Generiranje AI aneksa na temelju odabranog ugovora
-          </div>
-          {annexContract && (
-            <div className="space-y-6">
-              <div className="grid gap-4 rounded-xl border border-border/60 bg-primary/5 p-4 text-sm">
-                <div>
-                  <span className="font-semibold text-primary">Zakupnina:</span> {annexContract.osnovna_zakupnina?.toLocaleString()} €/mjesec
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <span><span className="font-semibold text-primary">Početak:</span> {new Date(annexContract.datum_pocetka).toLocaleDateString('hr-HR')}</span>
-                  <span><span className="font-semibold text-primary">Završetak:</span> {new Date(annexContract.datum_zavrsetka).toLocaleDateString('hr-HR')}</span>
-                </div>
-              </div>
-
-              <div className="grid gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="annex-nova-zakupnina">Nova zakupnina (€/mjesec)</Label>
-                    <Input
-                      id="annex-nova-zakupnina"
-                      value={annexForm.nova_zakupnina}
-                      onChange={(e) => setAnnexForm((prev) => ({ ...prev, nova_zakupnina: e.target.value }))}
-                      placeholder={annexContract.osnovna_zakupnina?.toString() || ''}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="annex-novi-datum">Novi datum završetka</Label>
-                    <Input
-                      id="annex-novi-datum"
-                      type="date"
-                      value={annexForm.novi_datum_zavrsetka}
-                      onChange={(e) => setAnnexForm((prev) => ({ ...prev, novi_datum_zavrsetka: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="annex-promjene">Dodatne promjene / napomene</Label>
-                  <Textarea
-                    id="annex-promjene"
-                    value={annexForm.dodatne_promjene}
-                    onChange={(e) => setAnnexForm((prev) => ({ ...prev, dodatne_promjene: e.target.value }))}
-                    placeholder="Npr. indeksacija od sljedećeg tromjesečja, formula korekcije kirije, posebni uvjeti"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground/80">
-                  AI će koristiti postojeće podatke ugovora i unesene izmjene kako bi generirao prijedlog aneksa na hrvatskom jeziku.
-                </p>
-                <Button onClick={handleGenerateAnnex} disabled={annexGenerating}>
-                  {annexGenerating ? 'Generiram...' : 'Generiraj aneks'}
-                </Button>
-              </div>
-
-              {annexResult && (
-                <div className="space-y-4">
-                  {annexResult.metadata?.source === 'fallback' && (
-                    <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
-                      Automatski predložak je korišten jer AI servis trenutno nije dostupan. Molimo pregledajte i prilagodite tekst prije slanja.
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="annex-naziv">Naziv dokumenta</Label>
-                      <Input
-                        id="annex-naziv"
-                        value={annexForm.naziv}
-                        onChange={(e) => setAnnexForm((prev) => ({ ...prev, naziv: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Generirani aneks</Label>
-                    <Textarea value={annexResult.content || ''} readOnly rows={14} className="mt-2" />
-                    <p className="mt-2 text-xs text-muted-foreground/70">
-                      Predložak: {annexTemplateSource}
-                      {annexTemplateError ? ` — ${annexTemplateError}` : ''}. Za prilagodbu uredite datoteku <code>brand/aneks-template.html</code>.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <Button variant="outline" onClick={handleAnnexDownload}>
-                      <Download className="w-4 h-4 mr-2" /> Preuzmi PDF
-                    </Button>
-                    <Button onClick={handleAnnexSaveAsDocument} disabled={annexSaving}>
-                      {annexSaving ? 'Spremam...' : 'Spremi kao dokument'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
 // Ugovor Form Component
-const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, propertyUnitsById = {}, onSubmit, onCancel, renewalTemplate }) => {
+const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, propertyUnitsById = {}, onSubmit, onCancel, renewalTemplate, contract = null, refreshEntities = async () => {} }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isParsing, setIsParsing] = useState(false);
   const [formData, setFormData] = useState({
@@ -6084,8 +6271,6 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     datum_pocetka: '',
     datum_zavrsetka: '',
     trajanje_mjeseci: '',
-    opcija_produljenja: false,
-    uvjeti_produljenja: '',
     rok_otkaza_dani: 30,
     osnovna_zakupnina: '',
     zakupnina_po_m2: '',
@@ -6101,6 +6286,7 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     property_unit_id: '',
   });
   const [tenantOptions, setTenantOptions] = useState(zakupnici);
+  const latestCreatedUnitRef = useRef(null);
   const activeTenantOptions = useMemo(
     () => tenantOptions.filter((tenant) => (tenant.status || 'aktivan') !== 'arhiviran'),
     [tenantOptions]
@@ -6115,6 +6301,50 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     return sortUnitsByPosition(propertyUnitsByProperty[formData.nekretnina_id] || []);
   }, [formData.nekretnina_id, propertyUnitsByProperty]);
 
+  const normaliseDateInput = useCallback((value) => {
+    if (!value) {
+      return '';
+    }
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return '';
+    }
+    return parsed.toISOString().slice(0, 10);
+  }, []);
+
+  useEffect(() => {
+    if (!contract) {
+      return;
+    }
+    setUploadedFile(null);
+    latestCreatedUnitRef.current = null;
+    setFormData({
+      interna_oznaka: contract.interna_oznaka || '',
+      nekretnina_id: contract.nekretnina_id || '',
+      zakupnik_id: contract.zakupnik_id || '',
+      datum_potpisivanja: normaliseDateInput(contract.datum_potpisivanja),
+      datum_pocetka: normaliseDateInput(contract.datum_pocetka),
+      datum_zavrsetka: normaliseDateInput(contract.datum_zavrsetka),
+      trajanje_mjeseci: contract.trajanje_mjeseci != null ? contract.trajanje_mjeseci.toString() : '',
+      rok_otkaza_dani: contract.rok_otkaza_dani != null ? contract.rok_otkaza_dani.toString() : '30',
+      osnovna_zakupnina: contract.osnovna_zakupnina != null ? contract.osnovna_zakupnina.toString() : '',
+      zakupnina_po_m2: contract.zakupnina_po_m2 != null ? contract.zakupnina_po_m2.toString() : '',
+      cam_troskovi: contract.cam_troskovi != null ? contract.cam_troskovi.toString() : '',
+      polog_depozit: contract.polog_depozit != null ? contract.polog_depozit.toString() : '',
+      garancija: contract.garancija != null ? contract.garancija.toString() : '',
+      indeksacija: contract.indeksacija ?? false,
+      indeks: contract.indeks || '',
+      formula_indeksacije: contract.formula_indeksacije || '',
+      obveze_odrzavanja: contract.obveze_odrzavanja || '',
+      namjena_prostora: contract.namjena_prostora || '',
+      rezije_brojila: contract.rezije_brojila || '',
+      property_unit_id: contract.property_unit_id || '',
+    });
+  }, [contract, normaliseDateInput]);
+
   useEffect(() => {
     setTenantOptions(zakupnici);
   }, [zakupnici]);
@@ -6123,7 +6353,11 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     if (!formData.property_unit_id) {
       return;
     }
-    const unit = propertyUnitsById?.[formData.property_unit_id];
+    const fallbackUnit =
+      latestCreatedUnitRef.current && latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
     if (!unit) {
       setFormData((prev) => ({ ...prev, property_unit_id: '' }));
       return;
@@ -6131,13 +6365,20 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     if (formData.nekretnina_id && unit.nekretnina_id !== formData.nekretnina_id) {
       setFormData((prev) => ({ ...prev, property_unit_id: '' }));
     }
+    if (propertyUnitsById?.[formData.property_unit_id]) {
+      latestCreatedUnitRef.current = null;
+    }
   }, [formData.nekretnina_id, formData.property_unit_id, propertyUnitsById]);
 
   useEffect(() => {
     if (!formData.property_unit_id) {
       return;
     }
-    const unit = propertyUnitsById?.[formData.property_unit_id];
+    const fallbackUnit =
+      latestCreatedUnitRef.current && latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
     if (!unit) {
       return;
     }
@@ -6211,6 +6452,31 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
     }) || null;
   }, [nekretnine]);
 
+  const findPropertyUnitMatch = useCallback((propertyId, suggestion) => {
+    if (!propertyId || !suggestion) {
+      return null;
+    }
+    const targetOznaka = normalize(suggestion.oznaka);
+    const targetNaziv = normalize(suggestion.naziv);
+    if (!targetOznaka && !targetNaziv) {
+      return null;
+    }
+    const units = propertyUnitsByProperty?.[propertyId] || [];
+    return (
+      units.find((unit) => {
+        const unitOznaka = normalize(unit.oznaka);
+        const unitNaziv = normalize(unit.naziv);
+        if (targetOznaka && unitOznaka === targetOznaka) {
+          return true;
+        }
+        if (targetNaziv && unitNaziv === targetNaziv) {
+          return true;
+        }
+        return false;
+      }) || null
+    );
+  }, [propertyUnitsByProperty]);
+
   const createTenantFromSuggestion = useCallback(async (suggestion) => {
     try {
       const payload = {
@@ -6241,6 +6507,9 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
   }, [refreshEntities]);
 
   useEffect(() => {
+    if (contract) {
+      return;
+    }
     if (renewalTemplate) {
       setFormData({
         interna_oznaka: renewalTemplate.interna_oznaka,
@@ -6250,8 +6519,6 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
         datum_pocetka: renewalTemplate.datum_pocetka,
         datum_zavrsetka: renewalTemplate.datum_zavrsetka,
         trajanje_mjeseci: renewalTemplate.trajanje_mjeseci.toString(),
-        opcija_produljenja: renewalTemplate.opcija_produljenja,
-        uvjeti_produljenja: renewalTemplate.uvjeti_produljenja || '',
         rok_otkaza_dani: renewalTemplate.rok_otkaza_dani,
         osnovna_zakupnina: renewalTemplate.osnovna_zakupnina.toString(),
         zakupnina_po_m2: renewalTemplate.zakupnina_po_m2?.toString() || '',
@@ -6266,7 +6533,7 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
         rezije_brojila: renewalTemplate.rezije_brojila || ''
       });
     }
-  }, [renewalTemplate]);
+  }, [renewalTemplate, contract]);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -6304,36 +6571,67 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
       const ostalo = parsedData.ostalo || {};
       const propertySuggestion = parsedData.nekretnina || {};
       const tenantSuggestion = parsedData.zakupnik || {};
+      const propertyUnitSuggestion = parsedData.property_unit || {};
+      const matchedPropertyUnit = response.data.matched_property_unit || null;
+      const createdPropertyUnit = response.data.created_property_unit || null;
 
       const propertyMatch = findPropertyMatch(propertySuggestion);
       const tenantMatch = findTenantMatch(tenantSuggestion);
       const tenantMatchStatus = tenantMatch ? (tenantMatch.status || 'aktivan') : null;
       const tenantMatchIsArchived = tenantMatchStatus === 'arhiviran';
 
-      setFormData((prevData) => ({
-        ...prevData,
-        interna_oznaka: ugovor.interna_oznaka || prevData.interna_oznaka,
-        datum_potpisivanja: ugovor.datum_potpisivanja || prevData.datum_potpisivanja,
-        datum_pocetka: ugovor.datum_pocetka || prevData.datum_pocetka,
-        datum_zavrsetka: ugovor.datum_zavrsetka || prevData.datum_zavrsetka,
-        trajanje_mjeseci: ugovor.trajanje_mjeseci?.toString() || prevData.trajanje_mjeseci,
-        rok_otkaza_dani: ugovor.rok_otkaza_dani || prevData.rok_otkaza_dani,
-        opcija_produljenja: ugovor.opcija_produljenja !== null ? ugovor.opcija_produljenja : prevData.opcija_produljenja,
-        uvjeti_produljenja: ugovor.uvjeti_produljenja || prevData.uvjeti_produljenja,
-        osnovna_zakupnina: financije.osnovna_zakupnina?.toString() || prevData.osnovna_zakupnina,
-        zakupnina_po_m2: financije.zakupnina_po_m2?.toString() || prevData.zakupnina_po_m2,
-        cam_troskovi: financije.cam_troskovi?.toString() || prevData.cam_troskovi,
-        polog_depozit: financije.polog_depozit?.toString() || prevData.polog_depozit,
-        garancija: financije.garancija?.toString() || prevData.garancija,
-        indeksacija: financije.indeksacija !== null ? financije.indeksacija : prevData.indeksacija,
-        indeks: financije.indeks || prevData.indeks,
-        formula_indeksacije: financije.formula_indeksacije || prevData.formula_indeksacije,
-        obveze_odrzavanja: ostalo.obveze_odrzavanja || prevData.obveze_odrzavanja,
-        namjena_prostora: parsedData.nekretnina?.namjena_prostora || prevData.namjena_prostora,
-        rezije_brojila: ostalo.rezije_brojila || prevData.rezije_brojila,
-        nekretnina_id: propertyMatch ? propertyMatch.id : prevData.nekretnina_id,
-        zakupnik_id: tenantMatch && !tenantMatchIsArchived ? tenantMatch.id : prevData.zakupnik_id,
-      }));
+      let inferredPropertyUnitId = '';
+
+      if (createdPropertyUnit && propertyMatch && createdPropertyUnit.nekretnina_id === propertyMatch.id) {
+        latestCreatedUnitRef.current = createdPropertyUnit;
+        inferredPropertyUnitId = createdPropertyUnit.id;
+        await refreshEntities();
+        toast.success(`Podprostor ${createdPropertyUnit.oznaka || createdPropertyUnit.naziv || createdPropertyUnit.id} je automatski kreiran.`);
+      } else if (matchedPropertyUnit && propertyMatch && matchedPropertyUnit.nekretnina_id === propertyMatch.id) {
+        inferredPropertyUnitId = matchedPropertyUnit.id;
+        toast.success(`Podprostor ${matchedPropertyUnit.oznaka || matchedPropertyUnit.naziv || matchedPropertyUnit.id} je povezan s ugovorom.`);
+      } else if (propertyMatch && (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv)) {
+        const localMatch = findPropertyUnitMatch(propertyMatch.id, propertyUnitSuggestion);
+        if (localMatch) {
+          inferredPropertyUnitId = localMatch.id;
+          toast.info(`Podprostor ${localMatch.oznaka || localMatch.naziv} je povezan s ugovorom.`);
+        } else {
+          toast.warning(`AI je identificirao podprostor ${propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv}, ali nije pronađen u sustavu.`);
+        }
+      } else if ((propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv) && !propertyMatch) {
+        toast.info('AI je prepoznao podprostor, ali nije pronašao odgovarajuću nekretninu.');
+      }
+
+      setFormData((prevData) => {
+        const nextData = {
+          ...prevData,
+          interna_oznaka: ugovor.interna_oznaka || prevData.interna_oznaka,
+          datum_potpisivanja: ugovor.datum_potpisivanja || prevData.datum_potpisivanja,
+          datum_pocetka: ugovor.datum_pocetka || prevData.datum_pocetka,
+          datum_zavrsetka: ugovor.datum_zavrsetka || prevData.datum_zavrsetka,
+          trajanje_mjeseci: ugovor.trajanje_mjeseci?.toString() || prevData.trajanje_mjeseci,
+          rok_otkaza_dani: ugovor.rok_otkaza_dani || prevData.rok_otkaza_dani,
+          osnovna_zakupnina: financije.osnovna_zakupnina?.toString() || prevData.osnovna_zakupnina,
+          zakupnina_po_m2: financije.zakupnina_po_m2?.toString() || prevData.zakupnina_po_m2,
+          cam_troskovi: financije.cam_troskovi?.toString() || prevData.cam_troskovi,
+          polog_depozit: financije.polog_depozit?.toString() || prevData.polog_depozit,
+          garancija: financije.garancija?.toString() || prevData.garancija,
+          indeksacija: financije.indeksacija !== null ? financije.indeksacija : prevData.indeksacija,
+          indeks: financije.indeks || prevData.indeks,
+          formula_indeksacije: financije.formula_indeksacije || prevData.formula_indeksacije,
+          obveze_odrzavanja: ostalo.obveze_odrzavanja || prevData.obveze_odrzavanja,
+          namjena_prostora: parsedData.nekretnina?.namjena_prostora || prevData.namjena_prostora,
+          rezije_brojila: ostalo.rezije_brojila || prevData.rezije_brojila,
+          nekretnina_id: propertyMatch ? propertyMatch.id : prevData.nekretnina_id,
+          zakupnik_id: tenantMatch && !tenantMatchIsArchived ? tenantMatch.id : prevData.zakupnik_id,
+        };
+
+        if (inferredPropertyUnitId) {
+          nextData.property_unit_id = inferredPropertyUnitId;
+        }
+
+        return nextData;
+      });
 
       if ((!tenantMatch || tenantMatchIsArchived) && (tenantSuggestion.naziv_firme || tenantSuggestion.ime_prezime)) {
         await createTenantFromSuggestion(tenantSuggestion);
@@ -6673,29 +6971,7 @@ const UgovorForm = ({ nekretnine, zakupnici, propertyUnitsByProperty = {}, prope
                 data-testid="ugovor-otkaz-input"
               />
             </div>
-            <div className="flex items-center space-x-2 pt-6">
-              <input
-                type="checkbox"
-                id="opcija_produljenja"
-                checked={formData.opcija_produljenja}
-                onChange={(e) => setFormData({ ...formData, opcija_produljenja: e.target.checked })}
-                data-testid="ugovor-produljenje-checkbox"
-              />
-              <Label htmlFor="opcija_produljenja">Opcija produljenja</Label>
-            </div>
           </div>
-
-          {formData.opcija_produljenja && (
-            <div>
-              <Label htmlFor="uvjeti_produljenja">Uvjeti produljenja</Label>
-              <Textarea
-                id="uvjeti_produljenja"
-                value={formData.uvjeti_produljenja}
-                onChange={(e) => setFormData({ ...formData, uvjeti_produljenja: e.target.value })}
-                data-testid="ugovor-uvjeti-input"
-              />
-            </div>
-          )}
 
           <div>
             <Label htmlFor="obveze_odrzavanja">Obveze održavanja</Label>
@@ -7133,6 +7409,7 @@ const LinkedEntitySelect = ({ label, placeholder, entities, value, onChange, ren
 
 const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty = {}, propertyUnitsById = {}, onSubmit, onCancel, refreshEntities, loading }) => {
   const fileInputRef = useRef(null);
+  const latestCreatedUnitRef = useRef(null);
   const initialFormState = {
     naziv: '',
     tip: 'ugovor',
@@ -7150,6 +7427,14 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
   const [quickCreateLoading, setQuickCreateLoading] = useState({ property: false, tenant: false, contract: false });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [tenantOptions, setTenantOptions] = useState(zakupnici);
+
+  useEffect(() => {
+    if (contract) {
+      setAiSuggestions(null);
+      setAiError(null);
+      setQuickCreateLoading({ property: false, tenant: false, contract: false });
+    }
+  }, [contract]);
 
   const activeTenantOptions = useMemo(
     () => tenantOptions.filter((tenant) => (tenant.status || 'aktivan') !== 'arhiviran'),
@@ -7200,6 +7485,31 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
     }) || null;
   }, [nekretnine]);
 
+  const findPropertyUnitMatch = useCallback((propertyId, suggestion) => {
+    if (!propertyId || !suggestion) {
+      return null;
+    }
+    const targetOznaka = normalize(suggestion.oznaka);
+    const targetNaziv = normalize(suggestion.naziv);
+    if (!targetOznaka && !targetNaziv) {
+      return null;
+    }
+    const units = propertyUnitsByProperty?.[propertyId] || [];
+    return (
+      units.find((unit) => {
+        const unitOznaka = normalize(unit.oznaka);
+        const unitNaziv = normalize(unit.naziv);
+        if (targetOznaka && unitOznaka === targetOznaka) {
+          return true;
+        }
+        if (targetNaziv && unitNaziv === targetNaziv) {
+          return true;
+        }
+        return false;
+      }) || null
+    );
+  }, [propertyUnitsByProperty]);
+
   const findTenantMatch = useCallback((suggestion) => {
     if (!suggestion) return null;
     const name = normalize(suggestion.naziv_firme || suggestion.ime_prezime);
@@ -7232,7 +7542,11 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
     if (!formData.property_unit_id) {
       return;
     }
-    const unit = propertyUnitsById?.[formData.property_unit_id];
+    const fallbackUnit =
+      latestCreatedUnitRef.current && latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
     if (!unit) {
       setFormData((prev) => ({ ...prev, property_unit_id: '' }));
       return;
@@ -7240,13 +7554,20 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
     if (formData.nekretnina_id && unit.nekretnina_id !== formData.nekretnina_id) {
       setFormData((prev) => ({ ...prev, property_unit_id: '' }));
     }
+    if (propertyUnitsById?.[formData.property_unit_id]) {
+      latestCreatedUnitRef.current = null;
+    }
   }, [formData.nekretnina_id, formData.property_unit_id, propertyUnitsById]);
 
   useEffect(() => {
     if (!formData.property_unit_id) {
       return;
     }
-    const unit = propertyUnitsById?.[formData.property_unit_id];
+    const fallbackUnit =
+      latestCreatedUnitRef.current && latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
     if (!unit) {
       return;
     }
@@ -7311,6 +7632,7 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
       const finances = suggestions.financije || {};
       const propertySuggestion = suggestions.nekretnina || {};
       const tenantSuggestion = suggestions.zakupnik || {};
+      const propertyUnitSuggestion = suggestions.property_unit || {};
       const propertyMatch = findPropertyMatch(propertySuggestion);
       const tenantMatch = findTenantMatch(tenantSuggestion);
       const contractMatch = findContractMatch(contract);
@@ -7319,6 +7641,30 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
       const documentType = resolveDocumentType(suggestions.document_type);
       const isPropertyDoc = PROPERTY_DOCUMENT_TYPES.has(documentType);
       const isContractDoc = CONTRACT_DOCUMENT_TYPES.has(documentType);
+      const matchedPropertyUnit = payload.matched_property_unit || null;
+      const createdPropertyUnit = payload.created_property_unit || null;
+
+      let inferredPropertyUnitId = '';
+
+      if (createdPropertyUnit && propertyMatch && createdPropertyUnit.nekretnina_id === propertyMatch.id) {
+        latestCreatedUnitRef.current = createdPropertyUnit;
+        inferredPropertyUnitId = createdPropertyUnit.id;
+        await refreshEntities();
+        toast.success(`Podprostor ${createdPropertyUnit.oznaka || createdPropertyUnit.naziv || createdPropertyUnit.id} je automatski kreiran.`);
+      } else if (matchedPropertyUnit && propertyMatch && matchedPropertyUnit.nekretnina_id === propertyMatch.id) {
+        inferredPropertyUnitId = matchedPropertyUnit.id;
+        toast.success(`Podprostor ${matchedPropertyUnit.oznaka || matchedPropertyUnit.naziv || matchedPropertyUnit.id} je povezan s dokumentom.`);
+      } else if (propertyMatch && (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv)) {
+        const localMatch = findPropertyUnitMatch(propertyMatch.id, propertyUnitSuggestion);
+        if (localMatch) {
+          inferredPropertyUnitId = localMatch.id;
+          toast.info(`Podprostor ${localMatch.oznaka || localMatch.naziv} je povezan s dokumentom.`);
+        } else {
+          toast.warning(`AI je identificirao podprostor ${propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv}, ali ga nije pronašao u sustavu.`);
+        }
+      } else if ((propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv) && !propertyMatch) {
+        toast.info('AI je prepoznao podprostor, ali nije pronašao odgovarajuću nekretninu.');
+      }
 
       const suggestedName = (() => {
         if (documentType === 'racun' && suggestions.racun?.broj_racuna) {
@@ -7374,6 +7720,12 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
 
         if (!prev.naziv && documentType === 'racun' && suggestions.racun?.broj_racuna) {
           updated.naziv = `Račun ${suggestions.racun.broj_racuna}`;
+        }
+
+        if (isPropertyDoc) {
+          updated.property_unit_id = '';
+        } else if (inferredPropertyUnitId) {
+          updated.property_unit_id = inferredPropertyUnitId;
         }
 
         return updated;
@@ -7489,8 +7841,6 @@ const DokumentForm = ({ nekretnine, zakupnici, ugovori, propertyUnitsByProperty 
        datum_pocetka: contract.datum_pocetka || today,
        datum_zavrsetka: contract.datum_zavrsetka || today,
         trajanje_mjeseci: contract.trajanje_mjeseci || 12,
-        opcija_produljenja: contract.opcija_produljenja ?? false,
-        uvjeti_produljenja: contract.uvjeti_produljenja || null,
         rok_otkaza_dani: contract.rok_otkaza_dani || 30,
         osnovna_zakupnina: toNumber(finances.osnovna_zakupnina, 0),
         zakupnina_po_m2: toNumberOrNull(finances.zakupnina_po_m2),
@@ -7856,12 +8206,13 @@ function App() {
         <BrowserRouter>
           <Navigation />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/nekretnine" element={<Nekretnine />} />
-            <Route path="/zakupnici" element={<Zakupnici />} />
-            <Route path="/ugovori" element={<Ugovori />} />
-            <Route path="/dokumenti" element={<Dokumenti />} />
-          </Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/nekretnine" element={<Nekretnine />} />
+          <Route path="/zakupnici" element={<Zakupnici />} />
+          <Route path="/ugovori" element={<Ugovori />} />
+          <Route path="/odrzavanje" element={<MaintenanceWorkspace />} />
+          <Route path="/dokumenti" element={<Dokumenti />} />
+        </Routes>
         </BrowserRouter>
       </div>
     </EntityStoreProvider>

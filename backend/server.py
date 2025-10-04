@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -41,27 +43,124 @@ DEFAULT_ANEKS_TEMPLATE_HTML = """<!DOCTYPE html>\n<html lang=\"hr\">\n<head>\n<m
 DEFAULT_UGOVOR_TEMPLATE_HTML = """<!DOCTYPE html>\n<html lang=\"hr\">\n<head>\n<meta charset=\"utf-8\"/>\n<title>Ugovor o zakupu</title>\n<style>\n  body { font-family: 'Helvetica', Arial, sans-serif; color: #202124; margin: 48px 56px 60px; line-height: 1.6; background: #ffffff; }\n  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1d3557; padding-bottom: 14px; margin-bottom: 32px; }\n  .brand { display: flex; flex-direction: column; gap: 4px; }\n  .brand-title { font-weight: 700; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; color: #1d3557; }\n  .brand-subtitle { font-size: 11px; color: #6c757d; letter-spacing: 0.08em; text-transform: uppercase; }\n  .meta { text-align: right; font-size: 11px; color: #6c757d; }\n  h1 { font-size: 26px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 10px; color: #1d3557; }\n  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; margin: 28px 0 12px; color: #457b9d; }\n  p { margin: 0 0 10px 0; }\n  ul { margin: 0 0 12px 24px; }\n  .section { margin-top: 20px; }\n  .signature-block { display: flex; justify-content: space-between; gap: 56px; margin-top: 60px; }\n  .signature { flex: 1; text-align: center; font-size: 12px; }\n  .signature::before { content: ''; display: block; height: 56px; border-bottom: 1px solid #dfe6ed; margin-bottom: 10px; }\n  footer { margin-top: 64px; font-size: 10px; color: #6c757d; border-top: 1px solid #dfe6ed; padding-top: 12px; }\n  .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #457b9d; color: #457b9d; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }\n</style>\n</head>\n<body>\n  <header>\n    <div class=\"brand\">\n      <div class=\"brand-title\">{{BRAND_NAME}}</div>\n      <div class=\"brand-subtitle\">{{BRAND_SUBTITLE}}</div>\n    </div>\n    <div class=\"meta\">\n      <div class=\"badge\">Ugovor o zakupu</div>\n      <div>Referenca: {{CONTRACT_REFERENCE}}</div>\n      <div>Generirano: {{GENERATED_AT}}</div>\n    </div>\n  </header>\n  <main>\n    <h1>{{TITLE}}</h1>\n    <p>{{INTRO}}</p>\n    <section class=\"section\">\n      <h2>Strane</h2>\n      <div>{{PARTIES}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Nekretnina</h2>\n      <div>{{PROPERTY_SUMMARY}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Uvjeti zakupa</h2>\n      <div>{{TERM_SUMMARY}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Financijski uvjeti</h2>\n      <div>{{FINANCIAL_SUMMARY}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Obveze i odgovornosti</h2>\n      <div>{{OBLIGATIONS}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Posebne odredbe</h2>\n      <div>{{SPECIAL_PROVISIONS}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Detaljni ugovor</h2>\n      <div>{{BODY}}</div>\n    </section>\n    <section class=\"section\">\n      <h2>Potvrda i potpisi</h2>\n      <p>{{CONFIRMATION}}</p>\n    </section>\n    <div class=\"signature-block\">\n      <div class=\"signature\">{{LANDLORD_LABEL}}</div>\n      <div class=\"signature\">{{TENANT_LABEL}}</div>\n    </div>\n  </main>\n  <footer>{{FOOTER}}</footer>\n</body>\n</html>\n"""
 
 
-def _parse_api_tokens() -> Dict[str, str]:
+def _parse_api_tokens() -> Dict[str, Dict[str, Any]]:
     tokens_raw = os.environ.get('API_TOKENS')
     if tokens_raw:
         mapping = {}
         for pair in tokens_raw.split(','):
             if not pair.strip():
                 continue
-            if ':' in pair:
-                token, role = pair.split(':', 1)
+            token_part = pair.strip()
+            role = 'admin'
+            scopes: List[str] = []
+            if ':' in token_part:
+                token, rest = token_part.split(':', 1)
+                if '|' in rest:
+                    role_part, scopes_part = rest.split('|', 1)
+                    role = role_part.strip() or 'admin'
+                    scopes = [scope.strip() for scope in scopes_part.split(';') if scope.strip()]
+                else:
+                    token = token.strip()
+                    role = rest.strip() or 'admin'
+                mapping[token.strip()] = {"role": role, "scopes": scopes}
             else:
-                token, role = pair, 'admin'
-            mapping[token.strip()] = role.strip() or 'admin'
+                mapping[token_part] = {"role": 'admin', "scopes": []}
         return mapping
     single = os.environ.get('API_TOKEN')
     if single:
-        return {single: os.environ.get('DEFAULT_ROLE', 'admin')}
+        return {single: {"role": os.environ.get('DEFAULT_ROLE', 'admin'), "scopes": []}}
     return {}
 
 
 API_TOKENS = _parse_api_tokens()
 DEFAULT_ROLE = os.environ.get('DEFAULT_ROLE', 'admin')
+
+ROLE_SCOPE_MAP: Dict[str, List[str]] = {
+    'admin': ['*'],
+    'system': ['*'],
+    'owner_exec': ['kpi:read', 'properties:read', 'leases:read', 'tenants:read', 'financials:read', 'reports:read'],
+    'property_manager': [
+        'properties:*',
+        'tenants:*',
+        'leases:*',
+        'maintenance:*',
+        'documents:*',
+        'vendors:read',
+        'financials:read',
+        'reports:read',
+    ],
+    'leasing_agent': [
+        'tenants:*',
+        'leases:read',
+        'leases:create',
+        'leases:update',
+        'documents:read',
+        'documents:create',
+        'maintenance:read',
+    ],
+    'maintenance_coordinator': [
+        'maintenance:*',
+        'properties:read',
+        'tenants:read',
+        'documents:read',
+        'vendors:read',
+    ],
+    'accountant': [
+        'financials:*',
+        'leases:read',
+        'tenants:read',
+        'properties:read',
+        'vendors:*',
+        'documents:read',
+        'reports:*',
+    ],
+    'vendor': ['maintenance:assigned', 'documents:create', 'documents:read'],
+    'tenant': ['self:read', 'self:maintenance', 'self:documents'],
+}
+
+
+def _resolve_role_scopes(role: str, explicit_scopes: Optional[List[str]] = None) -> List[str]:
+    base_scopes = ROLE_SCOPE_MAP.get(role, [])
+    if explicit_scopes:
+        combined = list(dict.fromkeys(base_scopes + explicit_scopes))
+    else:
+        combined = list(dict.fromkeys(base_scopes))
+    if not combined:
+        return ['*'] if role == DEFAULT_ROLE else []
+    return combined
+
+
+def _scope_matches(granted: List[str], required: str) -> bool:
+    if '*' in granted:
+        return True
+    if required in granted:
+        return True
+    if ':' not in required:
+        return False
+    resource, action = required.split(':', 1)
+    wildcard = f"{resource}:*"
+    if wildcard in granted:
+        return True
+    # allow hierarchical permission where write implies read
+    if action == 'read':
+        for perm in granted:
+            if perm.startswith(f"{resource}:") and perm != required:
+                return True
+    return False
+
+
+def require_scopes(*scopes: str):
+    async def _dependency(request: Request):
+        principal = getattr(request.state, 'current_user', None)
+        if not principal:
+            raise HTTPException(status_code=401, detail="Neautorizirano")
+        granted = principal.get('scopes', [])
+        missing = [scope for scope in scopes if not _scope_matches(granted, scope)]
+        if missing:
+            raise HTTPException(status_code=403, detail=f"Nedostaju ovlasti: {', '.join(missing)}")
+        return True
+
+    return _dependency
 
 # In-memory fallback implementations -------------------------------------------------
 
@@ -188,6 +287,7 @@ class InMemoryDatabase:
         self.podsjetnici = InMemoryCollection()
         self.racuni = InMemoryCollection()
         self.activity_logs = InMemoryCollection()
+        self.maintenance_tasks = InMemoryCollection()
 
 
 # MongoDB connection with optional in-memory fallback
@@ -202,34 +302,66 @@ else:
     db = client[os.environ['DB_NAME']]
 
 
-async def log_activity(user: Dict[str, str], method: str, path: str, status: int):
+async def log_activity(
+    principal: Dict[str, Any],
+    method: str,
+    path: str,
+    status: int,
+    *,
+    query_params: Optional[Dict[str, Any]] = None,
+    request_payload: Optional[Dict[str, Any]] = None,
+    ip_address: Optional[str] = None,
+    request_id: Optional[str] = None,
+    message: Optional[str] = None,
+):
     try:
         log = ActivityLog(
-            user=user.get('name', 'anonymous'),
-            role=user.get('role', DEFAULT_ROLE),
+            user=principal.get('name', 'anonymous'),
+            role=principal.get('role', DEFAULT_ROLE),
+            actor_id=principal.get('id'),
             method=method,
             path=path,
             status_code=status,
+            scopes=principal.get('scopes', []),
+            query_params=query_params or {},
+            request_payload=request_payload,
+            ip_address=ip_address,
+            request_id=request_id or str(uuid.uuid4()),
+            message=message,
         )
         await db.activity_logs.insert_one(prepare_for_mongo(log.model_dump()))
     except Exception as exc:
         logger.error("Failed to log activity: %s", exc)
 
 
-def get_current_user(request: Request) -> Dict[str, str]:
+def get_current_user(request: Request) -> Dict[str, Any]:
     if not API_TOKENS:
-        user = {"name": "anonymous", "role": DEFAULT_ROLE}
-        request.state.current_user = user
-        return user
+        scopes = _resolve_role_scopes(DEFAULT_ROLE)
+        principal = {
+            "id": "anonymous",
+            "name": "anonymous",
+            "role": DEFAULT_ROLE,
+            "scopes": scopes,
+        }
+        request.state.current_user = principal
+        return principal
 
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         token = auth_header.split(" ", 1)[1].strip()
-        role = API_TOKENS.get(token)
-        if role:
-            user = {"name": token, "role": role}
-            request.state.current_user = user
-            return user
+        entry = API_TOKENS.get(token)
+        if entry:
+            role = entry.get("role", DEFAULT_ROLE)
+            explicit_scopes = entry.get("scopes", [])
+            scopes = _resolve_role_scopes(role, explicit_scopes)
+            principal = {
+                "id": token,
+                "name": entry.get("name", token),
+                "role": role,
+                "scopes": scopes,
+            }
+            request.state.current_user = principal
+            return principal
 
     raise HTTPException(status_code=401, detail="Neautorizirano", headers={"WWW-Authenticate": "Bearer"})
 
@@ -239,10 +371,78 @@ app = FastAPI()
 # Activity logging middleware
 @app.middleware("http")
 async def activity_logger(request: Request, call_next):
-    user = getattr(request.state, "current_user", {"name": "guest", "role": DEFAULT_ROLE})
-    response = await call_next(request)
-    await log_activity(user, request.method, request.url.path, response.status_code)
-    return response
+    request_id = str(uuid.uuid4())
+    request_payload: Optional[Dict[str, Any]] = None
+    body_bytes: bytes = b''
+
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        try:
+            body_bytes = await request.body()
+        except Exception:
+            body_bytes = b''
+        if body_bytes:
+            if len(body_bytes) > 8192:
+                request_payload = {"truncated": True}
+            else:
+                try:
+                    parsed = json.loads(body_bytes.decode('utf-8'))
+                    if isinstance(parsed, dict):
+                        request_payload = parsed
+                    elif isinstance(parsed, list):
+                        request_payload = {"items": parsed[:25]}
+                    else:
+                        request_payload = {"value": parsed}
+                except (ValueError, UnicodeDecodeError):
+                    request_payload = None
+
+            async def receive() -> Dict[str, Any]:
+                return {"type": "http.request", "body": body_bytes, "more_body": False}
+
+            request._receive = receive  # type: ignore[attr-defined]
+
+    query_params = dict(request.query_params.multi_items())
+    client_ip = request.client.host if request.client else None
+
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        principal = getattr(request.state, "current_user", None) or {
+            "id": "guest",
+            "name": "guest",
+            "role": DEFAULT_ROLE,
+            "scopes": _resolve_role_scopes(DEFAULT_ROLE),
+        }
+        await log_activity(
+            principal,
+            request.method,
+            request.url.path,
+            status_code,
+            query_params=query_params,
+            request_payload=request_payload,
+            ip_address=client_ip,
+            request_id=request_id,
+        )
+        return response
+    except Exception as exc:
+        status_code = getattr(exc, 'status_code', 500)
+        principal = getattr(request.state, "current_user", None) or {
+            "id": "guest",
+            "name": "guest",
+            "role": DEFAULT_ROLE,
+            "scopes": _resolve_role_scopes(DEFAULT_ROLE),
+        }
+        await log_activity(
+            principal,
+            request.method,
+            request.url.path,
+            status_code,
+            query_params=query_params,
+            request_payload=request_payload,
+            ip_address=client_ip,
+            request_id=request_id,
+            message=str(exc),
+        )
+        raise
 
 # Create a router with the /api prefix and auth dependency
 api_router = APIRouter(prefix="/api", dependencies=[Depends(get_current_user)])
@@ -305,6 +505,23 @@ class PropertyUnitStatus(str, Enum):
     IZNAJMLJENO = "iznajmljeno"
     U_ODRZAVANJU = "u_odrzavanju"
 
+
+class MaintenanceStatus(str, Enum):
+    NOVI = "novi"
+    PLANIRAN = "planiran"
+    U_TOKU = "u_tijeku"
+    CEKA_DOBAVLJACA = "ceka_dobavljaca"
+    POTREBNA_ODLUKA = "potrebna_odluka"
+    ZAVRSENO = "zavrseno"
+    ARHIVIRANO = "arhivirano"
+
+
+class MaintenancePriority(str, Enum):
+    NISKO = "nisko"
+    SREDNJE = "srednje"
+    VISOKO = "visoko"
+    KRITICNO = "kriticno"
+
 # Helper functions
 def prepare_for_mongo(data):
     """Convert date/datetime objects to ISO strings for MongoDB storage"""
@@ -343,6 +560,435 @@ def parse_from_mongo(item):
     return item
 
 
+def _coerce_string(value: Any, default: str = "") -> str:
+    if value is None:
+        return default
+    if isinstance(value, str):
+        if value.strip() == "":
+            return default
+        return value
+    return str(value)
+
+
+def _coerce_optional_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        trimmed = value.strip()
+        return trimmed if trimmed else None
+    return str(value)
+
+
+def _coerce_enum(value: Any, enum_cls: type[Enum], default: Enum) -> Enum:
+    if isinstance(value, enum_cls):
+        return value
+    if value is None or value == "":
+        return default
+    try:
+        return enum_cls(value)
+    except ValueError:
+        return default
+
+
+def _coerce_date(value: Any, fallback: date) -> date:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        try:
+            if 'T' in value:
+                return datetime.fromisoformat(value.replace('Z', '+00:00')).date()
+            return date.fromisoformat(value)
+        except (ValueError, TypeError):
+            return fallback
+    return fallback
+
+
+def _coerce_float(value: Any, default: float = 0.0) -> float:
+    if value is None:
+        return default
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    if isinstance(value, str):
+        normalised = re.sub(r"[^0-9,.-]", "", value).replace(",", ".")
+        try:
+            return float(normalised)
+        except ValueError:
+            return default
+    return default
+
+
+def _coerce_optional_float(value: Any) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    if isinstance(value, str):
+        normalised = re.sub(r"[^0-9,.-]", "", value).replace(",", ".")
+        if not normalised:
+            return None
+        try:
+            return float(normalised)
+        except ValueError:
+            return None
+    return None
+
+
+def _coerce_int(value: Any, default: int = 0) -> int:
+    if value is None or value == "":
+        return default
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(float(value))
+        except ValueError:
+            return default
+    return default
+
+
+def _build_zakupnik_model(raw_doc: Dict[str, Any]) -> Zakupnik:
+    data = parse_from_mongo(copy.deepcopy(raw_doc))
+    data['oib'] = _coerce_string(data.get('oib'))
+    data['naziv_firme'] = _coerce_optional_string(data.get('naziv_firme'))
+    data['ime_prezime'] = _coerce_optional_string(data.get('ime_prezime'))
+    data['sjediste'] = _coerce_string(data.get('sjediste'))
+    data['kontakt_ime'] = _coerce_string(data.get('kontakt_ime'))
+    data['kontakt_email'] = _coerce_string(data.get('kontakt_email'))
+    data['kontakt_telefon'] = _coerce_string(data.get('kontakt_telefon'))
+    data['iban'] = _coerce_optional_string(data.get('iban'))
+    data['status'] = _coerce_enum(data.get('status'), ZakupnikStatus, ZakupnikStatus.AKTIVAN)
+    try:
+        return Zakupnik(**data)
+    except ValidationError as exc:
+        logger.warning('Zakupnik dokument %s nije prošao validaciju i bit će preskočen: %s', raw_doc.get('id'), exc)
+        raise
+
+
+def _build_zakupnici_list(raw_docs: List[Dict[str, Any]]) -> List[Zakupnik]:
+    rezultat: List[Zakupnik] = []
+    skipped = 0
+    for raw in raw_docs:
+        if not raw:
+            continue
+        try:
+            rezultat.append(_build_zakupnik_model(raw))
+        except ValidationError:
+            skipped += 1
+    if skipped:
+        logger.warning('Preskočeno %s zakupnika u agregiranom odgovoru zbog neispravnih podataka', skipped)
+    return rezultat
+
+
+def _build_ugovor_model(raw_doc: Dict[str, Any]) -> Ugovor:
+    data = parse_from_mongo(copy.deepcopy(raw_doc))
+    today = date.today()
+    data['interna_oznaka'] = _coerce_string(data.get('interna_oznaka'))
+    data['nekretnina_id'] = _coerce_string(data.get('nekretnina_id'))
+    data['zakupnik_id'] = _coerce_string(data.get('zakupnik_id'))
+    data['property_unit_id'] = _coerce_optional_string(data.get('property_unit_id'))
+
+    data['datum_potpisivanja'] = _coerce_date(data.get('datum_potpisivanja'), today)
+    data['datum_pocetka'] = _coerce_date(data.get('datum_pocetka'), today)
+    data['datum_zavrsetka'] = _coerce_date(data.get('datum_zavrsetka'), today)
+
+    data['trajanje_mjeseci'] = _coerce_int(data.get('trajanje_mjeseci'), 0)
+    data['rok_otkaza_dani'] = _coerce_int(data.get('rok_otkaza_dani'), 30)
+
+    data['osnovna_zakupnina'] = _coerce_float(data.get('osnovna_zakupnina'), 0.0)
+    for optional_key in ('zakupnina_po_m2', 'cam_troskovi', 'polog_depozit', 'garancija'):
+        data[optional_key] = _coerce_optional_float(data.get(optional_key))
+
+    data['indeksacija'] = bool(data.get('indeksacija'))
+    data['indeks'] = _coerce_optional_string(data.get('indeks'))
+    data['formula_indeksacije'] = _coerce_optional_string(data.get('formula_indeksacije'))
+    data['obveze_odrzavanja'] = _coerce_optional_string(data.get('obveze_odrzavanja'))
+    data['namjena_prostora'] = _coerce_optional_string(data.get('namjena_prostora'))
+    data['rezije_brojila'] = _coerce_optional_string(data.get('rezije_brojila'))
+
+    data['status'] = _coerce_enum(data.get('status'), StatusUgovora, StatusUgovora.AKTIVNO)
+
+    try:
+        return Ugovor(**data)
+    except ValidationError as exc:
+        logger.warning('Ugovor dokument %s nije prošao validaciju i bit će preskočen: %s', raw_doc.get('id'), exc)
+        raise
+
+
+def _build_ugovori_list(raw_docs: List[Dict[str, Any]]) -> List[Ugovor]:
+    rezultat: List[Ugovor] = []
+    skipped = 0
+    for raw in raw_docs:
+        if not raw:
+            continue
+        try:
+            rezultat.append(_build_ugovor_model(raw))
+        except ValidationError:
+            skipped += 1
+    if skipped:
+        logger.warning('Preskočeno %s ugovora u agregiranom odgovoru zbog neispravnih podataka', skipped)
+    return rezultat
+
+def _normalise_ai_string(value: Optional[str]) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, (int, float)):
+        value = str(value)
+    if not isinstance(value, str):
+        return ''
+    return re.sub(r'\s+', ' ', value).strip().lower()
+
+
+def _strings_close(a: Optional[str], b: Optional[str]) -> bool:
+    if not a or not b:
+        return False
+    norm_a = _normalise_ai_string(a)
+    norm_b = _normalise_ai_string(b)
+    if not norm_a or not norm_b:
+        return False
+    return norm_a == norm_b or norm_a in norm_b or norm_b in norm_a
+
+
+def _try_parse_float(value: Any) -> Optional[float]:
+    if value in (None, ''):
+        return None
+    try:
+        if isinstance(value, (int, float)):
+            return float(value)
+        text = str(value).strip().replace(',', '.')
+        if not text:
+            return None
+        return float(text)
+    except (ValueError, TypeError):
+        return None
+
+
+def _normalise_labels(labels: Optional[List[str]]) -> List[str]:
+    if not labels:
+        return []
+    cleaned: List[str] = []
+    seen = set()
+    for label in labels:
+        if not isinstance(label, str):
+            continue
+        trimmed = label.strip()
+        if not trimmed:
+            continue
+        key = trimmed.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned.append(trimmed)
+    return cleaned
+
+
+def _normalise_ai_unit_payload(unit_data: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(unit_data, dict):
+        return {}
+
+    def _clean(value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            value = str(value)
+        stripped = value.strip()
+        return stripped or None
+
+    payload: Dict[str, Any] = {}
+    payload['oznaka'] = _clean(unit_data.get('oznaka'))
+    payload['naziv'] = _clean(unit_data.get('naziv'))
+    payload['kat'] = _clean(unit_data.get('kat'))
+    payload['layout_ref'] = _clean(unit_data.get('layout_ref'))
+    payload['napomena'] = _clean(unit_data.get('napomena'))
+    payload['status'] = _clean(unit_data.get('status'))
+    payload['osnovna_zakupnina'] = _try_parse_float(unit_data.get('osnovna_zakupnina'))
+    payload['povrsina_m2'] = _try_parse_float(unit_data.get('povrsina_m2'))
+    payload['metadata'] = unit_data.get('metadata') if isinstance(unit_data.get('metadata'), dict) else None
+    return payload
+
+
+async def _find_property_match_from_ai(nekretnina_data: Optional[Dict[str, Any]]) -> Optional['Nekretnina']:
+    if not isinstance(nekretnina_data, dict):
+        return None
+
+    naziv = nekretnina_data.get('naziv')
+    adresa = nekretnina_data.get('adresa')
+    kat_opcina = nekretnina_data.get('katastarska_opcina')
+    kat_cestica = nekretnina_data.get('broj_kat_cestice')
+
+    if not any([naziv, adresa, kat_opcina, kat_cestica]):
+        return None
+
+    try:
+        properties_cursor = db.nekretnine.find()
+        properties_docs = await properties_cursor.to_list(1000) if hasattr(properties_cursor, 'to_list') else list(properties_cursor)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error('AI property match fetch failed: %s', exc)
+        return None
+
+    best_match: Optional[Nekretnina] = None
+    best_score = 0
+
+    for doc in properties_docs:
+        try:
+            property_obj = Nekretnina(**parse_from_mongo(doc))
+        except ValidationError as exc:  # pragma: no cover - safety
+            logger.warning('Skipping nekretnina during AI match due to validation error: %s', exc)
+            continue
+
+        score = 0
+        if naziv and _strings_close(naziv, property_obj.naziv):
+            score += 3
+        if adresa and _strings_close(adresa, property_obj.adresa):
+            score += 4
+        if kat_opcina and _strings_close(kat_opcina, property_obj.katastarska_opcina):
+            score += 2
+        if kat_cestica and _strings_close(kat_cestica, property_obj.broj_kat_cestice):
+            score += 1
+
+        if score > best_score and score >= 3:
+            best_match = property_obj
+            best_score = score
+
+    return best_match
+
+
+async def _find_unit_match_from_ai(nekretnina_id: str, unit_payload: Dict[str, Any]) -> Optional['PropertyUnit']:
+    if not nekretnina_id:
+        return None
+
+    oznaka = unit_payload.get('oznaka')
+    naziv = unit_payload.get('naziv')
+    if not oznaka and not naziv:
+        return None
+
+    try:
+        cursor = db.property_units.find({"nekretnina_id": nekretnina_id})
+        docs = await cursor.to_list(500) if hasattr(cursor, 'to_list') else list(cursor)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error('AI podprostor fetch failed: %s', exc)
+        return None
+
+    for doc in docs:
+        try:
+            unit_obj = PropertyUnit(**parse_from_mongo(doc))
+        except ValidationError as exc:  # pragma: no cover - safety
+            logger.warning('Skipping podprostor during AI match due to validation error: %s', exc)
+            continue
+
+        if oznaka and unit_obj.oznaka and _strings_close(oznaka, unit_obj.oznaka):
+            return unit_obj
+        if naziv and unit_obj.naziv and _strings_close(naziv, unit_obj.naziv):
+            return unit_obj
+
+    return None
+
+
+async def _create_property_unit_from_ai(nekretnina_id: str, unit_payload: Dict[str, Any]) -> Optional['PropertyUnit']:
+    oznaka = unit_payload.get('oznaka')
+    if not oznaka:
+        return None
+
+    status_value = unit_payload.get('status') or PropertyUnitStatus.DOSTUPNO.value
+    try:
+        status_enum = status_value if isinstance(status_value, PropertyUnitStatus) else PropertyUnitStatus(status_value)
+    except (ValueError, TypeError):
+        status_enum = PropertyUnitStatus.DOSTUPNO
+
+    base_note = 'Automatski kreirano iz AI analize PDF ugovora.'
+    existing_note = unit_payload.get('napomena')
+    combined_note = f"{existing_note}\n{base_note}" if existing_note else base_note
+
+    metadata = unit_payload.get('metadata') or {}
+    if isinstance(metadata, dict):
+        metadata = {**metadata, 'source': 'ai_parse_pdf_contract'}
+    else:
+        metadata = {'source': 'ai_parse_pdf_contract'}
+
+    unit = PropertyUnit(
+        nekretnina_id=nekretnina_id,
+        oznaka=oznaka,
+        naziv=unit_payload.get('naziv'),
+        kat=unit_payload.get('kat'),
+        povrsina_m2=unit_payload.get('povrsina_m2'),
+        status=status_enum,
+        osnovna_zakupnina=unit_payload.get('osnovna_zakupnina'),
+        layout_ref=unit_payload.get('layout_ref'),
+        napomena=combined_note,
+        metadata=metadata,
+    )
+
+    await db.property_units.insert_one(prepare_for_mongo(unit.model_dump()))
+    logger.info('AI kreirao novi podprostor %s za nekretninu %s', unit.oznaka, nekretnina_id)
+    return unit
+
+
+async def resolve_property_unit_from_ai(parsed_data: Dict[str, Any]) -> Dict[str, Optional[Any]]:
+    document_type = (parsed_data.get('document_type') or '').lower()
+    unit_suggestion_raw = parsed_data.get('property_unit')
+    unit_suggestion = _normalise_ai_unit_payload(unit_suggestion_raw)
+    parsed_data['property_unit'] = unit_suggestion if unit_suggestion else None
+
+    if document_type not in {'ugovor', 'aneks'}:
+        return {
+            'property': None,
+            'matched_unit': None,
+            'created_unit': None,
+        }
+
+    if not unit_suggestion or not unit_suggestion.get('oznaka'):
+        return {
+            'property': None,
+            'matched_unit': None,
+            'created_unit': None,
+        }
+
+    property_match = await _find_property_match_from_ai(parsed_data.get('nekretnina'))
+    if not property_match:
+        return {
+            'property': None,
+            'matched_unit': None,
+            'created_unit': None,
+        }
+
+    matched_unit = await _find_unit_match_from_ai(property_match.id, unit_suggestion)
+    created_unit: Optional[PropertyUnit] = None
+
+    if not matched_unit:
+        created_unit = await _create_property_unit_from_ai(property_match.id, unit_suggestion)
+        matched_unit = created_unit
+
+    return {
+        'property': property_match,
+        'matched_unit': matched_unit,
+        'created_unit': created_unit,
+    }
+
+
+async def build_ai_parse_response(parsed_data: Dict[str, Any]) -> Dict[str, Any]:
+    resolution = {'property': None, 'matched_unit': None, 'created_unit': None}
+    try:
+        resolution = await resolve_property_unit_from_ai(parsed_data)
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error('AI property unit resolution failed: %s', exc, exc_info=True)
+
+    matched_property = resolution.get('property')
+    matched_unit = resolution.get('matched_unit')
+    created_unit = resolution.get('created_unit')
+
+    return {
+        "success": True,
+        "data": parsed_data,
+        "message": "PDF je uspješno analiziran i podaci su izvučeni",
+        "matched_property": matched_property.model_dump(mode="json") if matched_property else None,
+        "matched_property_unit": matched_unit.model_dump(mode="json") if matched_unit else None,
+        "created_property_unit": created_unit.model_dump(mode="json") if created_unit else None,
+    }
+
+
 async def _get_property_or_404(nekretnina_id: str) -> "Nekretnina":
     dokument = await db.nekretnine.find_one({"id": nekretnina_id})
     if not dokument:
@@ -355,6 +1001,13 @@ async def _get_property_unit_or_404(property_unit_id: str) -> "PropertyUnit":
     if not dokument:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
     return PropertyUnit(**parse_from_mongo(dokument))
+
+
+async def _get_task_or_404(task_id: str) -> MaintenanceTask:
+    dokument = await db.maintenance_tasks.find_one({"id": task_id})
+    if not dokument:
+        raise HTTPException(status_code=404, detail="Radni nalog nije pronađen")
+    return MaintenanceTask(**parse_from_mongo(dokument))
 
 # Models
 
@@ -553,6 +1206,10 @@ class UgovorCreate(BaseModel):
     obveze_odrzavanja: Optional[str] = None
     namjena_prostora: Optional[str] = None
     rezije_brojila: Optional[str] = None
+
+
+class UgovorUpdate(UgovorCreate):
+    pass
 
 
 class AneksRequest(BaseModel):
@@ -767,15 +1424,88 @@ class RacunUpdate(BaseModel):
     placeno_na_dan: Optional[date] = None
 
 
+class MaintenanceActivity(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tip: str
+    opis: Optional[str] = None
+    autor: Optional[str] = None
+    status: Optional[MaintenanceStatus] = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class MaintenanceTask(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    naziv: str
+    opis: Optional[str] = None
+    status: MaintenanceStatus = MaintenanceStatus.NOVI
+    prioritet: MaintenancePriority = MaintenancePriority.SREDNJE
+    nekretnina_id: Optional[str] = None
+    property_unit_id: Optional[str] = None
+    ugovor_id: Optional[str] = None
+    prijavio: Optional[str] = None
+    dodijeljeno: Optional[str] = None
+    rok: Optional[date] = None
+    oznake: List[str] = Field(default_factory=list)
+    napomena: Optional[str] = None
+    kreiran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    azuriran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    aktivnosti: List[MaintenanceActivity] = Field(default_factory=list)
+
+
+class MaintenanceTaskCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+    naziv: str
+    opis: Optional[str] = None
+    status: MaintenanceStatus = MaintenanceStatus.NOVI
+    prioritet: MaintenancePriority = MaintenancePriority.SREDNJE
+    nekretnina_id: Optional[str] = None
+    property_unit_id: Optional[str] = None
+    ugovor_id: Optional[str] = None
+    prijavio: Optional[str] = None
+    dodijeljeno: Optional[str] = None
+    rok: Optional[date] = None
+    oznake: List[str] = Field(default_factory=list)
+    napomena: Optional[str] = None
+
+
+class MaintenanceTaskUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+    naziv: Optional[str] = None
+    opis: Optional[str] = None
+    status: Optional[MaintenanceStatus] = None
+    prioritet: Optional[MaintenancePriority] = None
+    nekretnina_id: Optional[str] = None
+    property_unit_id: Optional[str] = None
+    ugovor_id: Optional[str] = None
+    prijavio: Optional[str] = None
+    dodijeljeno: Optional[str] = None
+    rok: Optional[date] = None
+    oznake: Optional[List[str]] = None
+    napomena: Optional[str] = None
+
+
+class MaintenanceCommentCreate(BaseModel):
+    poruka: str
+    autor: Optional[str] = None
+
+
 class ActivityLog(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user: str
     role: str
+    actor_id: Optional[str] = None
     method: str
     path: str
     status_code: int
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     message: Optional[str] = None
+    scopes: List[str] = Field(default_factory=list)
+    query_params: Dict[str, Any] = Field(default_factory=dict)
+    request_payload: Optional[Dict[str, Any]] = None
+    ip_address: Optional[str] = None
+    request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
 # Routes
@@ -786,26 +1516,43 @@ async def root():
     return {"message": "Sustav za upravljanje nekretninama", "status": "aktivan"}
 
 # Nekretnine
-@api_router.post("/nekretnine", response_model=Nekretnina, status_code=201)
+@api_router.post(
+    "/nekretnine",
+    response_model=Nekretnina,
+    status_code=201,
+    dependencies=[Depends(require_scopes("properties:create"))],
+)
 async def create_nekretnina(nekretnina: NekretninarCreate):
     nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     nekretnina_obj = Nekretnina(**nekretnina_dict)
     await db.nekretnine.insert_one(prepare_for_mongo(nekretnina_obj.model_dump()))
     return nekretnina_obj
 
-@api_router.get("/nekretnine", response_model=List[Nekretnina])
+@api_router.get(
+    "/nekretnine",
+    response_model=List[Nekretnina],
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def get_nekretnine():
     nekretnine = await db.nekretnine.find().to_list(1000)
     return [Nekretnina(**parse_from_mongo(n)) for n in nekretnine]
 
-@api_router.get("/nekretnine/{nekretnina_id}", response_model=Nekretnina)
+@api_router.get(
+    "/nekretnine/{nekretnina_id}",
+    response_model=Nekretnina,
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def get_nekretnina(nekretnina_id: str):
     nekretnina = await db.nekretnine.find_one({"id": nekretnina_id})
     if not nekretnina:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
     return Nekretnina(**parse_from_mongo(nekretnina))
 
-@api_router.put("/nekretnine/{nekretnina_id}", response_model=Nekretnina)
+@api_router.put(
+    "/nekretnine/{nekretnina_id}",
+    response_model=Nekretnina,
+    dependencies=[Depends(require_scopes("properties:update"))],
+)
 async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate):
     nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
     result = await db.nekretnine.update_one(
@@ -818,7 +1565,10 @@ async def update_nekretnina(nekretnina_id: str, nekretnina: NekretninarCreate):
     updated_nekretnina = await db.nekretnine.find_one({"id": nekretnina_id})
     return Nekretnina(**parse_from_mongo(updated_nekretnina))
 
-@api_router.delete("/nekretnine/{nekretnina_id}")
+@api_router.delete(
+    "/nekretnine/{nekretnina_id}",
+    dependencies=[Depends(require_scopes("properties:delete"))],
+)
 async def delete_nekretnina(nekretnina_id: str):
     result = await db.nekretnine.delete_one({"id": nekretnina_id})
     if result.deleted_count == 0:
@@ -832,7 +1582,11 @@ async def delete_nekretnina(nekretnina_id: str):
 
 
 # Property units
-@api_router.get("/nekretnine/{nekretnina_id}/units", response_model=List[PropertyUnit])
+@api_router.get(
+    "/nekretnine/{nekretnina_id}/units",
+    response_model=List[PropertyUnit],
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def list_property_units(nekretnina_id: str):
     await _get_property_or_404(nekretnina_id)
     jedinice = await db.property_units.find({"nekretnina_id": nekretnina_id}).to_list(1000)
@@ -841,7 +1595,12 @@ async def list_property_units(nekretnina_id: str):
     return rezultat
 
 
-@api_router.post("/nekretnine/{nekretnina_id}/units", response_model=PropertyUnit, status_code=201)
+@api_router.post(
+    "/nekretnine/{nekretnina_id}/units",
+    response_model=PropertyUnit,
+    status_code=201,
+    dependencies=[Depends(require_scopes("properties:update"))],
+)
 async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate):
     await _get_property_or_404(nekretnina_id)
 
@@ -851,7 +1610,11 @@ async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate)
         ugovor_doc = await db.ugovori.find_one({"id": ugovor_id_value})
         if not ugovor_doc:
             raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
-        ugovor_obj = Ugovor(**parse_from_mongo(ugovor_doc))
+        try:
+            ugovor_obj = _build_ugovor_model(ugovor_doc)
+        except ValidationError as exc:
+            logger.error('Ugovor %s nije moguće validirati tijekom kreiranja podprostora: %s', ugovor_id_value, exc)
+            raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
         if ugovor_obj.nekretnina_id != nekretnina_id:
             raise HTTPException(status_code=400, detail="Ugovor je vezan uz drugu nekretninu")
         jedinica_payload.setdefault('zakupnik_id', ugovor_obj.zakupnik_id)
@@ -866,7 +1629,11 @@ async def create_property_unit(nekretnina_id: str, jedinica: PropertyUnitCreate)
     return jedinica_obj
 
 
-@api_router.get("/units", response_model=List[PropertyUnit])
+@api_router.get(
+    "/units",
+    response_model=List[PropertyUnit],
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def list_all_units(nekretnina_id: Optional[str] = None, status: Optional[PropertyUnitStatus] = None):
     query: Dict[str, Any] = {}
     if nekretnina_id:
@@ -881,12 +1648,20 @@ async def list_all_units(nekretnina_id: Optional[str] = None, status: Optional[P
     return rezultat
 
 
-@api_router.get("/units/{property_unit_id}", response_model=PropertyUnit)
+@api_router.get(
+    "/units/{property_unit_id}",
+    response_model=PropertyUnit,
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def get_property_unit(property_unit_id: str):
     return await _get_property_unit_or_404(property_unit_id)
 
 
-@api_router.put("/units/{property_unit_id}", response_model=PropertyUnit)
+@api_router.put(
+    "/units/{property_unit_id}",
+    response_model=PropertyUnit,
+    dependencies=[Depends(require_scopes("properties:update"))],
+)
 async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpdate):
     existing = await db.property_units.find_one({"id": property_unit_id})
     if not existing:
@@ -905,7 +1680,11 @@ async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpda
             ugovor_doc = await db.ugovori.find_one({"id": ugovor_id_value})
             if not ugovor_doc:
                 raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
-            ugovor_obj = Ugovor(**parse_from_mongo(ugovor_doc))
+            try:
+                ugovor_obj = _build_ugovor_model(ugovor_doc)
+            except ValidationError as exc:
+                logger.error('Ugovor %s nije moguće validirati tijekom ažuriranja podprostora: %s', ugovor_id_value, exc)
+                raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
             if ugovor_obj.nekretnina_id != existing_unit.nekretnina_id:
                 raise HTTPException(status_code=400, detail="Ugovor je vezan uz drugu nekretninu")
             update_payload.setdefault('zakupnik_id', ugovor_obj.zakupnik_id)
@@ -944,7 +1723,10 @@ async def update_property_unit(property_unit_id: str, jedinica: PropertyUnitUpda
     return PropertyUnit(**parse_from_mongo(updated))
 
 
-@api_router.delete("/units/{property_unit_id}")
+@api_router.delete(
+    "/units/{property_unit_id}",
+    dependencies=[Depends(require_scopes("properties:delete"))],
+)
 async def delete_property_unit(property_unit_id: str):
     existing = await db.property_units.find_one({"id": property_unit_id})
     if not existing:
@@ -957,7 +1739,10 @@ async def delete_property_unit(property_unit_id: str):
     return {"poruka": "Podprostor je uspješno obrisan"}
 
 
-@api_router.post("/units/bulk-update")
+@api_router.post(
+    "/units/bulk-update",
+    dependencies=[Depends(require_scopes("properties:update"))],
+)
 async def bulk_update_property_units(payload: PropertyUnitBulkUpdate):
     if not payload.unit_ids:
         raise HTTPException(status_code=400, detail="Odaberite barem jedan podprostor za ažuriranje")
@@ -981,14 +1766,23 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate):
     }
 
 # Zakupnici
-@api_router.post("/zakupnici", response_model=Zakupnik, status_code=201)
+@api_router.post(
+    "/zakupnici",
+    response_model=Zakupnik,
+    status_code=201,
+    dependencies=[Depends(require_scopes("tenants:create"))],
+)
 async def create_zakupnik(zakupnik: ZakupnikCreate):
     zakupnik_dict = prepare_for_mongo(zakupnik.model_dump())
     zakupnik_obj = Zakupnik(**zakupnik_dict)
     await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.model_dump()))
     return zakupnik_obj
 
-@api_router.get("/zakupnici", response_model=List[Zakupnik])
+@api_router.get(
+    "/zakupnici",
+    response_model=List[Zakupnik],
+    dependencies=[Depends(require_scopes("tenants:read"))],
+)
 async def get_zakupnici(search: Optional[str] = None, status: Optional[ZakupnikStatus] = None):
     filters: List[Dict[str, Any]] = []
 
@@ -1019,18 +1813,43 @@ async def get_zakupnici(search: Optional[str] = None, status: Optional[ZakupnikS
         query = None
 
     zakupnici_cursor = db.zakupnici.find(query) if query else db.zakupnici.find()
-    zakupnici = await zakupnici_cursor.to_list(1000)
-    return [Zakupnik(**parse_from_mongo(z)) for z in zakupnici]
+    raw_zakupnici = await zakupnici_cursor.to_list(1000)
 
-@api_router.get("/zakupnici/{zakupnik_id}", response_model=Zakupnik)
+    rezultat: List[Zakupnik] = []
+    skipped = 0
+    for raw in raw_zakupnici:
+        try:
+            rezultat.append(_build_zakupnik_model(raw))
+        except ValidationError:
+            skipped += 1
+            continue
+
+    if skipped:
+        logger.warning('Preskočeno %s zakupnika zbog neispravnih podataka', skipped)
+
+    return rezultat
+
+@api_router.get(
+    "/zakupnici/{zakupnik_id}",
+    response_model=Zakupnik,
+    dependencies=[Depends(require_scopes("tenants:read"))],
+)
 async def get_zakupnik(zakupnik_id: str):
     zakupnik = await db.zakupnici.find_one({"id": zakupnik_id})
     if not zakupnik:
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
-    return Zakupnik(**parse_from_mongo(zakupnik))
+    try:
+        return _build_zakupnik_model(zakupnik)
+    except ValidationError as exc:
+        logger.error('Zakupnik %s se ne može učitati: %s', zakupnik_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci zakupnika")
 
 
-@api_router.put("/zakupnici/{zakupnik_id}", response_model=Zakupnik)
+@api_router.put(
+    "/zakupnici/{zakupnik_id}",
+    response_model=Zakupnik,
+    dependencies=[Depends(require_scopes("tenants:update"))],
+)
 async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
     existing = await db.zakupnici.find_one({"id": zakupnik_id})
     if not existing:
@@ -1042,10 +1861,19 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate):
     updated = await db.zakupnici.find_one({"id": zakupnik_id})
     if not updated:
         raise HTTPException(status_code=500, detail="Ažuriranje zakupnika nije uspjelo")
-    return Zakupnik(**parse_from_mongo(updated))
+    try:
+        return _build_zakupnik_model(updated)
+    except ValidationError as exc:
+        logger.error('Zakupnik %s se ne može učitati nakon ažuriranja: %s', zakupnik_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci zakupnika")
 
 # Ugovori
-@api_router.post("/ugovori", response_model=Ugovor, status_code=201)
+@api_router.post(
+    "/ugovori",
+    response_model=Ugovor,
+    status_code=201,
+    dependencies=[Depends(require_scopes("leases:create"))],
+)
 async def create_ugovor(ugovor: UgovorCreate):
     jedinica: Optional[PropertyUnit] = None
     if ugovor.property_unit_id:
@@ -1089,22 +1917,133 @@ async def create_ugovor(ugovor: UgovorCreate):
 
     return ugovor_obj
 
-@api_router.get("/ugovori", response_model=List[Ugovor])
+@api_router.get(
+    "/ugovori",
+    response_model=List[Ugovor],
+    dependencies=[Depends(require_scopes("leases:read"))],
+)
 async def get_ugovori():
     ugovori = await db.ugovori.find().to_list(1000)
-    return [Ugovor(**parse_from_mongo(u)) for u in ugovori]
+    rezultat: List[Ugovor] = []
+    skipped = 0
+    for raw in ugovori:
+        try:
+            rezultat.append(_build_ugovor_model(raw))
+        except ValidationError:
+            skipped += 1
+    if skipped:
+        logger.warning('Preskočeno %s ugovora zbog neispravnih podataka', skipped)
+    return rezultat
 
-@api_router.get("/ugovori/{ugovor_id}", response_model=Ugovor)
+@api_router.get(
+    "/ugovori/{ugovor_id}",
+    response_model=Ugovor,
+    dependencies=[Depends(require_scopes("leases:read"))],
+)
 async def get_ugovor(ugovor_id: str):
     ugovor = await db.ugovori.find_one({"id": ugovor_id})
     if not ugovor:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
-    return Ugovor(**parse_from_mongo(ugovor))
+    try:
+        return _build_ugovor_model(ugovor)
+    except ValidationError as exc:
+        logger.error('Ugovor %s se ne može učitati: %s', ugovor_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
+
+
+@api_router.put(
+    "/ugovori/{ugovor_id}",
+    response_model=Ugovor,
+    dependencies=[Depends(require_scopes("leases:update"))],
+)
+async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate):
+    existing_doc = await db.ugovori.find_one({"id": ugovor_id})
+    if not existing_doc:
+        raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+
+    try:
+        existing = _build_ugovor_model(existing_doc)
+    except ValidationError as exc:
+        logger.error('Postojeći ugovor %s nije valjan: %s', ugovor_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
+
+    previous_unit_id = existing.property_unit_id
+    new_unit_id = ugovor_update.property_unit_id
+
+    new_unit: Optional[PropertyUnit] = None
+    if new_unit_id:
+        new_unit = await _get_property_unit_or_404(new_unit_id)
+        if new_unit.nekretnina_id != ugovor_update.nekretnina_id:
+            raise HTTPException(status_code=400, detail="Podprostor ne pripada odabranoj nekretnini")
+        if new_unit.ugovor_id and new_unit.ugovor_id != existing.id:
+            existing_contract_doc = await db.ugovori.find_one({"id": new_unit.ugovor_id})
+            existing_status = None
+            if existing_contract_doc:
+                raw_status = existing_contract_doc.get('status')
+                if isinstance(raw_status, StatusUgovora):
+                    existing_status = raw_status
+                else:
+                    try:
+                        existing_status = StatusUgovora(raw_status)
+                    except (TypeError, ValueError):
+                        existing_status = None
+
+            if existing_status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
+                raise HTTPException(status_code=409, detail="Podprostor je već povezan s aktivnim ugovorom")
+
+    update_payload = ugovor_update.model_dump()
+    update_payload['status'] = existing.status
+    update_payload['kreiran'] = existing.kreiran
+
+    await db.ugovori.update_one(
+        {"id": ugovor_id},
+        {"$set": prepare_for_mongo(update_payload)}
+    )
+
+    if previous_unit_id and previous_unit_id != new_unit_id:
+        await db.property_units.update_one(
+            {"id": previous_unit_id},
+            {"$set": prepare_for_mongo({
+                "status": PropertyUnitStatus.DOSTUPNO,
+                "zakupnik_id": None,
+                "ugovor_id": None,
+                "azuriran": datetime.now(timezone.utc),
+            })}
+        )
+
+    if new_unit_id:
+        await db.property_units.update_one(
+            {"id": new_unit_id},
+            {"$set": prepare_for_mongo({
+                "status": PropertyUnitStatus.IZNAJMLJENO,
+                "zakupnik_id": ugovor_update.zakupnik_id,
+                "ugovor_id": ugovor_id,
+                "azuriran": datetime.now(timezone.utc),
+            })}
+        )
+
+    updated_doc = await db.ugovori.find_one({"id": ugovor_id})
+    if not updated_doc:
+        raise HTTPException(status_code=500, detail="Ažuriranje ugovora nije uspjelo")
+
+    try:
+        updated = _build_ugovor_model(updated_doc)
+    except ValidationError as exc:
+        logger.error('Ugovor %s se ne može učitati nakon ažuriranja: %s', ugovor_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
+
+    await db.podsjetnici.delete_many({"ugovor_id": ugovor_id})
+    await create_podsjetnici_za_ugovor(updated)
+
+    return updated
 
 class StatusUpdate(BaseModel):
     novi_status: StatusUgovora
 
-@api_router.put("/ugovori/{ugovor_id}/status")
+@api_router.put(
+    "/ugovori/{ugovor_id}/status",
+    dependencies=[Depends(require_scopes("leases:update"))],
+)
 async def update_status_ugovora(ugovor_id: str, status_data: StatusUpdate):
     ugovor_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not ugovor_doc:
@@ -1143,7 +2082,12 @@ async def update_status_ugovora(ugovor_id: str, status_data: StatusUpdate):
     return {"poruka": f"Status ugovora ažuriran na {status_data.novi_status}"}
 
 # Dokumenti
-@api_router.post("/dokumenti", response_model=Dokument, status_code=201)
+@api_router.post(
+    "/dokumenti",
+    response_model=Dokument,
+    status_code=201,
+    dependencies=[Depends(require_scopes("documents:create"))],
+)
 async def create_dokument(request: Request):
     content_type = request.headers.get('content-type', '')
     upload_file: Optional[UploadFile] = None
@@ -1215,12 +2159,20 @@ async def create_dokument(request: Request):
     await db.dokumenti.insert_one(prepare_for_mongo(dokument_obj.model_dump()))
     return dokument_obj
 
-@api_router.get("/dokumenti", response_model=List[Dokument])
+@api_router.get(
+    "/dokumenti",
+    response_model=List[Dokument],
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_dokumenti():
     dokumenti = await db.dokumenti.find().to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
-@api_router.get("/dokumenti/nekretnina/{nekretnina_id}", response_model=List[Dokument])
+@api_router.get(
+    "/dokumenti/nekretnina/{nekretnina_id}",
+    response_model=List[Dokument],
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_dokumenti_nekretnine(nekretnina_id: str):
     await _get_property_or_404(nekretnina_id)
     jedinice = await db.property_units.find({"nekretnina_id": nekretnina_id}).to_list(1000)
@@ -1237,18 +2189,30 @@ async def get_dokumenti_nekretnine(nekretnina_id: str):
 
     return rezultat
 
-@api_router.get("/dokumenti/zakupnik/{zakupnik_id}", response_model=List[Dokument])
+@api_router.get(
+    "/dokumenti/zakupnik/{zakupnik_id}",
+    response_model=List[Dokument],
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_dokumenti_zakupnika(zakupnik_id: str):
     dokumenti = await db.dokumenti.find({"zakupnik_id": zakupnik_id}).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
-@api_router.get("/dokumenti/ugovor/{ugovor_id}", response_model=List[Dokument])
+@api_router.get(
+    "/dokumenti/ugovor/{ugovor_id}",
+    response_model=List[Dokument],
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_dokumenti_ugovora(ugovor_id: str):
     dokumenti = await db.dokumenti.find({"ugovor_id": ugovor_id}).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
 
-@api_router.get("/dokumenti/property-unit/{property_unit_id}", response_model=List[Dokument])
+@api_router.get(
+    "/dokumenti/property-unit/{property_unit_id}",
+    response_model=List[Dokument],
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_dokumenti_property_unit(property_unit_id: str):
     await _get_property_unit_or_404(property_unit_id)
     dokumenti = await db.dokumenti.find({"property_unit_id": property_unit_id}).to_list(1000)
@@ -1370,12 +2334,20 @@ async def get_activity_logs(limit: int = 100):
     return logs[:limit]
 
 # Podsjećanja
-@api_router.get("/podsjetnici", response_model=List[Podsjetnik])
+@api_router.get(
+    "/podsjetnici",
+    response_model=List[Podsjetnik],
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def get_podsjetnici():
     podsjetnici = await db.podsjetnici.find().to_list(1000)
     return [Podsjetnik(**parse_from_mongo(p)) for p in podsjetnici]
 
-@api_router.get("/podsjetnici/aktivni", response_model=List[Podsjetnik])
+@api_router.get(
+    "/podsjetnici/aktivni",
+    response_model=List[Podsjetnik],
+    dependencies=[Depends(require_scopes("properties:read"))],
+)
 async def get_aktivni_podsjetnici():
     danas = datetime.now(timezone.utc).date()
     podsjetnici = await db.podsjetnici.find({
@@ -1384,7 +2356,10 @@ async def get_aktivni_podsjetnici():
     }).to_list(1000)
     return [Podsjetnik(**parse_from_mongo(p)) for p in podsjetnici]
 
-@api_router.put("/podsjetnici/{podsjetnik_id}/oznaci-poslan")
+@api_router.put(
+    "/podsjetnici/{podsjetnik_id}/oznaci-poslan",
+    dependencies=[Depends(require_scopes("properties:update"))],
+)
 async def oznaci_podsjetnik_poslan(podsjetnik_id: str):
     result = await db.podsjetnici.update_one(
         {"id": podsjetnik_id},
@@ -1394,8 +2369,241 @@ async def oznaci_podsjetnik_poslan(podsjetnik_id: str):
         raise HTTPException(status_code=404, detail="Podsjetnik nije pronađen")
     return {"poruka": "Podsjetnik je označen kao riješen"}
 
+
+# Maintenance tasks (radni nalozi)
+@api_router.get(
+    "/maintenance-tasks",
+    response_model=List[MaintenanceTask],
+    dependencies=[Depends(require_scopes("maintenance:read"))],
+)
+async def list_maintenance_tasks(
+    status: Optional[MaintenanceStatus] = None,
+    prioritet: Optional[MaintenancePriority] = None,
+    nekretnina_id: Optional[str] = None,
+    rok_od: Optional[date] = None,
+    rok_do: Optional[date] = None,
+    oznaka: Optional[str] = None,
+    q: Optional[str] = None,
+):
+    query: Dict[str, Any] = {}
+    if status:
+        query["status"] = status.value if isinstance(status, Enum) else status
+    if prioritet:
+        query["prioritet"] = prioritet.value if isinstance(prioritet, Enum) else prioritet
+    if nekretnina_id:
+        query["nekretnina_id"] = nekretnina_id
+
+    cursor = db.maintenance_tasks.find(query or None)
+    raw_tasks = await cursor.to_list(1000) if hasattr(cursor, "to_list") else list(cursor)
+    tasks = [MaintenanceTask(**parse_from_mongo(task)) for task in raw_tasks]
+
+    if rok_od:
+        tasks = [task for task in tasks if task.rok and task.rok >= rok_od]
+    if rok_do:
+        tasks = [task for task in tasks if task.rok and task.rok <= rok_do]
+    if oznaka:
+        needle = oznaka.strip().lower()
+        if needle:
+            tasks = [task for task in tasks if any(needle in (label or '').lower() for label in task.oznake)]
+    if q:
+        needle = q.strip().lower()
+        if needle:
+            tasks = [
+                task for task in tasks
+                if needle in (task.naziv or '').lower()
+                or needle in (task.opis or '').lower()
+                or any(needle in (label or '').lower() for label in task.oznake)
+            ]
+
+    tasks.sort(key=lambda t: (t.azuriran, t.kreiran), reverse=True)
+    return tasks
+
+
+@api_router.get(
+    "/maintenance-tasks/{task_id}",
+    response_model=MaintenanceTask,
+    dependencies=[Depends(require_scopes("maintenance:read"))],
+)
+async def get_maintenance_task(task_id: str):
+    return await _get_task_or_404(task_id)
+
+
+@api_router.post(
+    "/maintenance-tasks",
+    response_model=MaintenanceTask,
+    status_code=201,
+    dependencies=[Depends(require_scopes("maintenance:create"))],
+)
+async def create_maintenance_task(payload: MaintenanceTaskCreate):
+    data = payload.model_dump()
+    labels = _normalise_labels(data.pop("oznake", []))
+
+    property_id = data.get("nekretnina_id")
+    unit_id = data.get("property_unit_id")
+    contract_id = data.get("ugovor_id")
+
+    if property_id:
+        await _get_property_or_404(property_id)
+
+    if unit_id:
+        unit = await _get_property_unit_or_404(unit_id)
+        if property_id and unit.nekretnina_id != property_id:
+            raise HTTPException(status_code=400, detail="Odabrani podprostor pripada drugoj nekretnini")
+        data.setdefault("nekretnina_id", unit.nekretnina_id)
+
+    if contract_id:
+        ugovor_doc = await db.ugovori.find_one({"id": contract_id})
+        if not ugovor_doc:
+            raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+        try:
+            ugovor = _build_ugovor_model(ugovor_doc)
+        except ValidationError as exc:
+            logger.error('Ugovor %s nije moguće validirati tijekom kreiranja naloga za održavanje: %s', contract_id, exc)
+            raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
+        if property_id and ugovor.nekretnina_id != property_id:
+            raise HTTPException(status_code=400, detail="Ugovor je vezan uz drugu nekretninu")
+        if not data.get("nekretnina_id"):
+            data["nekretnina_id"] = ugovor.nekretnina_id
+        if not data.get("property_unit_id") and ugovor.property_unit_id:
+            data["property_unit_id"] = ugovor.property_unit_id
+
+    data["oznake"] = labels
+    task = MaintenanceTask(**data)
+    initial_activity = MaintenanceActivity(
+        tip='kreiran',
+        opis=f"Radni nalog '{task.naziv}' kreiran",
+        autor=task.prijavio,
+        status=task.status,
+        timestamp=task.kreiran,
+    )
+    task.aktivnosti.append(initial_activity)
+    task.azuriran = task.kreiran
+    await db.maintenance_tasks.insert_one(prepare_for_mongo(task.model_dump()))
+    return task
+
+
+@api_router.patch(
+    "/maintenance-tasks/{task_id}",
+    response_model=MaintenanceTask,
+    dependencies=[Depends(require_scopes("maintenance:update"))],
+)
+async def update_maintenance_task(task_id: str, payload: MaintenanceTaskUpdate):
+    task = await _get_task_or_404(task_id)
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if "oznake" in update_data and update_data["oznake"] is not None:
+        update_data["oznake"] = _normalise_labels(update_data["oznake"])
+
+    if "nekretnina_id" in update_data and update_data["nekretnina_id"]:
+        await _get_property_or_404(update_data["nekretnina_id"])
+
+    if "property_unit_id" in update_data and update_data["property_unit_id"]:
+        unit = await _get_property_unit_or_404(update_data["property_unit_id"])
+        target_property_id = update_data.get("nekretnina_id", task.nekretnina_id)
+        if target_property_id and unit.nekretnina_id != target_property_id:
+            raise HTTPException(status_code=400, detail="Odabrani podprostor pripada drugoj nekretnini")
+        update_data.setdefault("nekretnina_id", unit.nekretnina_id)
+
+    if "ugovor_id" in update_data and update_data["ugovor_id"]:
+        ugovor_doc = await db.ugovori.find_one({"id": update_data["ugovor_id"]})
+        if not ugovor_doc:
+            raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+        try:
+            ugovor = _build_ugovor_model(ugovor_doc)
+        except ValidationError as exc:
+            logger.error('Ugovor %s nije moguće validirati tijekom ažuriranja naloga za održavanje: %s', update_data["ugovor_id"], exc)
+            raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
+        target_property_id = update_data.get("nekretnina_id", task.nekretnina_id)
+        if target_property_id and ugovor.nekretnina_id != target_property_id:
+            raise HTTPException(status_code=400, detail="Ugovor je vezan uz drugu nekretninu")
+        if not update_data.get("nekretnina_id"):
+            update_data["nekretnina_id"] = ugovor.nekretnina_id
+        if not update_data.get("property_unit_id") and ugovor.property_unit_id:
+            update_data["property_unit_id"] = ugovor.property_unit_id
+
+    original_data = task.model_dump()
+    merged = copy.deepcopy(original_data)
+    merged.update(update_data)
+
+    activities = list(original_data.get("aktivnosti", []))
+
+    changed_fields: List[str] = []
+    for key, value in update_data.items():
+        if key == "aktivnosti":
+            continue
+        current_value = original_data.get(key)
+        comparable_current = current_value.value if isinstance(current_value, Enum) else current_value
+        comparable_new = value.value if isinstance(value, Enum) else value
+        if comparable_new != comparable_current:
+            changed_fields.append(key)
+
+    status_changed = "status" in changed_fields
+    if status_changed:
+        changed_fields.remove("status")
+        new_status_raw = merged.get("status")
+        new_status = new_status_raw if isinstance(new_status_raw, MaintenanceStatus) else MaintenanceStatus(new_status_raw)
+        activities.append(MaintenanceActivity(
+            tip='promjena_statusa',
+            opis=f"Status promijenjen iz {task.status.value} u {new_status.value}",
+            status=new_status,
+            timestamp=datetime.now(timezone.utc),
+        ).model_dump())
+        merged["status"] = new_status
+
+    if changed_fields:
+        fields_label = ', '.join(field.replace('_', ' ') for field in changed_fields)
+        activities.append(MaintenanceActivity(
+            tip='uredjeno',
+            opis=f"Ažurirana polja: {fields_label}",
+            timestamp=datetime.now(timezone.utc),
+        ).model_dump())
+
+    merged["aktivnosti"] = activities
+    merged["azuriran"] = datetime.now(timezone.utc)
+    updated = MaintenanceTask(**merged)
+    await db.maintenance_tasks.update_one({"id": task_id}, {"$set": prepare_for_mongo(updated.model_dump())})
+    return updated
+
+
+@api_router.post(
+    "/maintenance-tasks/{task_id}/comments",
+    response_model=MaintenanceTask,
+    dependencies=[Depends(require_scopes("maintenance:update"))],
+)
+async def add_maintenance_comment(task_id: str, payload: MaintenanceCommentCreate):
+    task = await _get_task_or_404(task_id)
+    message = (payload.poruka or '').strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Komentar je prazan")
+    author = (payload.autor or '').strip() or None
+
+    merged = task.model_dump()
+    activities = list(merged.get("aktivnosti", []))
+    activities.append(MaintenanceActivity(
+        tip='komentar',
+        opis=message,
+        autor=author,
+        timestamp=datetime.now(timezone.utc),
+    ).model_dump())
+
+    merged["aktivnosti"] = activities
+    merged["azuriran"] = datetime.now(timezone.utc)
+    updated = MaintenanceTask(**merged)
+    await db.maintenance_tasks.update_one({"id": task_id}, {"$set": prepare_for_mongo(updated.model_dump())})
+    return updated
+
+
+@api_router.delete(
+    "/maintenance-tasks/{task_id}",
+    dependencies=[Depends(require_scopes("maintenance:delete"))],
+)
+async def delete_maintenance_task(task_id: str):
+    task = await _get_task_or_404(task_id)
+    await db.maintenance_tasks.delete_one({"id": task.id})
+    return {"poruka": "Radni nalog je obrisan"}
+
 # Dashboard i analitika
-@api_router.get("/dashboard")
+@api_router.get("/dashboard", dependencies=[Depends(require_scopes("kpi:read"))])
 async def get_dashboard():
     ukupno_nekretnina = await db.nekretnine.count_documents({})
     aktivni_ugovori = await db.ugovori.count_documents({"status": StatusUgovora.AKTIVNO})
@@ -1409,7 +2617,7 @@ async def get_dashboard():
     property_units_docs = await db.property_units.find({}).to_list(None)
 
     nekretnine = [Nekretnina(**parse_from_mongo(doc)) for doc in nekretnine_docs]
-    ugovori = [Ugovor(**parse_from_mongo(doc)) for doc in ugovori_docs]
+    ugovori = _build_ugovori_list(ugovori_docs)
     racuni = [Racun(**parse_from_mongo(doc)) for doc in racuni_docs]
     property_units = [PropertyUnit(**parse_from_mongo(doc)) for doc in property_units_docs]
 
@@ -1443,6 +2651,7 @@ async def get_dashboard():
 
     monthly_revenue = []
     monthly_expense = []
+    revenue_statuses = {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}
 
     for year, month in months:
         start, end = month_bounds(year, month)
@@ -1450,6 +2659,8 @@ async def get_dashboard():
         # Prihodi - zbroj aktivnih ugovora u tom mjesecu
         revenue_total = 0.0
         for ugovor in ugovori:
+            if ugovor.status not in revenue_statuses:
+                continue
             if ugovor.datum_pocetka <= end and ugovor.datum_zavrsetka >= start:
                 revenue_total += float(ugovor.osnovna_zakupnina or 0)
 
@@ -1631,7 +2842,10 @@ async def get_dashboard():
         "najamni_kapacitet": najamni_kapacitet,
     }
 
-@api_router.get("/pretraga")
+@api_router.get(
+    "/pretraga",
+    dependencies=[Depends(require_scopes("properties:read", "tenants:read", "leases:read"))],
+)
 async def pretraga(q: str):
     # Pretraži po svim relevantnim poljima
     nekretnine = await db.nekretnine.find({
@@ -1658,11 +2872,14 @@ async def pretraga(q: str):
     
     return {
         "nekretnine": [Nekretnina(**parse_from_mongo(n)) for n in nekretnine],
-        "zakupnici": [Zakupnik(**parse_from_mongo(z)) for z in zakupnici],
-        "ugovori": [Ugovor(**parse_from_mongo(u)) for u in ugovori]
+        "zakupnici": _build_zakupnici_list(zakupnici),
+        "ugovori": _build_ugovori_list(ugovori)
     }
 
-@api_router.post("/ai/generate-contract-annex")
+@api_router.post(
+    "/ai/generate-contract-annex",
+    dependencies=[Depends(require_scopes("leases:update", "documents:create"))],
+)
 async def generate_contract_annex(payload: AneksRequest):
     openai_key = os.environ.get("OPENAI_API_KEY")
 
@@ -1670,13 +2887,22 @@ async def generate_contract_annex(payload: AneksRequest):
     if not ugovor_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
 
-    ugovor = Ugovor(**parse_from_mongo(ugovor_doc))
+    try:
+        ugovor = _build_ugovor_model(ugovor_doc)
+    except ValidationError as exc:
+        logger.error('Ugovor %s nije moguće validirati za AI generiranje aneksa: %s', payload.ugovor_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
 
     nekretnina_doc = await db.nekretnine.find_one({"id": ugovor.nekretnina_id})
     zakupnik_doc = await db.zakupnici.find_one({"id": ugovor.zakupnik_id})
 
     nekretnina = Nekretnina(**parse_from_mongo(nekretnina_doc)) if nekretnina_doc else None
-    zakupnik = Zakupnik(**parse_from_mongo(zakupnik_doc)) if zakupnik_doc else None
+    zakupnik = None
+    if zakupnik_doc:
+        try:
+            zakupnik = _build_zakupnik_model(zakupnik_doc)
+        except ValidationError:
+            zakupnik = None
 
     promjene = []
     if payload.nova_zakupnina is not None:
@@ -1697,7 +2923,6 @@ async def generate_contract_annex(payload: AneksRequest):
         f"Zakupnina po m²: {ugovor.zakupnina_po_m2 or 'n/a'}",
         f"Depozit/polog: {ugovor.polog_depozit or 'n/a'}",
         f"CAM troškovi: {ugovor.cam_troskovi or 'n/a'}",
-        f"Opcija produljenja: {'DA' if ugovor.opcija_produljenja else 'NE'}",
         f"Uvjeti produljenja: {ugovor.uvjeti_produljenja or 'n/a'}",
     ])
 
@@ -1783,7 +3008,10 @@ async def generate_contract_annex(payload: AneksRequest):
         return _response_payload(fallback_text, "fallback")
 
 
-@api_router.post("/ai/generate-contract")
+@api_router.post(
+    "/ai/generate-contract",
+    dependencies=[Depends(require_scopes("leases:create", "documents:create"))],
+)
 async def generate_contract(payload: ContractCloneRequest):
     if payload.novo_trajanje_mjeseci <= 0:
         raise HTTPException(status_code=400, detail="Trajanje ugovora mora biti veće od nule.")
@@ -1800,13 +3028,22 @@ async def generate_contract(payload: ContractCloneRequest):
     if not ugovor_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
 
-    ugovor = Ugovor(**parse_from_mongo(ugovor_doc))
+    try:
+        ugovor = _build_ugovor_model(ugovor_doc)
+    except ValidationError as exc:
+        logger.error('Ugovor %s nije moguće validirati za AI generiranje ugovora: %s', payload.ugovor_id, exc)
+        raise HTTPException(status_code=500, detail="Neispravni podaci ugovora")
 
     nekretnina_doc = await db.nekretnine.find_one({"id": ugovor.nekretnina_id})
     zakupnik_doc = await db.zakupnici.find_one({"id": ugovor.zakupnik_id})
 
     nekretnina = Nekretnina(**parse_from_mongo(nekretnina_doc)) if nekretnina_doc else None
-    zakupnik = Zakupnik(**parse_from_mongo(zakupnik_doc)) if zakupnik_doc else None
+    zakupnik = None
+    if zakupnik_doc:
+        try:
+            zakupnik = _build_zakupnik_model(zakupnik_doc)
+        except ValidationError:
+            zakupnik = None
 
     novi_pocetak = payload.novi_datum_pocetka or ugovor.datum_pocetka
     novi_zavrsetak = payload.novi_datum_zavrsetka or _add_months(novi_pocetak, payload.novo_trajanje_mjeseci)
@@ -1961,7 +3198,10 @@ async def generate_contract(payload: ContractCloneRequest):
         return _response_payload(fallback_text, "fallback")
 
 
-@api_router.get("/templates/aneks")
+@api_router.get(
+    "/templates/aneks",
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_annex_template():
     template_html = load_annex_template()
     return {
@@ -1971,7 +3211,10 @@ async def get_annex_template():
     }
 
 
-@api_router.get("/templates/ugovor")
+@api_router.get(
+    "/templates/ugovor",
+    dependencies=[Depends(require_scopes("documents:read"))],
+)
 async def get_contract_template():
     template_html = load_contract_template()
     return {
@@ -1981,7 +3224,10 @@ async def get_contract_template():
     }
 
 
-@api_router.post("/ai/parse-pdf-contract")
+@api_router.post(
+    "/ai/parse-pdf-contract",
+    dependencies=[Depends(require_scopes("documents:create"))],
+)
 async def parse_pdf_contract(file: UploadFile = File(...)):
     """AI funkcija za čitanje i izvlačenje podataka iz PDF ugovora (OpenAI)"""
     try:
@@ -2023,8 +3269,8 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
 
             instructions = (
                 "Molim te analiziraj sljedeći tekst dokumenta i vrati JSON u ovom formatu:"\
-                "\n\n{\n  \"document_type\": \"ugovor/racun/ostalo\",\n  \"ugovor\": {\n    \"interna_oznaka\": \"string ili null\",\n    \"datum_potpisivanja\": \"YYYY-MM-DD ili null\",\n    \"datum_pocetka\": \"YYYY-MM-DD ili null\",\n    \"datum_zavrsetka\": \"YYYY-MM-DD ili null\",\n    \"trajanje_mjeseci\": \"broj ili null\",\n    \"opcija_produljenja\": \"boolean ili null\",\n    \"uvjeti_produljenja\": \"string ili null\",\n    \"rok_otkaza_dani\": \"broj ili null\"\n  },\n  \"nekretnina\": {\n    \"naziv\": \"string ili null\",\n    \"adresa\": \"string ili null\",\n    \"katastarska_opcina\": \"string ili null\",\n    \"broj_kat_cestice\": \"string ili null\",\n    \"povrsina\": \"broj ili null\",\n    \"vrsta\": \"poslovna_zgrada/stan/zemljiste/ostalo ili null\",\n    \"namjena_prostora\": \"string ili null\"\n  },\n  \"zakupnik\": {\n    \"naziv_firme\": \"string ili null\",\n    \"ime_prezime\": \"string ili null\",\n    \"oib\": \"string ili null\",\n    \"sjediste\": \"string ili null\",\n    \"kontakt_ime\": \"string ili null\",\n    \"kontakt_email\": \"string ili null\",\n    \"kontakt_telefon\": \"string ili null\"\n  },\n  \"financije\": {\n    \"osnovna_zakupnina\": \"broj ili null\",\n    \"zakupnina_po_m2\": \"broj ili null\",\n    \"cam_troskovi\": \"broj ili null\",\n    \"polog_depozit\": \"broj ili null\",\n    \"garancija\": \"broj ili null\",\n    \"indeksacija\": \"boolean ili null\",\n    \"indeks\": \"string ili null\",\n    \"formula_indeksacije\": \"string ili null\"\n  },\n  \"ostalo\": {\n    \"obveze_odrzavanja\": \"zakupodavac/zakupnik/podijeljeno ili null\",\n    \"rezije_brojila\": \"string ili null\"\n  },\n  \"racun\": {\n    \"dobavljac\": \"string ili null\",\n    \"broj_racuna\": \"string ili null\",\n    \"tip_rezije\": \"struja/voda/plin/komunalije/internet/ostalo ili null\",\n    \"razdoblje_od\": \"YYYY-MM-DD ili null\",\n    \"razdoblje_do\": \"YYYY-MM-DD ili null\",\n    \"datum_izdavanja\": \"YYYY-MM-DD ili null\",\n    \"datum_dospijeca\": \"YYYY-MM-DD ili null\",\n    \"iznos_za_platiti\": \"broj ili null\",\n    \"iznos_placen\": \"broj ili null\",\n    \"valuta\": \"string ili null\"\n  }\n}\n\n"
-                "VAŽNO: Ako ne možeš pronaći informaciju, stavi null. Datume u YYYY-MM-DD. Brojevi bez valute. Boolean true/false. Enum vrijednosti točno kako su zadane. Odgovori SAMO JSON objektom."
+                "\n\n{\n  \"document_type\": \"ugovor/racun/ostalo\",\n  \"ugovor\": {\n    \"interna_oznaka\": \"string ili null\",\n    \"datum_potpisivanja\": \"YYYY-MM-DD ili null\",\n    \"datum_pocetka\": \"YYYY-MM-DD ili null\",\n    \"datum_zavrsetka\": \"YYYY-MM-DD ili null\",\n    \"trajanje_mjeseci\": \"broj ili null\",\n    \"opcija_produljenja\": \"boolean ili null\",\n    \"uvjeti_produljenja\": \"string ili null\",\n    \"rok_otkaza_dani\": \"broj ili null\"\n  },\n  \"nekretnina\": {\n    \"naziv\": \"string ili null\",\n    \"adresa\": \"string ili null\",\n    \"katastarska_opcina\": \"string ili null\",\n    \"broj_kat_cestice\": \"string ili null\",\n    \"povrsina\": \"broj ili null\",\n    \"vrsta\": \"poslovna_zgrada/stan/zemljiste/ostalo ili null\",\n    \"namjena_prostora\": \"string ili null\"\n  },\n  \"property_unit\": {\n    \"oznaka\": \"string ili null\",\n    \"naziv\": \"string ili null\",\n    \"kat\": \"string ili null\",\n    \"povrsina_m2\": \"broj ili null\",\n    \"status\": \"dostupno/iznajmljeno/rezervirano/u_odrzavanju ili null\",\n    \"osnovna_zakupnina\": \"broj ili null\",\n    \"napomena\": \"string ili null\",\n    \"layout_ref\": \"string ili null\"\n  },\n  \"zakupnik\": {\n    \"naziv_firme\": \"string ili null\",\n    \"ime_prezime\": \"string ili null\",\n    \"oib\": \"string ili null\",\n    \"sjediste\": \"string ili null\",\n    \"kontakt_ime\": \"string ili null\",\n    \"kontakt_email\": \"string ili null\",\n    \"kontakt_telefon\": \"string ili null\"\n  },\n  \"financije\": {\n    \"osnovna_zakupnina\": \"broj ili null\",\n    \"zakupnina_po_m2\": \"broj ili null\",\n    \"cam_troskovi\": \"broj ili null\",\n    \"polog_depozit\": \"broj ili null\",\n    \"garancija\": \"broj ili null\",\n    \"indeksacija\": \"boolean ili null\",\n    \"indeks\": \"string ili null\",\n    \"formula_indeksacije\": \"string ili null\"\n  },\n  \"ostalo\": {\n    \"obveze_odrzavanja\": \"zakupodavac/zakupnik/podijeljeno ili null\",\n    \"rezije_brojila\": \"string ili null\"\n  },\n  \"racun\": {\n    \"dobavljac\": \"string ili null\",\n    \"broj_racuna\": \"string ili null\",\n    \"tip_rezije\": \"struja/voda/plin/komunalije/internet/ostalo ili null\",\n    \"razdoblje_od\": \"YYYY-MM-DD ili null\",\n    \"razdoblje_do\": \"YYYY-MM-DD ili null\",\n    \"datum_izdavanja\": \"YYYY-MM-DD ili null\",\n    \"datum_dospijeca\": \"YYYY-MM-DD ili null\",\n    \"iznos_za_platiti\": \"broj ili null\",\n    \"iznos_placen\": \"broj ili null\",\n    \"valuta\": \"string ili null\"\n  }\n}\n\n"
+                "VAŽNO: Ako ne možeš pronaći informaciju, stavi null. Datume u YYYY-MM-DD. Brojevi bez valute. Boolean true/false. Enum vrijednosti točno kako su zadane. Ako dokument opisuje konkretan podprostor (npr. oznaka, kat, naziv), popuni polje property_unit. Odgovori SAMO JSON objektom."
             )
 
             messages = [
@@ -2043,7 +3289,7 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
 
             try:
                 parsed_data = json.loads(ai_text)
-                return {"success": True, "data": parsed_data, "message": "PDF je uspješno analiziran i podaci su izvučeni"}
+                return await build_ai_parse_response(parsed_data)
             except json.JSONDecodeError:
                 start = ai_text.find('{')
                 end = ai_text.rfind('}') + 1
@@ -2051,7 +3297,7 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
                     json_part = ai_text[start:end]
                     try:
                         parsed_data = json.loads(json_part)
-                        return {"success": True, "data": parsed_data, "message": "PDF je uspješno analiziran i podaci su izvučeni"}
+                        return await build_ai_parse_response(parsed_data)
                     except json.JSONDecodeError:
                         pass
                 return {"success": False, "data": None, "message": f"AI je analizirao dokument, ali odgovor nije čist JSON: {ai_text[:500]}..."}
