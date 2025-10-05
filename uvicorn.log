@@ -1,4 +1,60 @@
-INFO:     Started server process [52389]
+INFO:     Started server process [45754]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58063 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58065 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58067 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58069 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58071 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58063 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58065 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58067 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58069 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58071 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58071 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58069 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58067 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58065 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58063 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58071 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58069 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58067 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58065 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58063 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58086 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58086 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58091 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58092 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58094 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58097 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58098 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58099 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58091 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58092 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58094 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58099 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58098 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58092 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58114 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58117 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58118 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58122 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58123 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58124 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58114 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58117 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58118 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58122 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58123 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58124 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58114 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58117 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58118 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58122 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58123 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58124 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK

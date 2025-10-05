@@ -43,6 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./components/ui/dialog";
+import { ScrollArea } from "./components/ui/scroll-area";
 import { Checkbox } from "./components/ui/checkbox";
 import { Progress } from "./components/ui/progress";
 import { toast } from "sonner";
@@ -76,7 +77,19 @@ import "./App.css";
 const apiClient = axios.create();
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("authToken");
+  let storedToken = null;
+  if (typeof window !== "undefined") {
+    storedToken = localStorage.getItem("authToken");
+    if (storedToken && ["null", "undefined", ""].includes(storedToken)) {
+      storedToken = null;
+    }
+  }
+
+  const token = storedToken || process.env.REACT_APP_DEV_AUTH_TOKEN || null;
+
+  if (!storedToken && typeof window !== "undefined" && token) {
+    localStorage.setItem("authToken", token);
+  }
   if (token) {
     config.headers = config.headers || {};
     if (!config.headers.Authorization) {
@@ -1031,6 +1044,47 @@ const EntityStoreProvider = ({ children }) => {
     }
   }, []);
 
+  const syncDocument = useCallback((document) => {
+    if (!document || !document.id) {
+      return;
+    }
+    setState((prev) => {
+      const current = Array.isArray(prev.dokumenti) ? prev.dokumenti : [];
+      const index = current.findIndex((item) => item?.id === document.id);
+      const nextDocuments =
+        index === -1 ? [document, ...current] : [...current];
+      if (index !== -1) {
+        nextDocuments[index] = { ...current[index], ...document };
+      }
+      return { ...prev, dokumenti: nextDocuments };
+    });
+  }, []);
+
+  const syncMaintenanceTask = useCallback((task) => {
+    if (!task || !task.id) {
+      return;
+    }
+    setState((prev) => {
+      const current = Array.isArray(prev.maintenanceTasks)
+        ? prev.maintenanceTasks
+        : [];
+      let replaced = false;
+      const nextTasks = current.map((item) => {
+        if (item?.id === task.id) {
+          replaced = true;
+          return { ...item, ...task };
+        }
+        return item;
+      });
+
+      if (!replaced) {
+        nextTasks.unshift(task);
+      }
+
+      return { ...prev, maintenanceTasks: nextTasks };
+    });
+  }, []);
+
   useEffect(() => {
     loadEntities();
   }, [loadEntities]);
@@ -1073,6 +1127,8 @@ const EntityStoreProvider = ({ children }) => {
       error,
       refresh: loadEntities,
       refreshMaintenanceTasks,
+      syncDocument,
+      syncMaintenanceTask,
     }),
     [
       state,
@@ -1082,6 +1138,8 @@ const EntityStoreProvider = ({ children }) => {
       error,
       loadEntities,
       refreshMaintenanceTasks,
+      syncDocument,
+      syncMaintenanceTask,
     ],
   );
 
@@ -1576,6 +1634,7 @@ const MaintenanceBoard = ({
     propertyUnitsById,
     propertyUnitsByProperty,
     refreshMaintenanceTasks,
+    syncMaintenanceTask,
     loading: storeLoading,
   } = useEntityStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -1597,15 +1656,7 @@ const MaintenanceBoard = ({
   const [detailLoading, setDetailLoading] = useState(false);
   const [commentForm, setCommentForm] = useState({ author: "", message: "" });
   const [commentSubmitting, setCommentSubmitting] = useState(false);
-
-  const {
-    logs: maintenanceAuditLogs,
-    loading: maintenanceAuditLoading,
-    error: maintenanceAuditError,
-  } = useAuditTimeline("maintenance", selectedTaskId, {
-    limit: 20,
-    enabled: detailOpen && Boolean(selectedTaskId),
-  });
+  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
 
   const propertyMap = useMemo(() => {
     const map = {};
@@ -1739,43 +1790,6 @@ const MaintenanceBoard = ({
 
   const archivedTasks = groupedTasks.arhivirano || [];
 
-  const getPriorityRank = (value) => {
-    const index = MAINTENANCE_PRIORITY_ORDER.indexOf(value);
-    return index === -1 ? MAINTENANCE_PRIORITY_ORDER.length : index;
-  };
-
-  const listRows = useMemo(() => {
-    const rows = [...(filteredTasks || [])];
-    rows.sort((a, b) => {
-      const dueValue = (task) => {
-        if (!task.rok) {
-          return Number.POSITIVE_INFINITY;
-        }
-        const parsed = new Date(task.rok);
-        return Number.isNaN(parsed.getTime())
-          ? Number.POSITIVE_INFINITY
-          : parsed.getTime();
-      };
-
-      const firstDue = dueValue(a);
-      const secondDue = dueValue(b);
-      if (firstDue !== secondDue) {
-        return firstDue - secondDue;
-      }
-
-      const priorityDiff =
-        getPriorityRank(a.prioritet) - getPriorityRank(b.prioritet);
-      if (priorityDiff !== 0) {
-        return priorityDiff;
-      }
-
-      const firstUpdated = new Date(a.azuriran || a.kreiran || 0).getTime();
-      const secondUpdated = new Date(b.azuriran || b.kreiran || 0).getTime();
-      return secondUpdated - firstUpdated;
-    });
-    return rows;
-  }, [filteredTasks]);
-
   const unitsForSelectedProperty = useMemo(() => {
     if (!formData.nekretnina_id) {
       return [];
@@ -1847,9 +1861,10 @@ const MaintenanceBoard = ({
         procijenjeni_trosak: parseCost(formData.procijenjeni_trosak),
         stvarni_trosak: parseCost(formData.stvarni_trosak),
       };
-      await api.createMaintenanceTask(payload);
+      const response = await api.createMaintenanceTask(payload);
       toast.success("Radni nalog je dodan");
       handleDialogOpenChange(false);
+      syncMaintenanceTask?.(response.data);
       await refreshMaintenanceTasks();
     } catch (error) {
       console.error("Greška pri kreiranju radnog naloga:", error);
@@ -1861,20 +1876,24 @@ const MaintenanceBoard = ({
     }
   };
 
-  const fetchTaskDetails = useCallback(async (taskId) => {
-    setDetailLoading(true);
-    try {
-      const response = await api.getMaintenanceTask(taskId);
-      setSelectedTask(response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Greška pri dohvaćanju detalja radnog naloga:", error);
-      toast.error("Greška pri dohvaćanju detalja naloga");
-      throw error;
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
+  const fetchTaskDetails = useCallback(
+    async (taskId) => {
+      setDetailLoading(true);
+      try {
+        const response = await api.getMaintenanceTask(taskId);
+        setSelectedTask(response.data);
+        syncMaintenanceTask?.(response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Greška pri dohvaćanju detalja radnog naloga:", error);
+        toast.error("Greška pri dohvaćanju detalja naloga");
+        throw error;
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [syncMaintenanceTask],
+  );
 
   const handleCardClick = useCallback(
     (task) => {
@@ -1925,14 +1944,16 @@ const MaintenanceBoard = ({
     }
     setCommentSubmitting(true);
     try {
-      await api.addMaintenanceComment(selectedTaskId, {
+      const response = await api.addMaintenanceComment(selectedTaskId, {
         poruka: commentForm.message.trim(),
         autor: commentForm.author.trim() || undefined,
       });
       toast.success("Komentar je dodan");
       setCommentForm({ author: "", message: "" });
+      const updatedTask = response.data;
+      syncMaintenanceTask?.(updatedTask);
+      setSelectedTask(updatedTask);
       await refreshMaintenanceTasks();
-      await fetchTaskDetails(selectedTaskId);
     } catch (error) {
       console.error("Greška pri dodavanju komentara:", error);
       const message =
@@ -1981,6 +2002,16 @@ const MaintenanceBoard = ({
     return Number.isFinite(diff) && diff >= 0 ? diff : null;
   }, [selectedTask]);
 
+  const selectedTaskPriority = useMemo(() => {
+    if (!selectedTask) {
+      return null;
+    }
+    return (
+      MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet] ||
+      MAINTENANCE_PRIORITY_CONFIG.srednje
+    );
+  }, [selectedTask]);
+
   const activityLabels = {
     kreiran: "Nalog kreiran",
     promjena_statusa: "Promjena statusa",
@@ -1989,25 +2020,86 @@ const MaintenanceBoard = ({
   };
 
   const handleStatusChange = useCallback(
-    async (taskId, nextStatus) => {
+    async (task, nextStatus) => {
+      if (!task || !task.id || !nextStatus) {
+        return;
+      }
+
+      const taskId = task.id;
+      const previousStatus = task.status;
+      const previousUpdatedAt = task.azuriran || null;
+      const previousCompletedAt = task.zavrseno_na || null;
+      const nowIso = new Date().toISOString();
+      const isCompleted = ["zavrseno", "arhivirano"].includes(nextStatus);
+
+      const optimisticTask = {
+        ...task,
+        status: nextStatus,
+        azuriran: nowIso,
+        zavrseno_na: isCompleted ? nowIso : null,
+      };
+
       setStatusUpdating(taskId);
+      syncMaintenanceTask?.(optimisticTask);
+
+      if (enableDetails && selectedTaskId === taskId) {
+        setSelectedTask((current) => {
+          if (!current || current.id !== taskId) {
+            return current;
+          }
+          return { ...current, ...optimisticTask };
+        });
+      }
+
       try {
-        await api.updateMaintenanceTask(taskId, { status: nextStatus });
+        const response = await api.updateMaintenanceTask(taskId, {
+          status: nextStatus,
+        });
+        const updatedTask = response.data;
+        syncMaintenanceTask?.(updatedTask);
         toast.success("Status radnog naloga je ažuriran");
-        await refreshMaintenanceTasks();
+
         if (enableDetails && selectedTaskId === taskId) {
-          await fetchTaskDetails(taskId);
+          setSelectedTask(updatedTask);
         }
       } catch (error) {
         console.error("Greška pri promjeni statusa naloga:", error);
         const message =
           error.response?.data?.detail || "Ažuriranje statusa nije uspjelo";
         toast.error(message);
+
+        const revertTask = {
+          ...task,
+          status: previousStatus,
+          azuriran: previousUpdatedAt,
+          zavrseno_na: previousCompletedAt,
+        };
+        syncMaintenanceTask?.(revertTask);
+
+        if (enableDetails && selectedTaskId === taskId) {
+          setSelectedTask((current) => {
+            if (!current || current.id !== taskId) {
+              return current;
+            }
+            return { ...current, ...revertTask };
+          });
+        }
+
+        if (refreshMaintenanceTasks) {
+          refreshMaintenanceTasks().catch((err) => {
+            console.error("Greška pri vraćanju liste naloga:", err);
+          });
+        }
       } finally {
         setStatusUpdating(null);
       }
     },
-    [refreshMaintenanceTasks, enableDetails, selectedTaskId, fetchTaskDetails],
+    [
+      enableDetails,
+      refreshMaintenanceTasks,
+      selectedTaskId,
+      syncMaintenanceTask,
+    ],
   );
 
   const today = useMemo(() => {
@@ -2031,7 +2123,7 @@ const MaintenanceBoard = ({
   }, [filters]);
 
   const renderTaskCard = useCallback(
-    (task) => {
+    (task, columnStatus = null) => {
       const statusMeta = MAINTENANCE_STATUS_META[task.status] || {};
       const priorityMeta =
         MAINTENANCE_PRIORITY_CONFIG[task.prioritet] ||
@@ -2046,12 +2138,14 @@ const MaintenanceBoard = ({
         validDueDate < today &&
         !["zavrseno", "arhivirano"].includes(task.status);
       const statusLabel = statusMeta.title || task.status;
+      const hideStatusBadge = columnStatus === task.status;
       const dueLabel = task.rok ? formatDate(task.rok) : "Bez roka";
       const isCompleted =
         task.status === "zavrseno" || task.status === "arhivirano";
 
       const cardClasses = [
         "border border-border/60 shadow-sm",
+        "w-full max-w-full min-w-0 overflow-hidden",
         statusMeta.cardBorderClass || "",
         enableDetails
           ? "cursor-pointer transition hover:border-primary/60"
@@ -2082,15 +2176,17 @@ const MaintenanceBoard = ({
                   {unit ? ` • ${unit.naziv || unit.oznaka || unit.id}` : ""}
                 </p>
               </div>
-              <Badge
-                variant="outline"
-                className={
-                  statusMeta.badgeClass ||
-                  "border border-border bg-muted text-muted-foreground"
-                }
-              >
-                {statusLabel}
-              </Badge>
+              {!hideStatusBadge && (
+                <Badge
+                  variant="outline"
+                  className={
+                    statusMeta.badgeClass ||
+                    "border border-border bg-muted text-muted-foreground"
+                  }
+                >
+                  {statusLabel}
+                </Badge>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-3 pt-0">
@@ -2162,41 +2258,29 @@ const MaintenanceBoard = ({
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-2 pt-2">
-              <Select
-                value={task.status}
-                onValueChange={(value) => handleStatusChange(task.id, value)}
-                disabled={statusUpdating === task.id}
-              >
-                <SelectTrigger
-                  className="h-8 w-full"
-                  onClick={(event) => event.stopPropagation()}
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <div className="min-w-[140px] flex-1">
+                <Select
+                  value={task.status}
+                  onValueChange={(value) => handleStatusChange(task, value)}
+                  disabled={statusUpdating === task.id}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALL_MAINTENANCE_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {MAINTENANCE_STATUS_META[status]?.title || status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2">
-                {!isCompleted && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleStatusChange(task.id, "zavrseno");
-                    }}
-                    disabled={statusUpdating === task.id}
+                  <SelectTrigger
+                    className="h-8 w-full"
+                    onClick={(event) => event.stopPropagation()}
                   >
-                    Označi dovršeno
-                  </Button>
-                )}
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ALL_MAINTENANCE_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {MAINTENANCE_STATUS_META[status]?.title || status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-shrink-0 items-center gap-2">
                 {task.status !== "arhivirano" && (
                   <Button
                     type="button"
@@ -2204,7 +2288,7 @@ const MaintenanceBoard = ({
                     variant="ghost"
                     onClick={(event) => {
                       event.stopPropagation();
-                      handleStatusChange(task.id, "arhivirano");
+                      handleStatusChange(task, "arhivirano");
                     }}
                     disabled={statusUpdating === task.id}
                     title="Arhiviraj nalog"
@@ -2231,160 +2315,218 @@ const MaintenanceBoard = ({
 
   return (
     <section className="space-y-4" id="maintenance-board">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 md:items-center">
+        {(title ||
+          description ||
+          (enableFilters && maintenanceTasks.length > 0)) && (
+          <div className="space-y-1">
+            {title && (
+              <h2 className="text-2xl font-semibold text-foreground">
+                {title}
+              </h2>
+            )}
+            {description && (
+              <p className="text-sm text-muted-foreground">{description}</p>
+            )}
+            {enableFilters && (
+              <p className="text-xs text-muted-foreground">
+                Prikazano {filteredTasks.length} od {maintenanceTasks.length}{" "}
+                naloga
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="ml-2 text-primary underline-offset-2 hover:underline"
+                  >
+                    Poništi filtre
+                  </button>
+                )}
+              </p>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {enableFilters && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsFiltersDialogOpen(true)}
+            >
+              Filteri
+            </Button>
+          )}
+          <Button
+            type="button"
+            onClick={handleOpenDialog}
+            className="md:w-auto"
+            data-testid="add-maintenance-task"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Dodaj radni nalog
+          </Button>
         </div>
-        <Button
-          type="button"
-          onClick={handleOpenDialog}
-          className="md:w-auto"
-          data-testid="add-maintenance-task"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Dodaj radni nalog
-        </Button>
       </div>
 
       {enableFilters && (
-        <div className="space-y-4 rounded-xl border border-border/60 bg-white/80 p-4 shadow-sm">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-foreground">
-              Filteri i pretraga
-            </h3>
-            {hasActiveFilters && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-              >
-                Poništi filtre
-              </Button>
-            )}
-          </div>
-          <div className="grid gap-3 md:grid-cols-6">
-            <div className="md:col-span-2">
-              <Label htmlFor="maintenance-search">Pretraži naloge</Label>
-              <Input
-                id="maintenance-search"
-                value={filters.search}
-                onChange={(event) =>
-                  handleFilterChange("search", event.target.value)
-                }
-                placeholder="npr. klima, lift, hitno"
-              />
+        <Dialog
+          open={isFiltersDialogOpen}
+          onOpenChange={setIsFiltersDialogOpen}
+        >
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Filtriraj radne naloge</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Suzi prikaz prema prioritetu, statusu, oznakama ili rokovima.
+              </p>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <Label htmlFor="maintenance-search">Pretraži naloge</Label>
+                  <Input
+                    id="maintenance-search"
+                    value={filters.search}
+                    onChange={(event) =>
+                      handleFilterChange("search", event.target.value)
+                    }
+                    placeholder="npr. klima, lift, hitno"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-prioritet-filter">
+                    Prioritet
+                  </Label>
+                  <Select
+                    value={filters.prioritet}
+                    onValueChange={(value) =>
+                      handleFilterChange("prioritet", value)
+                    }
+                  >
+                    <SelectTrigger id="maintenance-prioritet-filter">
+                      <SelectValue placeholder="Svi prioriteti" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Svi prioriteti</SelectItem>
+                      {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(
+                        ([value, config]) => (
+                          <SelectItem key={value} value={value}>
+                            {config.label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-status-filter">Status</Label>
+                  <Select
+                    value={filters.status}
+                    onValueChange={(value) =>
+                      handleFilterChange("status", value)
+                    }
+                  >
+                    <SelectTrigger id="maintenance-status-filter">
+                      <SelectValue placeholder="Svi statusi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Svi statusi</SelectItem>
+                      {ALL_MAINTENANCE_STATUSES.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {MAINTENANCE_STATUS_META[status]?.title || status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-property-filter">
+                    Nekretnina
+                  </Label>
+                  <Select
+                    value={filters.nekretnina}
+                    onValueChange={(value) =>
+                      handleFilterChange("nekretnina", value)
+                    }
+                  >
+                    <SelectTrigger id="maintenance-property-filter">
+                      <SelectValue placeholder="Sve nekretnine" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Sve nekretnine</SelectItem>
+                      {nekretnine.map((property) => (
+                        <SelectItem key={property.id} value={property.id}>
+                          {property.naziv}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-label-filter">Oznake</Label>
+                  <Input
+                    id="maintenance-label-filter"
+                    value={filters.oznaka}
+                    onChange={(event) =>
+                      handleFilterChange("oznaka", event.target.value)
+                    }
+                    placeholder="npr. elektrika, servis"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-due-from">Rok od</Label>
+                  <Input
+                    id="maintenance-due-from"
+                    type="date"
+                    value={filters.dueFrom}
+                    onChange={(event) =>
+                      handleFilterChange("dueFrom", event.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="maintenance-due-to">Rok do</Label>
+                  <Input
+                    id="maintenance-due-to"
+                    type="date"
+                    value={filters.dueTo}
+                    onChange={(event) =>
+                      handleFilterChange("dueTo", event.target.value)
+                    }
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="maintenance-prioritet-filter">Prioritet</Label>
-              <Select
-                value={filters.prioritet}
-                onValueChange={(value) =>
-                  handleFilterChange("prioritet", value)
-                }
-              >
-                <SelectTrigger id="maintenance-prioritet-filter">
-                  <SelectValue placeholder="Svi prioriteti" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Svi prioriteti</SelectItem>
-                  {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(
-                    ([value, config]) => (
-                      <SelectItem key={value} value={value}>
-                        {config.label}
-                      </SelectItem>
-                    ),
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="maintenance-status-filter">Status</Label>
-              <Select
-                value={filters.status}
-                onValueChange={(value) => handleFilterChange("status", value)}
-              >
-                <SelectTrigger id="maintenance-status-filter">
-                  <SelectValue placeholder="Svi statusi" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Svi statusi</SelectItem>
-                  {ALL_MAINTENANCE_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {MAINTENANCE_STATUS_META[status]?.title || status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="maintenance-property-filter">Nekretnina</Label>
-              <Select
-                value={filters.nekretnina}
-                onValueChange={(value) =>
-                  handleFilterChange("nekretnina", value)
-                }
-              >
-                <SelectTrigger id="maintenance-property-filter">
-                  <SelectValue placeholder="Sve nekretnine" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Sve nekretnine</SelectItem>
-                  {nekretnine.map((property) => (
-                    <SelectItem key={property.id} value={property.id}>
-                      {property.naziv}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="maintenance-label-filter">Oznake</Label>
-              <Input
-                id="maintenance-label-filter"
-                value={filters.oznaka}
-                onChange={(event) =>
-                  handleFilterChange("oznaka", event.target.value)
-                }
-                placeholder="npr. elektrika, servis"
-              />
-            </div>
-            <div>
-              <Label htmlFor="maintenance-due-from">Rok od</Label>
-              <Input
-                id="maintenance-due-from"
-                type="date"
-                value={filters.dueFrom}
-                onChange={(event) =>
-                  handleFilterChange("dueFrom", event.target.value)
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="maintenance-due-to">Rok do</Label>
-              <Input
-                id="maintenance-due-to"
-                type="date"
-                value={filters.dueTo}
-                onChange={(event) =>
-                  handleFilterChange("dueTo", event.target.value)
-                }
-              />
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground/80">
-            Prikazano {filteredTasks.length} od {maintenanceTasks.length}{" "}
-            naloga.
-          </p>
-        </div>
+
+            <DialogFooter className="pt-6">
+              <div className="flex w-full justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    handleResetFilters();
+                    setIsFiltersDialogOpen(false);
+                  }}
+                >
+                  Poništi sve
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setIsFiltersDialogOpen(false)}
+                >
+                  Zatvori
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       <div className="overflow-x-auto pb-2">
         <div className="flex min-w-max gap-4">
           {columns.map(({ status, meta, tasks }) => (
             <div key={status} className="w-72 flex-shrink-0">
-              <div className="rounded-xl border border-border/60 bg-white p-4 shadow-sm">
-                <div className="flex items-center justify-between border-b border-border/50 pb-2">
+              <div className="flex h-[calc(100vh-320px)] min-h-[24rem] flex-col rounded-xl border border-border/60 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-border/50 px-4 pt-4 pb-2">
                   <div>
                     <h3 className="text-sm font-semibold text-foreground">
                       {meta?.title || status}
@@ -2403,19 +2545,21 @@ const MaintenanceBoard = ({
                     {tasks.length}
                   </Badge>
                 </div>
-                <div className="space-y-3 pt-3">
-                  {isLoading ? (
-                    <p className="text-xs text-muted-foreground/70">
-                      Učitavam radne naloge…
-                    </p>
-                  ) : tasks.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/60">
-                      Nema naloga u ovoj fazi.
-                    </p>
-                  ) : (
-                    tasks.map((task) => renderTaskCard(task))
-                  )}
-                </div>
+                <ScrollArea className="flex-1 px-4 pb-4">
+                  <div className="space-y-3 pt-3 pr-2">
+                    {isLoading ? (
+                      <p className="text-xs text-muted-foreground/70">
+                        Učitavam radne naloge…
+                      </p>
+                    ) : tasks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground/60">
+                        Nema naloga u ovoj fazi.
+                      </p>
+                    ) : (
+                      tasks.map((task) => renderTaskCard(task, status))
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
             </div>
           ))}
@@ -2428,456 +2572,369 @@ const MaintenanceBoard = ({
             Arhivirani nalozi ({archivedTasks.length})
           </summary>
           <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {archivedTasks.map((task) => renderTaskCard(task))}
+            {archivedTasks.map((task) => renderTaskCard(task, "arhivirano"))}
           </div>
         </details>
       )}
 
-      {enableList && (
-        <div className="rounded-xl border border-border/60 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Popis naloga
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Detaljni pregled s mogućnošću brzog otvaranja timeline prikaza.
-              </p>
-            </div>
-            <Badge
-              variant="outline"
-              className="border-border text-muted-foreground"
-            >
-              {listRows.length}
-            </Badge>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border/60 text-sm">
-              <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2 text-left font-semibold">Nalog</th>
-                  <th className="px-4 py-2 text-left font-semibold">Status</th>
-                  <th className="px-4 py-2 text-left font-semibold">
-                    Prioritet
-                  </th>
-                  <th className="px-4 py-2 text-left font-semibold">
-                    Nekretnina
-                  </th>
-                  <th className="px-4 py-2 text-left font-semibold">Rok</th>
-                  <th className="px-4 py-2 text-left font-semibold">
-                    Dodijeljeno
-                  </th>
-                  <th className="px-4 py-2 text-right font-semibold">Akcija</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {listRows.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-4 py-4 text-center text-sm text-muted-foreground"
-                    >
-                      Trenutno nema naloga koji odgovaraju odabranim filtrima.
-                    </td>
-                  </tr>
-                ) : (
-                  listRows.map((task) => {
-                    const statusMeta =
-                      MAINTENANCE_STATUS_META[task.status] || {};
-                    const priorityMeta =
-                      MAINTENANCE_PRIORITY_CONFIG[task.prioritet] ||
-                      MAINTENANCE_PRIORITY_CONFIG.srednje;
-                    const property = propertyMap[task.nekretnina_id];
-                    const dueDate = task.rok ? new Date(task.rok) : null;
-                    const validDueDate =
-                      dueDate && !Number.isNaN(dueDate.getTime())
-                        ? dueDate
-                        : null;
-                    const overdue =
-                      validDueDate &&
-                      validDueDate < today &&
-                      !["zavrseno", "arhivirano"].includes(task.status);
-
-                    return (
-                      <tr
-                        key={task.id}
-                        className="transition hover:bg-muted/40"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium text-foreground">
-                              {task.naziv}
-                            </span>
-                            {task.opis && (
-                              <span className="text-xs text-muted-foreground">
-                                {task.opis}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant="outline"
-                            className={
-                              statusMeta.badgeClass ||
-                              "border border-border text-muted-foreground"
-                            }
-                          >
-                            {statusMeta.title || task.status}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            variant="outline"
-                            className={priorityMeta.className}
-                          >
-                            {priorityMeta.label}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {property ? property.naziv : "Nepovezana"}
-                        </td>
-                        <td
-                          className={`px-4 py-3 ${overdue ? "font-semibold text-red-600" : "text-muted-foreground"}`}
-                        >
-                          {task.rok ? formatDate(task.rok) : "Bez roka"}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {task.dodijeljeno || "—"}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleCardClick(task)}
-                          >
-                            Detalji
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {enableList && null}
 
       <Dialog open={detailOpen} onOpenChange={handleDetailOpenChange}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedTask?.naziv || "Detalji radnog naloga"}
-            </DialogTitle>
-            {selectedTask && (
-              <p className="text-sm text-muted-foreground">
-                {MAINTENANCE_STATUS_META[selectedTask.status]?.title ||
-                  selectedTask.status}{" "}
-                •{" "}
-                {MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet]?.label ||
-                  "Prioritet"}
-              </p>
-            )}
-          </DialogHeader>
-
-          {detailLoading ? (
-            <p className="text-sm text-muted-foreground">
-              Učitavam detalje naloga…
-            </p>
-          ) : selectedTask ? (
-            <div className="space-y-6">
-              <div className="grid gap-4 rounded-lg border border-border/70 bg-muted/30 p-4 md:grid-cols-2">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Nekretnina
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {propertyMap[selectedTask.nekretnina_id]?.naziv ||
-                      "Nije povezano"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Podprostor
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {propertyUnitsById?.[selectedTask.property_unit_id]
-                      ?.naziv ||
-                      propertyUnitsById?.[selectedTask.property_unit_id]
-                        ?.oznaka ||
-                      "Nije odabrano"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Prijavio
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.prijavio || "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Dodijeljeno
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.dodijeljeno || "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Rok
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.rok
-                      ? formatDate(selectedTask.rok)
-                      : "Bez roka"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Status
-                  </p>
-                  <Select
-                    value={selectedTask.status}
-                    onValueChange={(value) =>
-                      handleStatusChange(selectedTask.id, value)
-                    }
-                    disabled={statusUpdating === selectedTask.id}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ALL_MAINTENANCE_STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {MAINTENANCE_STATUS_META[status]?.title || status}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Procijenjeni trošak
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.procijenjeni_trosak != null
-                      ? formatCurrency(selectedTask.procijenjeni_trosak)
-                      : "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Stvarni trošak
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.stvarni_trosak != null
-                      ? formatCurrency(selectedTask.stvarni_trosak)
-                      : "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Završeno
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {selectedTask.zavrseno_na
-                      ? formatDateTime(selectedTask.zavrseno_na)
-                      : "—"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Vrijeme rješavanja
-                  </p>
-                  <p className="text-sm text-foreground">
-                    {resolutionHours != null
-                      ? `${resolutionHours.toFixed(1)} h`
-                      : "—"}
-                  </p>
-                </div>
-                {selectedTask.oznake && selectedTask.oznake.length > 0 && (
-                  <div className="space-y-1 md:col-span-2">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Oznake
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedTask.oznake.map((label) => (
-                        <Badge
-                          key={label}
-                          variant="outline"
-                          className="border-dashed border-border/50 text-muted-foreground"
-                        >
-                          #{label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {selectedTask.opis && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-foreground">
-                    Opis naloga
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedTask.opis}
-                  </p>
-                </div>
+        <DialogContent className="max-w-4xl overflow-hidden p-0">
+          <div className="flex flex-col">
+            <DialogHeader className="border-b border-border/60 px-6 py-4">
+              <DialogTitle>
+                {selectedTask?.naziv || "Detalji radnog naloga"}
+              </DialogTitle>
+              {selectedTask && (
+                <p className="text-sm text-muted-foreground">
+                  {MAINTENANCE_STATUS_META[selectedTask.status]?.title ||
+                    selectedTask.status}{" "}
+                  •{" "}
+                  {MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet]?.label ||
+                    "Prioritet"}
+                </p>
               )}
+            </DialogHeader>
 
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-foreground">
-                  Timeline aktivnosti
-                </h4>
-                {activityItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Još nema zabilježenih aktivnosti za ovaj nalog.
-                  </p>
-                ) : (
-                  <ul className="space-y-3">
-                    {activityItems.map((activity) => {
-                      const label =
-                        activityLabels[activity.tip] || activity.tip;
-                      const statusLabel = activity.status
-                        ? MAINTENANCE_STATUS_META[activity.status]?.title ||
-                          activity.status
-                        : null;
-                      const timestamp = formatDateTime(
-                        activity.timestamp ||
-                          activity.vrijeme ||
-                          activity.created_at,
-                      );
-                      return (
-                        <li key={activity.id} className="relative flex gap-3">
-                          <div
-                            className="mt-1 h-full w-px bg-border"
-                            aria-hidden
-                          />
-                          <div className="flex-1 rounded-lg border border-border/60 bg-white/80 p-3 shadow-sm">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge
-                                  variant="outline"
-                                  className="border-border text-muted-foreground"
-                                >
-                                  {label}
-                                </Badge>
-                                {statusLabel && (
-                                  <Badge
-                                    variant="outline"
-                                    className="border-primary/40 bg-primary/10 text-primary"
-                                  >
-                                    {statusLabel}
-                                  </Badge>
-                                )}
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                {timestamp}
-                              </span>
-                            </div>
-                            {activity.autor && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                Autor:{" "}
-                                <span className="font-medium text-foreground">
-                                  {activity.autor}
-                                </span>
-                              </p>
+            {detailLoading ? (
+              <div className="px-6 py-10">
+                <p className="text-sm text-muted-foreground">
+                  Učitavam detalje naloga…
+                </p>
+              </div>
+            ) : selectedTask ? (
+              <div className="flex flex-col-reverse lg:flex-row-reverse">
+                <aside className="border-t border-border/60 bg-muted/30 px-6 py-6 text-sm lg:w-80 lg:border-l lg:border-t-0">
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground">
+                        Sažetak naloga
+                      </h4>
+                      <dl className="space-y-3">
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Nekretnina
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {propertyMap[selectedTask.nekretnina_id]?.naziv ||
+                              "Nije povezano"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Podprostor
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {propertyUnitsById?.[selectedTask.property_unit_id]
+                              ?.naziv ||
+                              propertyUnitsById?.[selectedTask.property_unit_id]
+                                ?.oznaka ||
+                              "Nije odabrano"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Prijavio
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.prijavio || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Dodijeljeno
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.dodijeljeno || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Rok
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.rok
+                              ? formatDate(selectedTask.rok)
+                              : "Bez roka"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Status
+                          </dt>
+                          <dd className="pt-1">
+                            <Select
+                              value={selectedTask.status}
+                              onValueChange={(value) =>
+                                handleStatusChange(selectedTask, value)
+                              }
+                              disabled={statusUpdating === selectedTask.id}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ALL_MAINTENANCE_STATUSES.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {MAINTENANCE_STATUS_META[status]?.title ||
+                                      status}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Prioritet
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTaskPriority ? (
+                              <Badge
+                                variant="outline"
+                                className={selectedTaskPriority.className}
+                              >
+                                {selectedTaskPriority.label}
+                              </Badge>
+                            ) : (
+                              "—"
                             )}
-                            {activity.opis && (
-                              <p className="mt-2 text-sm text-foreground">
-                                {activity.opis}
-                              </p>
-                            )}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Procijenjeni trošak
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.procijenjeni_trosak != null
+                              ? formatCurrency(selectedTask.procijenjeni_trosak)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Stvarni trošak
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.stvarni_trosak != null
+                              ? formatCurrency(selectedTask.stvarni_trosak)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Završeno
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {selectedTask.zavrseno_na
+                              ? formatDateTime(selectedTask.zavrseno_na)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
+                            Vrijeme rješavanja
+                          </dt>
+                          <dd className="font-medium text-foreground">
+                            {resolutionHours != null
+                              ? `${resolutionHours.toFixed(1)} h`
+                              : "—"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                    {selectedTask.oznake && selectedTask.oznake.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Oznake
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedTask.oznake.map((label) => (
+                            <Badge
+                              key={label}
+                              variant="outline"
+                              className="border-dashed border-border/50 text-muted-foreground"
+                            >
+                              #{label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </aside>
+                <ScrollArea className="max-h-[75vh] flex-1">
+                  <div className="space-y-6 px-6 py-6">
+                    {selectedTask.opis && (
+                      <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-2">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          Opis naloga
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedTask.opis}
+                        </p>
+                      </section>
+                    )}
+
+                    <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          Timeline aktivnosti
+                        </h4>
+                        {activityItems.length > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            {activityItems.length} zapisa
+                          </span>
+                        )}
+                      </div>
+                      {activityItems.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          Još nema zabilježenih aktivnosti za ovaj nalog.
+                        </p>
+                      ) : (
+                        <ul className="space-y-3">
+                          {activityItems.map((activity, index) => {
+                            const label =
+                              activityLabels[activity.tip] || activity.tip;
+                            const statusLabel = activity.status
+                              ? MAINTENANCE_STATUS_META[activity.status]
+                                  ?.title || activity.status
+                              : null;
+                            const timestamp = formatDateTime(
+                              activity.timestamp ||
+                                activity.vrijeme ||
+                                activity.created_at,
+                            );
+                            const key =
+                              activity.id ||
+                              `${activity.tip}-${timestamp || index}`;
+                            return (
+                              <li key={key} className="relative flex gap-3">
+                                <div
+                                  className="mt-1 h-full w-px bg-border"
+                                  aria-hidden
+                                />
+                                <div className="flex-1 rounded-lg border border-border/60 bg-white/80 p-3 shadow-sm">
+                                  <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Badge
+                                        variant="outline"
+                                        className="border-border text-muted-foreground"
+                                      >
+                                        {label}
+                                      </Badge>
+                                      {statusLabel && (
+                                        <Badge
+                                          variant="outline"
+                                          className="border-primary/40 bg-primary/10 text-primary"
+                                        >
+                                          {statusLabel}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                      {timestamp}
+                                    </span>
+                                  </div>
+                                  {activity.autor && (
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      Autor:{" "}
+                                      <span className="font-medium text-foreground">
+                                        {activity.autor}
+                                      </span>
+                                    </p>
+                                  )}
+                                  {activity.opis && (
+                                    <p className="mt-2 text-sm text-foreground">
+                                      {activity.opis}
+                                    </p>
+                                  )}
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </section>
+
+                    <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-3">
+                      <h4 className="text-sm font-semibold text-foreground">
+                        Dodaj komentar
+                      </h4>
+                      <form
+                        onSubmit={handleCommentSubmit}
+                        className="space-y-3"
+                      >
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div>
+                            <Label htmlFor="comment-author">
+                              Autor komentara
+                            </Label>
+                            <Input
+                              id="comment-author"
+                              value={commentForm.author}
+                              onChange={(event) =>
+                                setCommentForm((prev) => ({
+                                  ...prev,
+                                  author: event.target.value,
+                                }))
+                              }
+                              placeholder="npr. Voditelj održavanja"
+                            />
                           </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              <AuditTimelinePanel
-                className="border-t border-border/60 pt-4"
-                title="Audit zapis naloga"
-                logs={maintenanceAuditLogs}
-                loading={maintenanceAuditLoading}
-                error={maintenanceAuditError}
-                emptyMessage="Još nema audit zapisa za ovaj nalog."
-              />
-
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold text-foreground">
-                  Dodaj komentar
-                </h4>
-                <form onSubmit={handleCommentSubmit} className="space-y-3">
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                      <Label htmlFor="comment-author">Autor komentara</Label>
-                      <Input
-                        id="comment-author"
-                        value={commentForm.author}
-                        onChange={(event) =>
-                          setCommentForm((prev) => ({
-                            ...prev,
-                            author: event.target.value,
-                          }))
-                        }
-                        placeholder="npr. Voditelj održavanja"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label htmlFor="comment-message">Komentar *</Label>
-                      <Textarea
-                        id="comment-message"
-                        rows={3}
-                        value={commentForm.message}
-                        onChange={(event) =>
-                          setCommentForm((prev) => ({
-                            ...prev,
-                            message: event.target.value,
-                          }))
-                        }
-                        placeholder="Zapišite ažuriranje, dogovoreni termin ili povratnu informaciju izvođača"
-                        required
-                      />
-                    </div>
+                          <div className="md:col-span-2">
+                            <Label htmlFor="comment-message">Komentar *</Label>
+                            <Textarea
+                              id="comment-message"
+                              rows={3}
+                              value={commentForm.message}
+                              onChange={(event) =>
+                                setCommentForm((prev) => ({
+                                  ...prev,
+                                  message: event.target.value,
+                                }))
+                              }
+                              placeholder="Zapišite ažuriranje, dogovoreni termin ili povratnu informaciju izvođača"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setCommentForm({ author: "", message: "" })
+                            }
+                            disabled={commentSubmitting}
+                          >
+                            Poništi
+                          </Button>
+                          <Button
+                            type="submit"
+                            size="sm"
+                            disabled={commentSubmitting}
+                          >
+                            {commentSubmitting ? "Spremam…" : "Dodaj komentar"}
+                          </Button>
+                        </div>
+                      </form>
+                    </section>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setCommentForm({ author: "", message: "" })
-                      }
-                      disabled={commentSubmitting}
-                    >
-                      Poništi
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={commentSubmitting}
-                    >
-                      {commentSubmitting ? "Spremam…" : "Dodaj komentar"}
-                    </Button>
-                  </div>
-                </form>
+                </ScrollArea>
               </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Detalji naloga nisu dostupni.
-            </p>
-          )}
+            ) : (
+              <div className="px-6 py-10">
+                <p className="text-sm text-muted-foreground">
+                  Detalji naloga nisu dostupni.
+                </p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
-
       <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -3158,8 +3215,8 @@ const MaintenanceWorkspace = () => {
       <MaintenanceBoard
         enableFilters
         enableList
-        title="Kanban i popis radnih naloga"
-        description="Filtrirajte, pratite timeline aktivnosti i upravljajte komentarima na jednom mjestu."
+        title={null}
+        description={null}
       />
     </div>
   );
@@ -8124,6 +8181,10 @@ const Ugovori = () => {
     if (isMutating) {
       return;
     }
+    if (!formData?.property_unit_id) {
+      toast.error("Ugovor mora biti povezan s podprostorom");
+      return;
+    }
     setIsMutating(true);
     try {
       if (editingContract) {
@@ -9061,7 +9122,20 @@ const UgovorForm = ({
       const response = await api.parsePdfContract(file);
 
       if (!response.data.success) {
-        toast.error(response.data.message || "Greška pri analizi PDF-a");
+        const serverMessage = response.data.message || "";
+        const lowerMessage = serverMessage.toLowerCase();
+        const aiUnavailable =
+          lowerMessage.includes("openai_api_key") ||
+          lowerMessage.includes("openai") ||
+          lowerMessage.includes("analizi pdf-a");
+        console.warn("AI analiza nije uspjela:", serverMessage, response.data);
+        if (aiUnavailable) {
+          toast.info(
+            "AI analiza trenutno nije dostupna. Podatke možete unijeti ručno.",
+          );
+        } else {
+          toast.error(serverMessage || "Greška pri analizi PDF-a");
+        }
         return;
       }
 
@@ -9191,9 +9265,7 @@ const UgovorForm = ({
       toast.success("PDF ugovor je analiziran i podaci su uneseni u formu!");
     } catch (error) {
       console.error("Greška pri analizi PDF-a:", error);
-      toast.error(
-        "Greška pri analizi PDF ugovora. Molimo unesite podatke ručno.",
-      );
+      toast.info("AI analiza nije uspjela. Podatke možete unijeti ručno.");
     } finally {
       toast.dismiss("contract-pdf-parse");
       setIsParsing(false);
@@ -9208,6 +9280,10 @@ const UgovorForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.property_unit_id) {
+      toast.error("Odaberite podprostor prije spremanja ugovora");
+      return;
+    }
     const data = {
       ...formData,
       trajanje_mjeseci: parseInt(formData.trajanje_mjeseci),
@@ -9223,7 +9299,7 @@ const UgovorForm = ({
         ? parseFloat(formData.polog_depozit)
         : null,
       garancija: formData.garancija ? parseFloat(formData.garancija) : null,
-      property_unit_id: formData.property_unit_id || null,
+      property_unit_id: formData.property_unit_id,
     };
 
     // Ako je renewal, arhiviraj stari ugovor
@@ -9381,7 +9457,7 @@ const UgovorForm = ({
           />
 
           <LinkedEntitySelect
-            label="Podprostor / jedinica"
+            label="Podprostor / jedinica *"
             placeholder={
               formData.nekretnina_id
                 ? "Poveži podprostor"
@@ -9397,6 +9473,7 @@ const UgovorForm = ({
             }
             testId="ugovor-unit-select"
             disabled={!formData.nekretnina_id}
+            allowNone={false}
           />
 
           <LinkedEntitySelect
@@ -9685,6 +9762,7 @@ const Dokumenti = () => {
     propertyUnitsById,
     loading: storeLoading,
     refresh,
+    syncDocument,
   } = useEntityStore();
   const [isMutating, setIsMutating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -9787,16 +9865,24 @@ const Dokumenti = () => {
 
   const handleCreateDokument = async (formData) => {
     setIsMutating(true);
+    const toastId = toast.loading("Spremam dokument…");
     try {
-      await api.createDokument(formData);
-      toast.success("Dokument je uspješno dodan");
-      await refresh();
+      const response = await api.createDokument(formData);
+      if (response?.data) {
+        syncDocument(response.data);
+      }
+      toast.success("Dokument je uspješno dodan", { id: toastId });
+      try {
+        await refresh();
+      } catch (refreshError) {
+        console.error("Greška pri osvježavanju dokumenata:", refreshError);
+      }
       setShowCreateForm(false);
     } catch (error) {
       console.error("Greška pri dodavanju dokumenta:", error);
       const message =
         error.response?.data?.detail || "Greška pri dodavanju dokumenta";
-      toast.error(message);
+      toast.error(message, { id: toastId });
       throw error;
     } finally {
       setIsMutating(false);
@@ -10206,18 +10292,6 @@ const DokumentForm = ({
   });
   const [uploadedFile, setUploadedFile] = useState(null);
   const [tenantOptions, setTenantOptions] = useState(zakupnici);
-
-  useEffect(() => {
-    if (contract) {
-      setAiSuggestions(null);
-      setAiError(null);
-      setQuickCreateLoading({
-        property: false,
-        tenant: false,
-        contract: false,
-      });
-    }
-  }, [contract]);
 
   const activeTenantOptions = useMemo(
     () =>
@@ -10746,6 +10820,14 @@ const DokumentForm = ({
           "",
         rezije_brojila: other.rezije_brojila || "",
       };
+      const propertyUnitId = formData.property_unit_id;
+      if (!propertyUnitId) {
+        toast.error(
+          "AI nije uspio povezati podprostor. Molimo odaberite podprostor ručno prije kreiranja ugovora.",
+        );
+        return;
+      }
+      payload.property_unit_id = propertyUnitId;
       const response = await api.createUgovor(payload);
       toast.success("Ugovor je kreiran iz AI prijedloga");
       await refreshEntities();
@@ -11232,5 +11314,11 @@ function App() {
   );
 }
 
-export { Zakupnici, EntityStoreContext, EntityStoreProvider };
+export {
+  Dashboard,
+  MaintenanceWorkspace,
+  Zakupnici,
+  EntityStoreContext,
+  EntityStoreProvider,
+};
 export default App;

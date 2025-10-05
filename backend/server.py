@@ -7,12 +7,11 @@ import json
 import logging
 import os
 import re
-import shutil
-import tempfile
 import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Set
@@ -41,6 +40,19 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+
+def _get_openai_api_key() -> Optional[str]:
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        return None
+    key = key.strip()
+    if (key.startswith('"') and key.endswith('"')) or (
+        key.startswith("'") and key.endswith("'")
+    ):
+        key = key[1:-1].strip()
+    return key or None
+
 
 DEFAULT_ANEKS_TEMPLATE_PATH = ROOT_DIR.parent / "brand" / "aneks-template.html"
 ANEKS_TEMPLATE_ENV_PATH = os.environ.get("ANEKS_TEMPLATE_PATH")
@@ -2480,33 +2492,34 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: R
     dependencies=[Depends(require_scopes("leases:create"))],
 )
 async def create_ugovor(ugovor: UgovorCreate, request: Request):
-    jedinica: Optional[PropertyUnit] = None
-    if ugovor.property_unit_id:
-        jedinica = await _get_property_unit_or_404(ugovor.property_unit_id)
-        if jedinica.nekretnina_id != ugovor.nekretnina_id:
-            raise HTTPException(
-                status_code=400, detail="Podprostor ne pripada odabranoj nekretnini"
-            )
-        if jedinica.ugovor_id:
-            existing_contract_doc = await db.ugovori.find_one(
-                {"id": jedinica.ugovor_id}
-            )
-            existing_status = None
-            if existing_contract_doc:
-                raw_status = existing_contract_doc.get("status")
-                if isinstance(raw_status, StatusUgovora):
-                    existing_status = raw_status
-                else:
-                    try:
-                        existing_status = StatusUgovora(raw_status)
-                    except (TypeError, ValueError):
-                        existing_status = None
+    if not ugovor.property_unit_id:
+        raise HTTPException(
+            status_code=400, detail="Ugovor mora biti povezan s podprostorom"
+        )
 
-            if existing_status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Podprostor je već povezan s aktivnim ugovorom",
-                )
+    jedinica = await _get_property_unit_or_404(ugovor.property_unit_id)
+    if jedinica.nekretnina_id != ugovor.nekretnina_id:
+        raise HTTPException(
+            status_code=400, detail="Podprostor ne pripada odabranoj nekretnini"
+        )
+    if jedinica.ugovor_id:
+        existing_contract_doc = await db.ugovori.find_one({"id": jedinica.ugovor_id})
+        existing_status = None
+        if existing_contract_doc:
+            raw_status = existing_contract_doc.get("status")
+            if isinstance(raw_status, StatusUgovora):
+                existing_status = raw_status
+            else:
+                try:
+                    existing_status = StatusUgovora(raw_status)
+                except (TypeError, ValueError):
+                    existing_status = None
+
+        if existing_status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
+            raise HTTPException(
+                status_code=409,
+                detail="Podprostor je već povezan s aktivnim ugovorom",
+            )
 
     ugovor_dict = prepare_for_mongo(ugovor.model_dump())
     ugovor_obj = Ugovor(**ugovor_dict)
@@ -2516,20 +2529,30 @@ async def create_ugovor(ugovor: UgovorCreate, request: Request):
 
     await db.ugovori.insert_one(prepare_for_mongo(ugovor_obj.model_dump()))
 
-    if jedinica:
-        await db.property_units.update_one(
-            {"id": jedinica.id},
+    unit_update: Dict[str, Any] = {
+        "azuriran": datetime.now(timezone.utc),
+    }
+
+    if ugovor_obj.status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
+        unit_update.update(
             {
-                "$set": prepare_for_mongo(
-                    {
-                        "status": PropertyUnitStatus.IZNAJMLJENO,
-                        "zakupnik_id": ugovor_obj.zakupnik_id,
-                        "ugovor_id": ugovor_obj.id,
-                        "azuriran": datetime.now(timezone.utc),
-                    }
-                )
-            },
+                "status": PropertyUnitStatus.IZNAJMLJENO,
+                "zakupnik_id": ugovor_obj.zakupnik_id,
+                "ugovor_id": ugovor_obj.id,
+            }
         )
+    else:
+        unit_update.update(
+            {
+                "status": PropertyUnitStatus.DOSTUPNO,
+                "zakupnik_id": None,
+                "ugovor_id": None,
+            }
+        )
+
+    await db.property_units.update_one(
+        {"id": jedinica.id}, {"$set": prepare_for_mongo(unit_update)}
+    )
 
     request.state.audit_context = {"entity_type": "lease", "entity_id": ugovor_obj.id}
     return ugovor_obj
@@ -2579,6 +2602,11 @@ async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Re
     existing_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not existing_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
+
+    if not ugovor_update.property_unit_id:
+        raise HTTPException(
+            status_code=400, detail="Ugovor mora biti povezan s podprostorom"
+        )
 
     try:
         existing = _build_ugovor_model(existing_doc)
@@ -2643,18 +2671,30 @@ async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Re
         )
 
     if new_unit_id:
+        target_status = existing.status
+        unit_update: Dict[str, Any] = {
+            "azuriran": datetime.now(timezone.utc),
+        }
+        if target_status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
+            unit_update.update(
+                {
+                    "status": PropertyUnitStatus.IZNAJMLJENO,
+                    "zakupnik_id": ugovor_update.zakupnik_id,
+                    "ugovor_id": ugovor_id,
+                }
+            )
+        else:
+            unit_update.update(
+                {
+                    "status": PropertyUnitStatus.DOSTUPNO,
+                    "zakupnik_id": None,
+                    "ugovor_id": None,
+                }
+            )
+
         await db.property_units.update_one(
             {"id": new_unit_id},
-            {
-                "$set": prepare_for_mongo(
-                    {
-                        "status": PropertyUnitStatus.IZNAJMLJENO,
-                        "zakupnik_id": ugovor_update.zakupnik_id,
-                        "ugovor_id": ugovor_id,
-                        "azuriran": datetime.now(timezone.utc),
-                    }
-                )
-            },
+            {"$set": prepare_for_mongo(unit_update)},
         )
 
     updated_doc = await db.ugovori.find_one({"id": ugovor_id})
@@ -3890,7 +3930,7 @@ async def pretraga(q: str):
     dependencies=[Depends(require_scopes("leases:update", "documents:create"))],
 )
 async def generate_contract_annex(payload: AneksRequest):
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    openai_key = _get_openai_api_key()
 
     ugovor_doc = await db.ugovori.find_one({"id": payload.ugovor_id})
     if not ugovor_doc:
@@ -4065,7 +4105,7 @@ async def generate_contract(payload: ContractCloneRequest):
     if not nova_oznaka:
         raise HTTPException(status_code=400, detail="Nova interna oznaka je obavezna.")
 
-    openai_key = os.environ.get("OPENAI_API_KEY")
+    openai_key = _get_openai_api_key()
 
     ugovor_doc = await db.ugovori.find_one({"id": payload.ugovor_id})
     if not ugovor_doc:
@@ -4301,88 +4341,89 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
         if file.content_type != "application/pdf":
             raise HTTPException(status_code=400, detail="Datoteka mora biti PDF format")
 
-        openai_key = os.environ.get("OPENAI_API_KEY")
+        openai_key = _get_openai_api_key()
         if not openai_key:
             raise HTTPException(
                 status_code=500, detail="OPENAI_API_KEY nije postavljen u okruženju"
             )
 
-        # Spremi privremenu datoteku
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-            shutil.copyfileobj(file.file, tmp_file)
-            tmp_path = tmp_file.name
+        pdf_bytes = await file.read()
+        if not pdf_bytes:
+            raise HTTPException(status_code=400, detail="PDF datoteka je prazna")
 
         try:
-            # Ekstrakcija teksta iz PDF-a lokalno
-            reader = PdfReader(tmp_path)
-            pages_text = []
-            max_pages = min(len(reader.pages), 20)
-            for i in range(max_pages):
+            reader = PdfReader(BytesIO(pdf_bytes))
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400, detail=f"PDF se ne može pročitati: {exc}"
+            )
+
+        pages_text = []
+        max_pages = min(len(reader.pages), 20)
+        for i in range(max_pages):
+            try:
+                page = reader.pages[i]
+                pages_text.append(page.extract_text() or "")
+            except Exception:
+                pages_text.append("")
+        pdf_text = "\n\n".join(pages_text)
+
+        if len(pdf_text) > 20000:
+            pdf_text = pdf_text[:20000]
+
+        client = OpenAI(api_key=openai_key)
+
+        system_prompt = (
+            "Ti si digitalni asistent za upravljanje nekretninama. "
+            "Tvoj zadatak je analizirati učitani PDF (ugovor, račun ili drugi dokument) i vratiti strukturirane podatke. "
+            "Vrati STROGO validan JSON prema shemi. Bez dodatnog teksta."
+        )
+
+        instructions = (
+            "Molim te analiziraj sljedeći tekst dokumenta i vrati JSON u ovom formatu:"
+            '\n\n{\n  "document_type": "ugovor/racun/ostalo",\n  "ugovor": {\n    "interna_oznaka": "string ili null",\n    "datum_potpisivanja": "YYYY-MM-DD ili null",\n    "datum_pocetka": "YYYY-MM-DD ili null",\n    "datum_zavrsetka": "YYYY-MM-DD ili null",\n    "trajanje_mjeseci": "broj ili null",\n    "opcija_produljenja": "boolean ili null",\n    "uvjeti_produljenja": "string ili null",\n    "rok_otkaza_dani": "broj ili null"\n  },\n  "nekretnina": {\n    "naziv": "string ili null",\n    "adresa": "string ili null",\n    "katastarska_opcina": "string ili null",\n    "broj_kat_cestice": "string ili null",\n    "povrsina": "broj ili null",\n    "vrsta": "poslovna_zgrada/stan/zemljiste/ostalo ili null",\n    "namjena_prostora": "string ili null"\n  },\n  "property_unit": {\n    "oznaka": "string ili null",\n    "naziv": "string ili null",\n    "kat": "string ili null",\n    "povrsina_m2": "broj ili null",\n    "status": "dostupno/iznajmljeno/rezervirano/u_odrzavanju ili null",\n    "osnovna_zakupnina": "broj ili null",\n    "napomena": "string ili null",\n    "layout_ref": "string ili null"\n  },\n  "zakupnik": {\n    "naziv_firme": "string ili null",\n    "ime_prezime": "string ili null",\n    "oib": "string ili null",\n    "sjediste": "string ili null",\n    "kontakt_ime": "string ili null",\n    "kontakt_email": "string ili null",\n    "kontakt_telefon": "string ili null"\n  },\n  "financije": {\n    "osnovna_zakupnina": "broj ili null",\n    "zakupnina_po_m2": "broj ili null",\n    "cam_troskovi": "broj ili null",\n    "polog_depozit": "broj ili null",\n    "garancija": "broj ili null",\n    "indeksacija": "boolean ili null",\n    "indeks": "string ili null",\n    "formula_indeksacije": "string ili null"\n  },\n  "ostalo": {\n    "obveze_odrzavanja": "zakupodavac/zakupnik/podijeljeno ili null",\n    "rezije_brojila": "string ili null"\n  },\n  "racun": {\n    "dobavljac": "string ili null",\n    "broj_racuna": "string ili null",\n    "tip_rezije": "struja/voda/plin/komunalije/internet/ostalo ili null",\n    "razdoblje_od": "YYYY-MM-DD ili null",\n    "razdoblje_do": "YYYY-MM-DD ili null",\n    "datum_izdavanja": "YYYY-MM-DD ili null",\n    "datum_dospijeca": "YYYY-MM-DD ili null",\n    "iznos_za_platiti": "broj ili null",\n    "iznos_placen": "broj ili null",\n    "valuta": "string ili null"\n  }\n}\n\n'
+            "VAŽNO: Ako ne možeš pronaći informaciju, stavi null. Datume u YYYY-MM-DD. Brojevi bez valute. Boolean true/false. Enum vrijednosti točno kako su zadane. Ako dokument opisuje konkretan podprostor (npr. oznaka, kat, naziv), popuni polje property_unit. Odgovori SAMO JSON objektom."
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": f"{instructions}\n\nTekst ugovora (sažeto):\n\n{pdf_text}",
+            },
+        ]
+
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0,
+        )
+
+        ai_text = response.choices[0].message.content if response.choices else ""
+
+        try:
+            parsed_data = json.loads(ai_text)
+            return await build_ai_parse_response(parsed_data)
+        except json.JSONDecodeError:
+            logger.warning("AI response is not valid JSON: %s", ai_text[:200])
+            start = ai_text.find("{")
+            end = ai_text.rfind("}") + 1
+            if start != -1 and end > start:
+                json_part = ai_text[start:end]
                 try:
-                    page = reader.pages[i]
-                    pages_text.append(page.extract_text() or "")
-                except Exception:
-                    pages_text.append("")
-            pdf_text = "\n\n".join(pages_text)
-
-            if len(pdf_text) > 20000:
-                pdf_text = pdf_text[:20000]
-
-            client = OpenAI(api_key=openai_key)
-
-            system_prompt = (
-                "Ti si digitalni asistent za upravljanje nekretninama. "
-                "Tvoj zadatak je analizirati učitani PDF (ugovor, račun ili drugi dokument) i vratiti strukturirane podatke. "
-                "Vrati STROGO validan JSON prema shemi. Bez dodatnog teksta."
-            )
-
-            instructions = (
-                "Molim te analiziraj sljedeći tekst dokumenta i vrati JSON u ovom formatu:"
-                '\n\n{\n  "document_type": "ugovor/racun/ostalo",\n  "ugovor": {\n    "interna_oznaka": "string ili null",\n    "datum_potpisivanja": "YYYY-MM-DD ili null",\n    "datum_pocetka": "YYYY-MM-DD ili null",\n    "datum_zavrsetka": "YYYY-MM-DD ili null",\n    "trajanje_mjeseci": "broj ili null",\n    "opcija_produljenja": "boolean ili null",\n    "uvjeti_produljenja": "string ili null",\n    "rok_otkaza_dani": "broj ili null"\n  },\n  "nekretnina": {\n    "naziv": "string ili null",\n    "adresa": "string ili null",\n    "katastarska_opcina": "string ili null",\n    "broj_kat_cestice": "string ili null",\n    "povrsina": "broj ili null",\n    "vrsta": "poslovna_zgrada/stan/zemljiste/ostalo ili null",\n    "namjena_prostora": "string ili null"\n  },\n  "property_unit": {\n    "oznaka": "string ili null",\n    "naziv": "string ili null",\n    "kat": "string ili null",\n    "povrsina_m2": "broj ili null",\n    "status": "dostupno/iznajmljeno/rezervirano/u_odrzavanju ili null",\n    "osnovna_zakupnina": "broj ili null",\n    "napomena": "string ili null",\n    "layout_ref": "string ili null"\n  },\n  "zakupnik": {\n    "naziv_firme": "string ili null",\n    "ime_prezime": "string ili null",\n    "oib": "string ili null",\n    "sjediste": "string ili null",\n    "kontakt_ime": "string ili null",\n    "kontakt_email": "string ili null",\n    "kontakt_telefon": "string ili null"\n  },\n  "financije": {\n    "osnovna_zakupnina": "broj ili null",\n    "zakupnina_po_m2": "broj ili null",\n    "cam_troskovi": "broj ili null",\n    "polog_depozit": "broj ili null",\n    "garancija": "broj ili null",\n    "indeksacija": "boolean ili null",\n    "indeks": "string ili null",\n    "formula_indeksacije": "string ili null"\n  },\n  "ostalo": {\n    "obveze_odrzavanja": "zakupodavac/zakupnik/podijeljeno ili null",\n    "rezije_brojila": "string ili null"\n  },\n  "racun": {\n    "dobavljac": "string ili null",\n    "broj_racuna": "string ili null",\n    "tip_rezije": "struja/voda/plin/komunalije/internet/ostalo ili null",\n    "razdoblje_od": "YYYY-MM-DD ili null",\n    "razdoblje_do": "YYYY-MM-DD ili null",\n    "datum_izdavanja": "YYYY-MM-DD ili null",\n    "datum_dospijeca": "YYYY-MM-DD ili null",\n    "iznos_za_platiti": "broj ili null",\n    "iznos_placen": "broj ili null",\n    "valuta": "string ili null"\n  }\n}\n\n'
-                "VAŽNO: Ako ne možeš pronaći informaciju, stavi null. Datume u YYYY-MM-DD. Brojevi bez valute. Boolean true/false. Enum vrijednosti točno kako su zadane. Ako dokument opisuje konkretan podprostor (npr. oznaka, kat, naziv), popuni polje property_unit. Odgovori SAMO JSON objektom."
-            )
-
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": f"{instructions}\n\nTekst ugovora (sažeto):\n\n{pdf_text}",
-                },
-            ]
-
-            response = await asyncio.to_thread(
-                client.chat.completions.create,
-                model="gpt-4o-mini",
-                messages=messages,
-                temperature=0,
-            )
-
-            ai_text = response.choices[0].message.content if response.choices else ""
-
-            try:
-                parsed_data = json.loads(ai_text)
-                return await build_ai_parse_response(parsed_data)
-            except json.JSONDecodeError:
-                start = ai_text.find("{")
-                end = ai_text.rfind("}") + 1
-                if start != -1 and end > start:
-                    json_part = ai_text[start:end]
-                    try:
-                        parsed_data = json.loads(json_part)
-                        return await build_ai_parse_response(parsed_data)
-                    except json.JSONDecodeError:
-                        pass
-                return {
-                    "success": False,
-                    "data": None,
-                    "message": f"AI je analizirao dokument, ali odgovor nije čist JSON: {ai_text[:500]}...",
-                }
-
-        finally:
-            try:
-                os.unlink(tmp_path)
-            except OSError:
-                pass
+                    parsed_data = json.loads(json_part)
+                    return await build_ai_parse_response(parsed_data)
+                except json.JSONDecodeError:
+                    logger.warning(
+                        "Failed to parse extracted JSON fragment: %s", json_part[:200]
+                    )
+                    pass
+            return {
+                "success": False,
+                "data": None,
+                "message": f"AI je analizirao dokument, ali odgovor nije čist JSON: {ai_text[:500]}...",
+            }
 
     except Exception as e:
         logger.error(f"Greška pri AI analizi PDF-a (OpenAI): {str(e)}")
@@ -4391,6 +4432,8 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
             "data": None,
             "message": f"Greška pri analizi PDF-a: {str(e)}",
         }
+    finally:
+        await file.close()
 
 
 # Helper funkcija za kreiranje podsjećanja
