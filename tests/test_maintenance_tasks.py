@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from typing import Dict, Optional
 
 import pytest
@@ -76,11 +76,11 @@ def _bootstrap_users():
     PM_HEADERS = {"Authorization": f"Bearer {pm_token}"}
 
 
-def _register_user(email: str, password: str, role: str, full_name: str = ''):
+def _register_user(email: str, password: str, role: str, full_name: str = ""):
     payload = {
         "email": email,
         "password": password,
-        "full_name": full_name or email.split('@')[0].title(),
+        "full_name": full_name or email.split("@")[0].title(),
         "role": role,
     }
     response = client.post("/api/auth/register", json=payload, headers=ADMIN_HEADERS)
@@ -181,12 +181,14 @@ def _create_task(payload):
 
 def test_create_maintenance_task_records_initial_activity():
     property_id = _create_property()
-    task = _create_task({
-        "naziv": "Servis lifta",
-        "nekretnina_id": property_id,
-        "prioritet": "visoko",
-        "rok": "2024-12-01",
-    })
+    task = _create_task(
+        {
+            "naziv": "Servis lifta",
+            "nekretnina_id": property_id,
+            "prioritet": "visoko",
+            "rok": "2024-12-01",
+        }
+    )
 
     assert task["naziv"] == "Servis lifta"
     assert task["dodijeljeno_user_id"] == PM_USER_ID
@@ -219,7 +221,9 @@ def test_create_task_with_contract_from_other_property_is_rejected():
     property_b = _create_property("Objekt B")
     unit_id = _create_unit(property_a)
     tenant = _create_zakupnik()
-    contract_id = _create_contract(nekretnina_id=property_a, zakupnik_id=tenant["id"], property_unit_id=unit_id)
+    contract_id = _create_contract(
+        nekretnina_id=property_a, zakupnik_id=tenant["id"], property_unit_id=unit_id
+    )
 
     response = client.post(
         "/api/maintenance-tasks",
@@ -239,13 +243,17 @@ def test_create_task_infers_relations_from_contract():
     property_id = _create_property("Glavni objekt")
     unit_id = _create_unit(property_id, oznaka="C1")
     tenant = _create_zakupnik("Zakupnik d.o.o.")
-    contract_id = _create_contract(nekretnina_id=property_id, zakupnik_id=tenant["id"], property_unit_id=unit_id)
+    contract_id = _create_contract(
+        nekretnina_id=property_id, zakupnik_id=tenant["id"], property_unit_id=unit_id
+    )
 
-    task = _create_task({
-        "naziv": "Revizija opreme",
-        "ugovor_id": contract_id,
-        "opis": "Provjera opreme prema ugovoru",
-    })
+    task = _create_task(
+        {
+            "naziv": "Revizija opreme",
+            "ugovor_id": contract_id,
+            "opis": "Provjera opreme prema ugovoru",
+        }
+    )
 
     assert task["nekretnina_id"] == property_id
     assert task["property_unit_id"] == unit_id
@@ -276,10 +284,12 @@ def test_assignment_requires_manager_role():
 
 def test_status_update_adds_activity():
     property_id = _create_property()
-    task = _create_task({
-        "naziv": "Zamjena rasvjete",
-        "nekretnina_id": property_id,
-    })
+    task = _create_task(
+        {
+            "naziv": "Zamjena rasvjete",
+            "nekretnina_id": property_id,
+        }
+    )
 
     response = client.patch(
         f"/api/maintenance-tasks/{task['id']}",
@@ -296,10 +306,12 @@ def test_status_update_adds_activity():
 
 def test_comment_endpoint_adds_activity():
     property_id = _create_property()
-    task = _create_task({
-        "naziv": "Provjera protupožarnog sustava",
-        "nekretnina_id": property_id,
-    })
+    task = _create_task(
+        {
+            "naziv": "Provjera protupožarnog sustava",
+            "nekretnina_id": property_id,
+        }
+    )
 
     response = client.post(
         f"/api/maintenance-tasks/{task['id']}/comments",
@@ -319,20 +331,24 @@ def test_list_filters_by_priority_property_and_due_date():
     property_a = _create_property("Objekt A")
     property_b = _create_property("Objekt B")
 
-    _create_task({
-        "naziv": "Hitna intervencija",
-        "nekretnina_id": property_a,
-        "prioritet": "kriticno",
-        "rok": "2024-05-01",
-        "oznake": ["elektrika"],
-    })
-    _create_task({
-        "naziv": "Plin godišnji servis",
-        "nekretnina_id": property_b,
-        "prioritet": "srednje",
-        "rok": "2024-08-15",
-        "oznake": ["plin"],
-    })
+    _create_task(
+        {
+            "naziv": "Hitna intervencija",
+            "nekretnina_id": property_a,
+            "prioritet": "kriticno",
+            "rok": "2024-05-01",
+            "oznake": ["elektrika"],
+        }
+    )
+    _create_task(
+        {
+            "naziv": "Plin godišnji servis",
+            "nekretnina_id": property_b,
+            "prioritet": "srednje",
+            "rok": "2024-08-15",
+            "oznake": ["plin"],
+        }
+    )
 
     response = client.get(
         "/api/maintenance-tasks",

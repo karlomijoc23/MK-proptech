@@ -14,10 +14,18 @@ client = TestClient(app)
 
 
 def _clear_collections():
-    for name in ("nekretnine", "zakupnici", "ugovori", "podsjetnici", "users", "activity_logs"):
+    for name in (
+        "nekretnine",
+        "zakupnici",
+        "ugovori",
+        "podsjetnici",
+        "users",
+        "activity_logs",
+    ):
         collection = getattr(db, name, None)
         if collection and hasattr(collection, "_documents"):
             collection._documents.clear()  # type: ignore[attr-defined]
+
 
 ADMIN_HEADERS = {}
 PM_HEADERS = {}
@@ -74,7 +82,13 @@ def reset_db(monkeypatch):
         @staticmethod
         def _create(**kwargs):
             return SimpleNamespace(
-                choices=[SimpleNamespace(message=SimpleNamespace(content="""ANEKS UGOVORA\n\n1. Predmet izmjene ...\n2. Nova zakupnina ...\n3. Ostale odredbe ostaju na snazi."""))]
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(
+                            content="""ANEKS UGOVORA\n\n1. Predmet izmjene ...\n2. Nova zakupnina ...\n3. Ostale odredbe ostaju na snazi."""
+                        )
+                    )
+                ]
             )
 
     class StubOpenAI:

@@ -80,14 +80,18 @@ def test_search_zakupnici_matches_multiple_fields():
     )
 
     # Search by partial company name (case-insensitive)
-    response = client.get("/api/zakupnici", params={"search": "beta"}, headers=AUTH_HEADERS)
+    response = client.get(
+        "/api/zakupnici", params={"search": "beta"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     results = response.json()
     assert len(results) == 1
     assert results[0]["naziv_firme"] == "Beta LLC"
 
     # Search by email fragment
-    response = client.get("/api/zakupnici", params={"search": "@beta.hr"}, headers=AUTH_HEADERS)
+    response = client.get(
+        "/api/zakupnici", params={"search": "@beta.hr"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     results = response.json()
     assert len(results) == 1
@@ -95,7 +99,9 @@ def test_search_zakupnici_matches_multiple_fields():
 
 
 def test_search_zakupnici_returns_all_without_query():
-    created = [_create_zakupnik(naziv_firme=f"Tenant {i}", oib=f"{i:011d}") for i in range(3)]
+    created = [
+        _create_zakupnik(naziv_firme=f"Tenant {i}", oib=f"{i:011d}") for i in range(3)
+    ]
     response = client.get("/api/zakupnici", headers=AUTH_HEADERS)
     assert response.status_code == 200
     results = response.json()
@@ -118,7 +124,9 @@ def test_update_zakupnik_applies_changes():
         "iban": "HR6623400091110623200",
     }
 
-    response = client.put(f"/api/zakupnici/{created['id']}", json=update_payload, headers=AUTH_HEADERS)
+    response = client.put(
+        f"/api/zakupnici/{created['id']}", json=update_payload, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200, response.text
     updated = response.json()
     assert updated["naziv_firme"] == "Gamma Consulting"
@@ -126,7 +134,9 @@ def test_update_zakupnik_applies_changes():
     assert updated["kontakt_ime"] == "Marija"
 
     # Fetch again to ensure persistence
-    fetch_response = client.get("/api/zakupnici", params={"search": "Gamma"}, headers=AUTH_HEADERS)
+    fetch_response = client.get(
+        "/api/zakupnici", params={"search": "Gamma"}, headers=AUTH_HEADERS
+    )
     assert fetch_response.status_code == 200
     results = fetch_response.json()
     assert results
@@ -145,7 +155,9 @@ def test_update_zakupnik_returns_404_for_missing_entity():
         "iban": None,
     }
 
-    response = client.put("/api/zakupnici/missing-id", json=missing_payload, headers=AUTH_HEADERS)
+    response = client.put(
+        "/api/zakupnici/missing-id", json=missing_payload, headers=AUTH_HEADERS
+    )
     assert response.status_code == 404
     body = response.json()
     assert body["detail"] == "Zakupnik nije pronađen"
