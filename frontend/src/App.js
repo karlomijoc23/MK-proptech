@@ -46,7 +46,7 @@ import {
 import { ScrollArea } from "./components/ui/scroll-area";
 import { Checkbox } from "./components/ui/checkbox";
 import { Progress } from "./components/ui/progress";
-import { toast } from "sonner";
+import { Toaster, toast } from "./components/ui/sonner";
 import {
   Home,
   Building,
@@ -5186,6 +5186,7 @@ const Nekretnine = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingNekretnina, setEditingNekretnina] = useState(null);
   const [selectedNekretnina, setSelectedNekretnina] = useState(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
 
   const [propertySearch, setPropertySearch] = useState("");
   const propertyTypeOptions = useMemo(() => {
@@ -5319,10 +5320,17 @@ const Nekretnine = () => {
   };
 
   const handleCreateNekretnina = async (formPayload) => {
+    if (formSubmitting) {
+      return;
+    }
+    setFormSubmitting(true);
     const { property, units } = normaliseNekretninaPayload(formPayload);
     try {
       const response = await api.createNekretnina(property);
       const createdProperty = response.data;
+
+      setNekretnine((prev) => [createdProperty, ...prev]);
+      setShowCreateForm(false);
 
       if (units && units.length) {
         for (const unitPayload of units) {
@@ -5342,21 +5350,37 @@ const Nekretnine = () => {
 
       toast.success("Nekretnina je uspješno kreirana");
       await fetchNekretnine();
-      await refreshEntities();
-      setShowCreateForm(false);
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju entiteta nakon kreiranja nekretnine:",
+          refreshError,
+        );
+        toast.warning(
+          "Nekretnina je kreirana, ali osvježavanje prikaza nije uspjelo.",
+        );
+      }
     } catch (error) {
       console.error("Greška pri kreiranju nekretnine:", error);
       toast.error("Greška pri kreiranju nekretnine");
+    } finally {
+      setFormSubmitting(false);
     }
   };
 
   const handleUpdateNekretnina = async (formPayload) => {
+    if (!editingNekretnina || formSubmitting) {
+      return;
+    }
+    setFormSubmitting(true);
+    const currentId = editingNekretnina.id;
     const { property, units } = normaliseNekretninaPayload(formPayload);
     try {
-      await api.updateNekretnina(editingNekretnina.id, property);
+      await api.updateNekretnina(currentId, property);
 
       if (units && units.length) {
-        const existing = propertyUnitsByProperty?.[editingNekretnina.id] || [];
+        const existing = propertyUnitsByProperty?.[currentId] || [];
         const existingByOznaka = new Map(
           existing
             .filter((unit) => unit?.oznaka)
@@ -5375,7 +5399,7 @@ const Nekretnine = () => {
             continue;
           }
           try {
-            await api.createUnit(editingNekretnina.id, unitPayload);
+            await api.createUnit(currentId, unitPayload);
           } catch (error) {
             console.error("Neuspjelo kreiranje podprostora:", error);
             toast.error(
@@ -5392,12 +5416,24 @@ const Nekretnine = () => {
       }
 
       toast.success("Nekretnina je uspješno ažurirana");
-      await fetchNekretnine();
-      await refreshEntities();
       setEditingNekretnina(null);
+      await fetchNekretnine();
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju entiteta nakon ažuriranja nekretnine:",
+          refreshError,
+        );
+        toast.warning(
+          "Nekretnina je ažurirana, ali prikaz podataka nije osvježen.",
+        );
+      }
     } catch (error) {
       console.error("Greška pri ažuriranju nekretnine:", error);
       toast.error("Greška pri ažuriranju nekretnine");
+    } finally {
+      setFormSubmitting(false);
     }
   };
 
@@ -6755,6 +6791,7 @@ const Nekretnine = () => {
           <NekretninarForm
             onSubmit={handleCreateNekretnina}
             onCancel={() => setShowCreateForm(false)}
+            submitting={formSubmitting}
           />
         </DialogContent>
       </Dialog>
@@ -6782,6 +6819,7 @@ const Nekretnine = () => {
             }
             onSubmit={handleUpdateNekretnina}
             onCancel={() => setEditingNekretnina(null)}
+            submitting={formSubmitting}
           />
         </DialogContent>
       </Dialog>
@@ -6794,6 +6832,7 @@ const NekretninarForm = ({
   onSubmit,
   onCancel,
   existingUnits = [],
+  submitting = false,
 }) => {
   const [formData, setFormData] = useState({
     naziv: nekretnina?.naziv || "",
@@ -6864,8 +6903,11 @@ const NekretninarForm = ({
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) {
+      return;
+    }
     const data = {
       ...formData,
       povrsina: parseFloat(formData.povrsina) || 0,
@@ -6915,7 +6957,7 @@ const NekretninarForm = ({
         napomena: unit.napomena?.trim() || null,
       }));
 
-    onSubmit({ nekretnina: data, units: preparedUnits });
+    await onSubmit({ nekretnina: data, units: preparedUnits });
   };
 
   return (
@@ -7514,14 +7556,19 @@ const NekretninarForm = ({
       </Tabs>
 
       <div className="flex space-x-2 pt-4">
-        <Button type="submit" data-testid="potvrdi-nekretninu-form">
-          {nekretnina ? "Ažuriraj" : "Kreiraj"}
+        <Button
+          type="submit"
+          data-testid="potvrdi-nekretninu-form"
+          disabled={submitting}
+        >
+          {submitting ? "Spremam..." : nekretnina ? "Ažuriraj" : "Kreiraj"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           data-testid="odustani-nekretninu-form"
+          disabled={submitting}
         >
           Odustani
         </Button>
@@ -7540,9 +7587,11 @@ const Zakupnici = () => {
   } = useEntityStore();
   const [searchValue, setSearchValue] = useState("");
   const [tenantView, setTenantView] = useState("active");
+  const [contactSegment, setContactSegment] = useState("zakupnici");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingZakupnik, setEditingZakupnik] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [createTip, setCreateTip] = useState("zakupnik");
 
   const {
     logs: tenantAuditLogs,
@@ -7553,21 +7602,36 @@ const Zakupnici = () => {
     enabled: Boolean(editingZakupnik?.id),
   });
 
+  useEffect(() => {
+    setTenantView("active");
+    setCreateTip(contactSegment === "partneri" ? "partner" : "zakupnik");
+  }, [contactSegment]);
+
+  const segmentTip = contactSegment === "partneri" ? "partner" : "zakupnik";
+
+  const segmentZakupnici = useMemo(
+    () =>
+      zakupnici.filter((tenant) => (tenant.tip || "zakupnik") === segmentTip),
+    [zakupnici, segmentTip],
+  );
+
   const activeCount = useMemo(
     () =>
-      zakupnici.filter((tenant) => (tenant.status || "aktivan") !== "arhiviran")
-        .length,
-    [zakupnici],
+      segmentZakupnici.filter(
+        (tenant) => (tenant.status || "aktivan") !== "arhiviran",
+      ).length,
+    [segmentZakupnici],
   );
   const archivedCount = useMemo(
     () =>
-      zakupnici.filter((tenant) => (tenant.status || "aktivan") === "arhiviran")
-        .length,
-    [zakupnici],
+      segmentZakupnici.filter(
+        (tenant) => (tenant.status || "aktivan") === "arhiviran",
+      ).length,
+    [segmentZakupnici],
   );
 
   const filteredZakupnici = useMemo(() => {
-    const base = zakupnici.filter((tenant) => {
+    const base = segmentZakupnici.filter((tenant) => {
       const status = tenant.status || "aktivan";
       return tenantView === "archived"
         ? status === "arhiviran"
@@ -7583,6 +7647,17 @@ const Zakupnici = () => {
     const pick = (value) => (value || "").toString().toLowerCase();
 
     return base.filter((tenant) => {
+      const contactHaystack = Array.isArray(tenant.kontakt_osobe)
+        ? tenant.kontakt_osobe.flatMap((kontakt) => [
+            kontakt.ime,
+            kontakt.uloga,
+            kontakt.email,
+            kontakt.telefon,
+            kontakt.napomena,
+            kontakt.preferirani_kanal,
+          ])
+        : [];
+
       const haystack = [
         tenant.naziv_firme,
         tenant.ime_prezime,
@@ -7592,25 +7667,46 @@ const Zakupnici = () => {
         tenant.kontakt_email,
         tenant.kontakt_telefon,
         tenant.iban,
+        tenant.opis_usluge,
+        tenant.radno_vrijeme,
+        tenant.biljeske,
+        ...(tenant.oznake || []),
+        ...contactHaystack,
       ].map(pick);
 
       return tokens.every((token) =>
         haystack.some((field) => field.includes(token)),
       );
     });
-  }, [zakupnici, searchValue, tenantView]);
+  }, [segmentZakupnici, searchValue, tenantView]);
 
   const handleCreateZakupnik = async (formData) => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await api.createZakupnik({
+      const payload = {
         ...formData,
+        tip: formData.tip || createTip,
         status: formData.status || "aktivan",
-      });
-      toast.success("Zakupnik je uspješno kreiran");
-      await refreshEntities();
+      };
+      await api.createZakupnik(payload);
+      toast.success(
+        payload.tip === "partner"
+          ? "Partner je uspješno kreiran"
+          : "Zakupnik je uspješno kreiran",
+      );
       setShowCreateForm(false);
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju zakupnika nakon kreiranja:",
+          refreshError,
+        );
+        toast.warning(
+          "Zakupnik je dodan, ali lista nije osvježena automatski.",
+        );
+      }
     } catch (error) {
       console.error("Greška pri kreiranju zakupnika:", error);
       toast.error("Greška pri kreiranju zakupnika");
@@ -7623,13 +7719,27 @@ const Zakupnici = () => {
     if (!editingZakupnik || submitting) return;
     setSubmitting(true);
     try {
-      await api.updateZakupnik(editingZakupnik.id, {
+      const payload = {
         ...formData,
+        tip: formData.tip || editingZakupnik.tip || "zakupnik",
         status: formData.status || "aktivan",
-      });
-      toast.success("Zakupnik je uspješno ažuriran");
-      await refreshEntities();
+      };
+      await api.updateZakupnik(editingZakupnik.id, payload);
+      toast.success(
+        payload.tip === "partner"
+          ? "Partner je uspješno ažuriran"
+          : "Zakupnik je uspješno ažuriran",
+      );
       setEditingZakupnik(null);
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju zakupnika nakon ažuriranja:",
+          refreshError,
+        );
+        toast.warning("Zakupnik je ažuriran, ali prikaz nije osvježen.");
+      }
     } catch (error) {
       console.error("Greška pri ažuriranju zakupnika:", error);
       toast.error("Greška pri ažuriranju zakupnika");
@@ -7638,28 +7748,83 @@ const Zakupnici = () => {
     }
   };
 
-  const buildZakupnikPayload = (tenant, overrides = {}) => ({
-    naziv_firme: tenant.naziv_firme || "",
-    ime_prezime: tenant.ime_prezime || "",
-    oib: tenant.oib || "",
-    sjediste: tenant.sjediste || "",
-    kontakt_ime: tenant.kontakt_ime || "",
-    kontakt_email: tenant.kontakt_email || "",
-    kontakt_telefon: tenant.kontakt_telefon || "",
-    iban: tenant.iban || "",
-    status: overrides.status || tenant.status || "aktivan",
-  });
+  const buildZakupnikPayload = (tenant, overrides = {}) => {
+    const trim = (value) => (value ?? "").toString().trim();
+    const normaliseInt = (value) => {
+      if (value === null || value === undefined || value === "") {
+        return null;
+      }
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const contacts = Array.isArray(tenant.kontakt_osobe)
+      ? tenant.kontakt_osobe.map((kontakt, index) => ({
+          id:
+            kontakt.id ||
+            kontakt.localId ||
+            `kontakt-${tenant.id || "temp"}-${index}`,
+          ime:
+            trim(kontakt.ime) ||
+            trim(kontakt.email) ||
+            trim(kontakt.telefon) ||
+            "Kontakt",
+          uloga: trim(kontakt.uloga) || null,
+          email: trim(kontakt.email) || null,
+          telefon: trim(kontakt.telefon) || null,
+          napomena: trim(kontakt.napomena) || null,
+          preferirani_kanal: trim(kontakt.preferirani_kanal) || null,
+          hitnost_odziva_sati: normaliseInt(kontakt.hitnost_odziva_sati),
+        }))
+      : [];
+
+    if (!contacts.length) {
+      contacts.push({
+        id: `kontakt-${tenant.id || Date.now()}`,
+        ime:
+          trim(tenant.kontakt_ime) ||
+          trim(tenant.naziv_firme) ||
+          trim(tenant.ime_prezime) ||
+          "Kontakt",
+        uloga: null,
+        email: trim(tenant.kontakt_email) || null,
+        telefon: trim(tenant.kontakt_telefon) || null,
+        napomena: null,
+        preferirani_kanal: null,
+        hitnost_odziva_sati: normaliseInt(tenant.hitnost_odziva_sati),
+      });
+    }
+
+    return {
+      naziv_firme: trim(tenant.naziv_firme) || null,
+      ime_prezime: trim(tenant.ime_prezime) || null,
+      oib: trim(tenant.oib),
+      sjediste: trim(tenant.sjediste),
+      kontakt_ime: trim(tenant.kontakt_ime),
+      kontakt_email: trim(tenant.kontakt_email),
+      kontakt_telefon: trim(tenant.kontakt_telefon),
+      iban: trim(tenant.iban) || null,
+      status: overrides.status || tenant.status || "aktivan",
+      tip: overrides.tip || tenant.tip || "zakupnik",
+      oznake: Array.isArray(tenant.oznake) ? tenant.oznake.filter(Boolean) : [],
+      opis_usluge: trim(tenant.opis_usluge) || null,
+      radno_vrijeme: trim(tenant.radno_vrijeme) || null,
+      biljeske: trim(tenant.biljeske) || null,
+      hitnost_odziva_sati: normaliseInt(tenant.hitnost_odziva_sati),
+      kontakt_osobe: contacts,
+    };
+  };
 
   const handleToggleArchive = async (tenant, nextStatus) => {
     try {
-      await api.updateZakupnik(
-        tenant.id,
-        buildZakupnikPayload(tenant, { status: nextStatus }),
-      );
+      const payload = buildZakupnikPayload(tenant, { status: nextStatus });
+      await api.updateZakupnik(tenant.id, payload);
+      const label =
+        (payload.tip || "zakupnik") === "partner" ? "Partner" : "Zakupnik";
       toast.success(
         nextStatus === "arhiviran"
-          ? "Zakupnik je arhiviran"
-          : "Zakupnik je ponovno aktivan",
+          ? `${label} je arhiviran`
+          : `${label} je ponovno aktivan`,
       );
       await refreshEntities();
     } catch (error) {
@@ -7685,26 +7850,54 @@ const Zakupnici = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight text-primary">
-            Zakupnici
+            Zakupnici i partneri
           </h1>
           <p className="text-sm text-muted-foreground">
-            Evidencija partnera s ključnim kontaktima, financijskim podacima i
-            AI podsjetnicima za obnovu ugovora.
+            Centralna baza zakupnika i servisnih suradnika s glavnim kontaktima,
+            SLA obavezama i operativnim napomenama.
           </p>
         </div>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-          <div className="relative w-full md:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchValue}
-              onChange={(event) => setSearchValue(event.target.value)}
-              placeholder="Pretraži po nazivu, OIB-u ili kontaktu..."
-              className="pl-10"
-              aria-label="Pretraži zakupnike"
-              data-testid="zakupnici-search-input"
-            />
+        <div className="flex w-full flex-col gap-3 md:max-w-xl">
+          <div className="flex flex-wrap items-center justify-between gap-3 md:justify-end">
+            <div className="flex items-center gap-1 rounded-full bg-muted/60 p-1">
+              <Button
+                size="sm"
+                variant={contactSegment === "zakupnici" ? "default" : "ghost"}
+                className="rounded-full"
+                onClick={() => setContactSegment("zakupnici")}
+              >
+                Zakupnici
+              </Button>
+              <Button
+                size="sm"
+                variant={contactSegment === "partneri" ? "default" : "ghost"}
+                className="rounded-full"
+                onClick={() => setContactSegment("partneri")}
+              >
+                Partneri
+              </Button>
+            </div>
+            <div className="relative flex-1 md:flex-initial md:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder={
+                  contactSegment === "partneri"
+                    ? "Pretraži partnere..."
+                    : "Pretraži zakupnike..."
+                }
+                className="pl-10"
+                aria-label={
+                  contactSegment === "partneri"
+                    ? "Pretraži partnere"
+                    : "Pretraži zakupnike"
+                }
+                data-testid="zakupnici-search-input"
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-2">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end md:gap-2">
             <div className="flex items-center gap-2">
               <Button
                 variant={tenantView === "active" ? "default" : "outline"}
@@ -7723,12 +7916,19 @@ const Zakupnici = () => {
               </Button>
             </div>
             <Button
-              onClick={() => setShowCreateForm(true)}
+              onClick={() => {
+                setShowCreateForm(true);
+                setCreateTip(segmentTip);
+              }}
               data-testid="dodaj-zakupnika-btn"
               className="h-11 rounded-full bg-primary text-primary-foreground shadow-shell hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
-              <span className="ml-2">Dodaj zakupnika</span>
+              <span className="ml-2">
+                {segmentTip === "partner"
+                  ? "Dodaj partnera"
+                  : "Dodaj zakupnika"}
+              </span>
             </Button>
           </div>
         </div>
@@ -7740,25 +7940,53 @@ const Zakupnici = () => {
           <div className="space-y-1">
             <p className="text-lg font-semibold text-foreground">
               {tenantView === "archived"
-                ? "Nema arhiviranih zakupnika"
+                ? `Nema arhiviranih ${segmentTip === "partner" ? "partnera" : "zakupnika"}`
                 : "Nema rezultata"}
             </p>
             <p className="text-sm text-muted-foreground">
               {tenantView === "archived"
-                ? "Zakupnici koje arhivirate prikazat će se ovdje."
-                : "Pokušajte s drugim upitom ili dodajte novog zakupnika."}
+                ? `${segmentTip === "partner" ? "Partneri" : "Zakupnici"} koje arhivirate prikazat će se ovdje.`
+                : `Pokušajte s drugim upitom ili dodajte novog ${segmentTip === "partner" ? "partnera" : "zakupnika"}.`}
             </p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredZakupnici.map((zakupnik) => {
+            const isPartner = (zakupnik.tip || "zakupnik") === "partner";
             const displayName =
               zakupnik.naziv_firme ||
               zakupnik.ime_prezime ||
-              "Nepoznati zakupnik";
-            const entityType = zakupnik.naziv_firme ? "Tvrtka" : "Osoba";
+              "Nepoznati kontakt";
+            const entityType = isPartner
+              ? "Partner"
+              : zakupnik.naziv_firme
+                ? "Tvrtka"
+                : "Osoba";
             const isArchived = (zakupnik.status || "aktivan") === "arhiviran";
+            const kontaktOsobe = Array.isArray(zakupnik.kontakt_osobe)
+              ? zakupnik.kontakt_osobe
+              : [];
+            const primaryContact = kontaktOsobe[0] || null;
+            const additionalContacts = kontaktOsobe.slice(1);
+            const primaryName =
+              primaryContact?.ime || zakupnik.kontakt_ime || null;
+            const primaryRole = primaryContact?.uloga || null;
+            const primaryPhone =
+              primaryContact?.telefon || zakupnik.kontakt_telefon || null;
+            const primaryEmail =
+              primaryContact?.email || zakupnik.kontakt_email || null;
+            const preferredChannel = primaryContact?.preferirani_kanal || null;
+            const slaRaw =
+              primaryContact?.hitnost_odziva_sati ??
+              zakupnik.hitnost_odziva_sati;
+            const slaValue =
+              slaRaw !== null && slaRaw !== undefined && slaRaw !== ""
+                ? `${slaRaw} h`
+                : null;
+            const tags = Array.isArray(zakupnik.oznake)
+              ? zakupnik.oznake.filter(Boolean)
+              : [];
 
             return (
               <Card
@@ -7779,6 +8007,14 @@ const Zakupnici = () => {
                         >
                           {entityType}
                         </Badge>
+                        {isPartner && slaValue && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-emerald-300 bg-emerald-50 text-emerald-700"
+                          >
+                            SLA {slaValue}
+                          </Badge>
+                        )}
                         {isArchived && (
                           <Badge
                             variant="secondary"
@@ -7792,19 +8028,19 @@ const Zakupnici = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 px-5 py-6 text-sm text-muted-foreground">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-3 text-foreground">
+                  <div className="space-y-2 text-foreground">
+                    <div className="flex flex-wrap items-center gap-3">
                       <span className="inline-flex items-center gap-2 font-medium">
                         <Phone className="h-4 w-4 text-primary/70" />
-                        {zakupnik.kontakt_telefon || "Telefon nije zabilježen"}
+                        {primaryPhone || "Telefon nije zabilježen"}
                       </span>
-                      {zakupnik.kontakt_email && (
+                      {primaryEmail && (
                         <a
-                          href={`mailto:${zakupnik.kontakt_email}`}
+                          href={`mailto:${primaryEmail}`}
                           className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
                         >
                           <Mail className="h-3 w-3" />
-                          {zakupnik.kontakt_email}
+                          {primaryEmail}
                         </a>
                       )}
                     </div>
@@ -7812,13 +8048,30 @@ const Zakupnici = () => {
                       <MapPin className="h-4 w-4 text-primary/60" />
                       <span>{zakupnik.sjediste || "Adresa nije navedena"}</span>
                     </div>
-                    {zakupnik.kontakt_ime && (
-                      <p className="text-muted-foreground/80">
-                        Kontakt osoba:{" "}
-                        <span className="font-medium text-foreground">
-                          {zakupnik.kontakt_ime}
-                        </span>
-                      </p>
+                    {primaryName && (
+                      <div className="space-y-1 text-muted-foreground/80">
+                        <p>
+                          Kontakt osoba:{" "}
+                          <span className="font-medium text-foreground">
+                            {primaryName}
+                          </span>
+                          {primaryRole && (
+                            <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground/70">
+                              {primaryRole}
+                            </span>
+                          )}
+                        </p>
+                        {preferredChannel && (
+                          <p className="text-xs text-muted-foreground/70">
+                            Preferirani kanal: {preferredChannel}
+                          </p>
+                        )}
+                        {slaValue && (
+                          <p className="text-xs text-muted-foreground/70">
+                            SLA odziv: {slaValue}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -7831,7 +8084,87 @@ const Zakupnici = () => {
                         IBAN: {zakupnik.iban}
                       </Badge>
                     )}
+                    {zakupnik.radno_vrijeme && (
+                      <Badge variant="outline" className="bg-white">
+                        Radno vrijeme: {zakupnik.radno_vrijeme}
+                      </Badge>
+                    )}
                   </div>
+
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <Badge
+                          key={`${zakupnik.id}-${tag}`}
+                          variant="outline"
+                          className="rounded-full bg-white text-[11px]"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {isPartner && zakupnik.opis_usluge && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-900">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        Opis suradnje
+                      </p>
+                      <p>{zakupnik.opis_usluge}</p>
+                    </div>
+                  )}
+
+                  {zakupnik.biljeske && (
+                    <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+                        Bilješke
+                      </p>
+                      <p className="text-sm text-foreground/90">
+                        {zakupnik.biljeske}
+                      </p>
+                    </div>
+                  )}
+
+                  {additionalContacts.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                        Dodatni kontakti
+                      </p>
+                      <div className="space-y-2">
+                        {additionalContacts.map((kontakt) => (
+                          <div
+                            key={kontakt.id || `${zakupnik.id}-${kontakt.ime}`}
+                            className="rounded-lg border border-border/40 bg-white/70 p-2 text-xs text-muted-foreground"
+                          >
+                            <p className="font-semibold text-foreground">
+                              {kontakt.ime}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {kontakt.uloga && (
+                                <Badge
+                                  variant="outline"
+                                  className="rounded-full"
+                                >
+                                  {kontakt.uloga}
+                                </Badge>
+                              )}
+                              {kontakt.email && (
+                                <a
+                                  href={`mailto:${kontakt.email}`}
+                                  className="text-primary underline-offset-2 hover:underline"
+                                >
+                                  {kontakt.email}
+                                </a>
+                              )}
+                              {kontakt.telefon && (
+                                <span>{kontakt.telefon}</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between gap-2 pt-2">
                     <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-muted-foreground/70">
@@ -7841,12 +8174,25 @@ const Zakupnici = () => {
                       >
                         {entityType}
                       </Badge>
+                      {slaValue && (
+                        <Badge
+                          variant="outline"
+                          className="rounded-full bg-white/80 text-muted-foreground"
+                        >
+                          SLA: {slaValue}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingZakupnik(zakupnik)}
+                        onClick={() => {
+                          setContactSegment(
+                            isPartner ? "partneri" : "zakupnici",
+                          );
+                          setEditingZakupnik(zakupnik);
+                        }}
                         data-testid={`uredi-zakupnika-${zakupnik.id}`}
                       >
                         <Edit className="h-4 w-4" />
@@ -7879,14 +8225,15 @@ const Zakupnici = () => {
           })}
         </div>
       )}
-
       <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
         <DialogContent
           className="max-w-2xl"
           aria-describedby="dodaj-zakupnika-form-description"
         >
           <DialogHeader>
-            <DialogTitle>Dodaj novog zakupnika</DialogTitle>
+            <DialogTitle>
+              {createTip === "partner" ? "Dodaj partnera" : "Dodaj zakupnika"}
+            </DialogTitle>
           </DialogHeader>
           <div id="dodaj-zakupnika-form-description" className="sr-only">
             Forma za kreiranje novog zakupnika
@@ -7895,6 +8242,7 @@ const Zakupnici = () => {
             onSubmit={handleCreateZakupnik}
             onCancel={() => setShowCreateForm(false)}
             submitting={submitting}
+            defaultTip={createTip}
           />
         </DialogContent>
       </Dialog>
@@ -7912,7 +8260,11 @@ const Zakupnici = () => {
           aria-describedby="uredi-zakupnik-form-description"
         >
           <DialogHeader>
-            <DialogTitle>Uredi zakupnika</DialogTitle>
+            <DialogTitle>
+              {(editingZakupnik?.tip || "zakupnik") === "partner"
+                ? "Uredi partnera"
+                : "Uredi zakupnika"}
+            </DialogTitle>
           </DialogHeader>
           <div id="uredi-zakupnik-form-description" className="sr-only">
             Forma za ažuriranje postojećeg zakupnika
@@ -7923,6 +8275,7 @@ const Zakupnici = () => {
               onSubmit={handleUpdateZakupnik}
               onCancel={() => setEditingZakupnik(null)}
               submitting={submitting}
+              defaultTip={editingZakupnik?.tip || "zakupnik"}
             />
             <AuditTimelinePanel
               className="border-t border-border/60 pt-4"
@@ -7939,47 +8292,254 @@ const Zakupnici = () => {
   );
 };
 // Zakupnik Form Component
-const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
-  const [formData, setFormData] = useState({
-    naziv_firme: zakupnik?.naziv_firme || "",
-    ime_prezime: zakupnik?.ime_prezime || "",
-    oib: zakupnik?.oib || "",
-    sjediste: zakupnik?.sjediste || "",
-    kontakt_ime: zakupnik?.kontakt_ime || "",
-    kontakt_email: zakupnik?.kontakt_email || "",
-    kontakt_telefon: zakupnik?.kontakt_telefon || "",
-    iban: zakupnik?.iban || "",
-    status: zakupnik?.status || "aktivan",
-  });
+const ZakupnikForm = ({
+  zakupnik,
+  onSubmit,
+  onCancel,
+  submitting = false,
+  defaultTip = "zakupnik",
+}) => {
+  const makeLocalId = useCallback(() => {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return `kontakt-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+  }, []);
+
+  const initialState = useMemo(() => {
+    const tip = zakupnik?.tip || defaultTip || "zakupnik";
+    const primaryContact = zakupnik?.kontakt_osobe?.[0] || null;
+
+    const form = {
+      tip,
+      naziv_firme: zakupnik?.naziv_firme || "",
+      ime_prezime: zakupnik?.ime_prezime || "",
+      oib: zakupnik?.oib || "",
+      sjediste: zakupnik?.sjediste || "",
+      kontakt_ime: primaryContact?.ime || zakupnik?.kontakt_ime || "",
+      kontakt_email: primaryContact?.email || zakupnik?.kontakt_email || "",
+      kontakt_telefon:
+        primaryContact?.telefon || zakupnik?.kontakt_telefon || "",
+      iban: zakupnik?.iban || "",
+      status: zakupnik?.status || "aktivan",
+      primary_uloga: primaryContact?.uloga || "",
+      primary_preferirani_kanal: primaryContact?.preferirani_kanal || "",
+      primary_napomena: primaryContact?.napomena || "",
+      hitnost_odziva_sati:
+        primaryContact?.hitnost_odziva_sati != null
+          ? String(primaryContact.hitnost_odziva_sati)
+          : zakupnik?.hitnost_odziva_sati != null
+            ? String(zakupnik.hitnost_odziva_sati)
+            : "",
+      oznake_input: Array.isArray(zakupnik?.oznake)
+        ? zakupnik.oznake.join(", ")
+        : "",
+      opis_usluge: zakupnik?.opis_usluge || "",
+      radno_vrijeme: zakupnik?.radno_vrijeme || "",
+      biljeske: zakupnik?.biljeske || "",
+    };
+
+    const contacts = (zakupnik?.kontakt_osobe || [])
+      .slice(1)
+      .map((kontakt) => ({
+        localId: kontakt.id || makeLocalId(),
+        id: kontakt.id || null,
+        ime: kontakt.ime || "",
+        uloga: kontakt.uloga || "",
+        email: kontakt.email || "",
+        telefon: kontakt.telefon || "",
+        napomena: kontakt.napomena || "",
+        preferirani_kanal: kontakt.preferirani_kanal || "",
+        hitnost_odziva_sati:
+          kontakt.hitnost_odziva_sati != null
+            ? String(kontakt.hitnost_odziva_sati)
+            : "",
+      }));
+
+    return { form, contacts };
+  }, [zakupnik, defaultTip, makeLocalId]);
+
+  const [formData, setFormData] = useState(initialState.form);
+  const [extraContacts, setExtraContacts] = useState(initialState.contacts);
+
+  useEffect(() => {
+    setFormData(initialState.form);
+    setExtraContacts(initialState.contacts);
+  }, [initialState]);
+
+  const resolvedTags = useMemo(
+    () =>
+      formData.oznake_input
+        .split(/[\n,]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    [formData.oznake_input],
+  );
+
+  const updateForm = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const createEmptyContact = useCallback(
+    () => ({
+      localId: makeLocalId(),
+      id: null,
+      ime: "",
+      uloga: "",
+      email: "",
+      telefon: "",
+      napomena: "",
+      preferirani_kanal: "",
+      hitnost_odziva_sati: "",
+    }),
+    [makeLocalId],
+  );
+
+  const handleAddContact = () => {
+    setExtraContacts((prev) => [...prev, createEmptyContact()]);
+  };
+
+  const handleContactChange = (localId, field, value) => {
+    setExtraContacts((prev) =>
+      prev.map((kontakt) =>
+        kontakt.localId === localId ? { ...kontakt, [field]: value } : kontakt,
+      ),
+    );
+  };
+
+  const handleRemoveContact = (localId) => {
+    setExtraContacts((prev) =>
+      prev.filter((kontakt) => kontakt.localId !== localId),
+    );
+  };
+
+  const trimString = (value) => (value ?? "").trim();
+  const parseOptionalInt = (value) => {
+    if (value === "" || value === null || value === undefined) {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (submitting) return;
-    const data = {
-      ...formData,
-      naziv_firme: formData.naziv_firme || null,
-      ime_prezime: formData.ime_prezime || null,
-      iban: formData.iban || null,
-      status: formData.status || "aktivan",
+    if (submitting) {
+      return;
+    }
+
+    const primaryContactId = zakupnik?.kontakt_osobe?.[0]?.id || makeLocalId();
+
+    const primaryContactPayload = {
+      id: primaryContactId,
+      ime: trimString(formData.kontakt_ime) || "Kontakt",
+      uloga: trimString(formData.primary_uloga) || null,
+      email: trimString(formData.kontakt_email) || null,
+      telefon: trimString(formData.kontakt_telefon) || null,
+      napomena: trimString(formData.primary_napomena) || null,
+      preferirani_kanal: trimString(formData.primary_preferirani_kanal) || null,
+      hitnost_odziva_sati: parseOptionalInt(formData.hitnost_odziva_sati),
     };
-    await onSubmit(data);
+
+    const normalisedExtraContacts = extraContacts
+      .map((kontakt) => {
+        const name = trimString(kontakt.ime);
+        const fallbackName =
+          name || trimString(kontakt.email) || trimString(kontakt.telefon);
+        if (!fallbackName) {
+          return null;
+        }
+        return {
+          id: kontakt.id || kontakt.localId || makeLocalId(),
+          ime: fallbackName,
+          uloga: trimString(kontakt.uloga) || null,
+          email: trimString(kontakt.email) || null,
+          telefon: trimString(kontakt.telefon) || null,
+          napomena: trimString(kontakt.napomena) || null,
+          preferirani_kanal: trimString(kontakt.preferirani_kanal) || null,
+          hitnost_odziva_sati: parseOptionalInt(kontakt.hitnost_odziva_sati),
+        };
+      })
+      .filter(Boolean);
+
+    const kontakt_osobe = [primaryContactPayload, ...normalisedExtraContacts];
+
+    const payload = {
+      tip: formData.tip,
+      naziv_firme: trimString(formData.naziv_firme) || null,
+      ime_prezime: trimString(formData.ime_prezime) || null,
+      oib: trimString(formData.oib),
+      sjediste: trimString(formData.sjediste),
+      kontakt_ime: trimString(formData.kontakt_ime),
+      kontakt_email: trimString(formData.kontakt_email),
+      kontakt_telefon: trimString(formData.kontakt_telefon),
+      iban: trimString(formData.iban) || null,
+      status: formData.status || "aktivan",
+      oznake: resolvedTags,
+      opis_usluge: trimString(formData.opis_usluge) || null,
+      radno_vrijeme: trimString(formData.radno_vrijeme) || null,
+      biljeske: trimString(formData.biljeske) || null,
+      hitnost_odziva_sati: parseOptionalInt(formData.hitnost_odziva_sati),
+      kontakt_osobe,
+    };
+
+    await onSubmit(payload);
   };
+
+  const isPartner = formData.tip === "partner";
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4"
+      className="space-y-5"
       data-testid="zakupnik-form"
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <Label htmlFor="naziv_firme">Naziv firme</Label>
+          <Label htmlFor="tip">Tip kontakta *</Label>
+          <Select
+            value={formData.tip}
+            onValueChange={(value) => updateForm("tip", value)}
+          >
+            <SelectTrigger
+              id="tip"
+              className="mt-1"
+              data-testid="zakupnik-tip-select"
+            >
+              <SelectValue placeholder="Odaberite tip" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="zakupnik">Zakupnik</SelectItem>
+              <SelectItem value="partner">Partner</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) => updateForm("status", value)}
+          >
+            <SelectTrigger data-testid="zakupnik-status-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="aktivan">Aktivan</SelectItem>
+              <SelectItem value="arhiviran">Arhiviran</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor="naziv_firme">
+            {isPartner ? "Naziv partnera" : "Naziv firme"}
+          </Label>
           <Input
             id="naziv_firme"
             value={formData.naziv_firme}
-            onChange={(e) =>
-              setFormData({ ...formData, naziv_firme: e.target.value })
-            }
+            onChange={(event) => updateForm("naziv_firme", event.target.value)}
             data-testid="zakupnik-naziv-input"
           />
         </div>
@@ -7988,21 +8548,19 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
           <Input
             id="ime_prezime"
             value={formData.ime_prezime}
-            onChange={(e) =>
-              setFormData({ ...formData, ime_prezime: e.target.value })
-            }
+            onChange={(event) => updateForm("ime_prezime", event.target.value)}
             data-testid="zakupnik-ime-input"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
           <Label htmlFor="oib">OIB / VAT ID *</Label>
           <Input
             id="oib"
             value={formData.oib}
-            onChange={(e) => setFormData({ ...formData, oib: e.target.value })}
+            onChange={(event) => updateForm("oib", event.target.value)}
             data-testid="zakupnik-oib-input"
             required
           />
@@ -8012,7 +8570,7 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
           <Input
             id="iban"
             value={formData.iban}
-            onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
+            onChange={(event) => updateForm("iban", event.target.value)}
             data-testid="zakupnik-iban-input"
           />
         </div>
@@ -8023,73 +8581,331 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
         <Input
           id="sjediste"
           value={formData.sjediste}
-          onChange={(e) =>
-            setFormData({ ...formData, sjediste: e.target.value })
-          }
+          onChange={(event) => updateForm("sjediste", event.target.value)}
           data-testid="zakupnik-sjediste-input"
           required
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="kontakt_ime">Kontakt osoba *</Label>
-          <Input
-            id="kontakt_ime"
-            value={formData.kontakt_ime}
-            onChange={(e) =>
-              setFormData({ ...formData, kontakt_ime: e.target.value })
-            }
-            data-testid="zakupnik-kontakt-input"
-            required
-          />
+      <div className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Primarni kontakt
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Koristi se za brzu komunikaciju, generiranje dokumenata i
+              podsjetnike.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div>
+            <Label htmlFor="kontakt_ime">Kontakt osoba *</Label>
+            <Input
+              id="kontakt_ime"
+              value={formData.kontakt_ime}
+              onChange={(event) =>
+                updateForm("kontakt_ime", event.target.value)
+              }
+              data-testid="zakupnik-kontakt-input"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="kontakt_email">Email *</Label>
+            <Input
+              id="kontakt_email"
+              type="email"
+              value={formData.kontakt_email}
+              onChange={(event) =>
+                updateForm("kontakt_email", event.target.value)
+              }
+              data-testid="zakupnik-email-input"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="kontakt_telefon">Telefon *</Label>
+            <Input
+              id="kontakt_telefon"
+              value={formData.kontakt_telefon}
+              onChange={(event) =>
+                updateForm("kontakt_telefon", event.target.value)
+              }
+              data-testid="zakupnik-telefon-input"
+              required
+            />
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div>
+            <Label htmlFor="primary_uloga">Uloga</Label>
+            <Input
+              id="primary_uloga"
+              value={formData.primary_uloga}
+              onChange={(event) =>
+                updateForm("primary_uloga", event.target.value)
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="primary_preferirani_kanal">Preferirani kanal</Label>
+            <Input
+              id="primary_preferirani_kanal"
+              value={formData.primary_preferirani_kanal}
+              onChange={(event) =>
+                updateForm("primary_preferirani_kanal", event.target.value)
+              }
+              placeholder="npr. Email, Telefon"
+            />
+          </div>
+          <div>
+            <Label htmlFor="hitnost_odziva_sati">Odziv (h)</Label>
+            <Input
+              id="hitnost_odziva_sati"
+              type="number"
+              min="0"
+              value={formData.hitnost_odziva_sati}
+              onChange={(event) =>
+                updateForm("hitnost_odziva_sati", event.target.value)
+              }
+              placeholder="npr. 4"
+            />
+          </div>
         </div>
         <div>
-          <Label htmlFor="kontakt_email">Email *</Label>
-          <Input
-            id="kontakt_email"
-            type="email"
-            value={formData.kontakt_email}
-            onChange={(e) =>
-              setFormData({ ...formData, kontakt_email: e.target.value })
+          <Label htmlFor="primary_napomena">Napomena</Label>
+          <Textarea
+            id="primary_napomena"
+            value={formData.primary_napomena}
+            onChange={(event) =>
+              updateForm("primary_napomena", event.target.value)
             }
-            data-testid="zakupnik-email-input"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="kontakt_telefon">Telefon *</Label>
-          <Input
-            id="kontakt_telefon"
-            value={formData.kontakt_telefon}
-            onChange={(e) =>
-              setFormData({ ...formData, kontakt_telefon: e.target.value })
-            }
-            data-testid="zakupnik-telefon-input"
-            required
+            rows={2}
+            placeholder="Posebne upute, raspoloživost ili SLA dogovori"
           />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) => setFormData({ ...formData, status: value })}
-        >
-          <SelectTrigger data-testid="zakupnik-status-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="aktivan">Aktivan</SelectItem>
-            <SelectItem value="arhiviran">Arhiviran</SelectItem>
-          </SelectContent>
-        </Select>
+        <Label htmlFor="oznake">Oznake</Label>
+        <Input
+          id="oznake"
+          value={formData.oznake_input}
+          onChange={(event) => updateForm("oznake_input", event.target.value)}
+          placeholder="npr. Električar, 24/7, SLA A"
+        />
+        <p className="text-xs text-muted-foreground">
+          Razdvojite oznake zarezom ili novim redom.
+        </p>
+        {resolvedTags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {resolvedTags.map((tag) => (
+              <Badge
+                key={`tag-preview-${tag}`}
+                variant="outline"
+                className="rounded-full bg-white text-[11px]"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="flex space-x-2">
+      {isPartner && (
+        <div>
+          <Label htmlFor="opis_usluge">Opis suradnje</Label>
+          <Textarea
+            id="opis_usluge"
+            value={formData.opis_usluge}
+            onChange={(event) => updateForm("opis_usluge", event.target.value)}
+            rows={3}
+            placeholder="Koje poslove partner pokriva, područje odgovornosti, SLA..."
+          />
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor="radno_vrijeme">Radno vrijeme</Label>
+          <Input
+            id="radno_vrijeme"
+            value={formData.radno_vrijeme}
+            onChange={(event) =>
+              updateForm("radno_vrijeme", event.target.value)
+            }
+            placeholder="npr. Pon-Pet 08-16"
+          />
+        </div>
+        <div>
+          <Label htmlFor="biljeske">Bilješke</Label>
+          <Textarea
+            id="biljeske"
+            value={formData.biljeske}
+            onChange={(event) => updateForm("biljeske", event.target.value)}
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">
+              Dodatni kontakti
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Koristite za alternative ili specijalizirane kontakte.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddContact}
+            className="gap-1"
+          >
+            <Plus className="h-4 w-4" /> Dodaj kontakt
+          </Button>
+        </div>
+
+        {extraContacts.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border/50 bg-muted/20 p-4 text-xs text-muted-foreground">
+            Trenutno nema dodatnih kontakata.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {extraContacts.map((kontakt) => (
+              <div
+                key={kontakt.localId}
+                className="space-y-3 rounded-lg border border-border/60 bg-white/80 p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-foreground">
+                    {kontakt.ime || "Kontakt"}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveContact(kontakt.localId)}
+                    aria-label="Ukloni kontakt"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <Label>Ime *</Label>
+                    <Input
+                      value={kontakt.ime}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "ime",
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Ime i prezime"
+                    />
+                  </div>
+                  <div>
+                    <Label>Uloga</Label>
+                    <Input
+                      value={kontakt.uloga}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "uloga",
+                          event.target.value,
+                        )
+                      }
+                      placeholder="npr. Voditelj servisa"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={kontakt.email}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "email",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Telefon</Label>
+                    <Input
+                      value={kontakt.telefon}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "telefon",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Preferirani kanal</Label>
+                    <Input
+                      value={kontakt.preferirani_kanal}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "preferirani_kanal",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Odziv (h)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={kontakt.hitnost_odziva_sati}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "hitnost_odziva_sati",
+                          event.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>Napomena</Label>
+                    <Textarea
+                      value={kontakt.napomena}
+                      onChange={(event) =>
+                        handleContactChange(
+                          kontakt.localId,
+                          "napomena",
+                          event.target.value,
+                        )
+                      }
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
         <Button
           type="submit"
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           data-testid="potvrdi-zakupnik-form"
           disabled={submitting}
         >
@@ -8097,13 +8913,16 @@ const ZakupnikForm = ({ zakupnik, onSubmit, onCancel, submitting = false }) => {
             ? "Spremam..."
             : zakupnik
               ? "Spremi promjene"
-              : "Kreiraj zakupnika"}
+              : isPartner
+                ? "Kreiraj partnera"
+                : "Kreiraj zakupnika"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           data-testid="odustani-zakupnik-form"
+          disabled={submitting}
         >
           Odustani
         </Button>
@@ -8194,10 +9013,20 @@ const Ugovori = () => {
         await api.createUgovor(formData);
         toast.success("Ugovor je uspješno kreiran");
       }
-      await refreshEntities();
       setShowCreateForm(false);
       setRenewalTemplate(null);
       setEditingContract(null);
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju ugovora nakon spremanja:",
+          refreshError,
+        );
+        toast.warning(
+          "Ugovor je spremljen, ali prikaz nije automatski osvježen.",
+        );
+      }
     } catch (error) {
       console.error("Greška pri spremanju ugovora:", error);
       toast.error("Spremanje ugovora nije uspjelo");
@@ -8635,6 +9464,7 @@ const Ugovori = () => {
             auditTimeline={contractAuditLogs}
             auditLoading={contractAuditLoading}
             auditError={contractAuditError}
+            submitting={isMutating}
           />
         </DialogContent>
       </Dialog>
@@ -8763,6 +9593,7 @@ const UgovorForm = ({
   auditTimeline = [],
   auditLoading = false,
   auditError = null,
+  submitting = false,
 }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isParsing, setIsParsing] = useState(false);
@@ -8811,6 +9642,15 @@ const UgovorForm = ({
       propertyUnitsByProperty[formData.nekretnina_id] || [],
     );
   }, [formData.nekretnina_id, propertyUnitsByProperty]);
+
+  const manualUnitStatusOptions = useMemo(
+    () =>
+      Object.entries(UNIT_STATUS_CONFIG).map(([value, config]) => ({
+        value,
+        label: config.label,
+      })),
+    [],
+  );
 
   const normaliseDateInput = useCallback((value) => {
     if (!value) {
@@ -9280,6 +10120,9 @@ const UgovorForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) {
+      return;
+    }
     if (!formData.property_unit_id) {
       toast.error("Odaberite podprostor prije spremanja ugovora");
       return;
@@ -9318,7 +10161,7 @@ const UgovorForm = ({
       }
     }
 
-    onSubmit(data);
+    await onSubmit(data);
   };
 
   return (
@@ -9345,13 +10188,13 @@ const UgovorForm = ({
                 accept=".pdf"
                 onChange={handleFileUpload}
                 className="hidden"
-                disabled={isParsing}
+                disabled={isParsing || submitting}
               />
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => document.getElementById("pdf-upload").click()}
-                disabled={isParsing}
+                disabled={isParsing || submitting}
                 className="mb-2"
               >
                 {isParsing ? (
@@ -9378,7 +10221,7 @@ const UgovorForm = ({
                 variant="outline"
                 size="sm"
                 onClick={handleRemoveFile}
-                disabled={isParsing}
+                disabled={isParsing || submitting}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -9735,14 +10578,23 @@ const UgovorForm = ({
       )}
 
       <div className="flex space-x-2 pt-4">
-        <Button type="submit" data-testid="potvrdi-ugovor-form">
-          {renewalTemplate ? "Kreiraj produžetak" : "Kreiraj ugovor"}
+        <Button
+          type="submit"
+          data-testid="potvrdi-ugovor-form"
+          disabled={submitting || isParsing}
+        >
+          {submitting
+            ? "Spremam..."
+            : renewalTemplate
+              ? "Kreiraj produžetak"
+              : "Kreiraj ugovor"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           data-testid="odustani-ugovor-form"
+          disabled={submitting}
         >
           Odustani
         </Button>
@@ -9872,12 +10724,12 @@ const Dokumenti = () => {
         syncDocument(response.data);
       }
       toast.success("Dokument je uspješno dodan", { id: toastId });
+      setShowCreateForm(false);
       try {
         await refresh();
       } catch (refreshError) {
         console.error("Greška pri osvježavanju dokumenata:", refreshError);
       }
-      setShowCreateForm(false);
     } catch (error) {
       console.error("Greška pri dodavanju dokumenta:", error);
       const message =
@@ -10289,9 +11141,29 @@ const DokumentForm = ({
     property: false,
     tenant: false,
     contract: false,
+    unit: false,
   });
+  const [manualUnitForm, setManualUnitForm] = useState(() => ({
+    oznaka: "",
+    naziv: "",
+    kat: "",
+    povrsina_m2: "",
+    status: "dostupno",
+    osnovna_zakupnina: "",
+    napomena: "",
+  }));
+  const [showManualUnitForm, setShowManualUnitForm] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [tenantOptions, setTenantOptions] = useState(zakupnici);
+
+  const manualUnitStatusOptions = useMemo(
+    () =>
+      Object.entries(UNIT_STATUS_CONFIG).map(([value, config]) => ({
+        value,
+        label: config.label,
+      })),
+    [],
+  );
 
   const activeTenantOptions = useMemo(
     () =>
@@ -10439,6 +11311,128 @@ const DokumentForm = ({
   const aiSuggestionIsContractDoc = aiSuggestionDocumentType
     ? CONTRACT_DOCUMENT_TYPES.has(aiSuggestionDocumentType)
     : false;
+  const propertyUnitSuggestion = aiSuggestions?.property_unit || null;
+
+  const matchedPropertyId = useMemo(() => {
+    if (formData.nekretnina_id) {
+      return formData.nekretnina_id;
+    }
+    if (matchedProperty?.id) {
+      return matchedProperty.id;
+    }
+    if (propertyUnitSuggestion?.nekretnina_id) {
+      return propertyUnitSuggestion.nekretnina_id;
+    }
+    return null;
+  }, [formData.nekretnina_id, matchedProperty, propertyUnitSuggestion]);
+
+  const matchedUnit = useMemo(
+    () =>
+      matchedPropertyId && propertyUnitSuggestion
+        ? findPropertyUnitMatch(matchedPropertyId, propertyUnitSuggestion)
+        : null,
+    [matchedPropertyId, propertyUnitSuggestion, findPropertyUnitMatch],
+  );
+
+  const selectedUnit = useMemo(() => {
+    if (!formData.property_unit_id) {
+      return null;
+    }
+    const fallback =
+      latestCreatedUnitRef.current &&
+      latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    return propertyUnitsById?.[formData.property_unit_id] || fallback;
+  }, [formData.property_unit_id, propertyUnitsById]);
+
+  const resetManualUnitForm = () => {
+    setManualUnitForm({
+      oznaka: "",
+      naziv: "",
+      kat: "",
+      povrsina_m2: "",
+      status: "dostupno",
+      osnovna_zakupnina: "",
+      napomena: "",
+    });
+  };
+
+  const handleManualUnitFieldChange = (field, value) => {
+    setManualUnitForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleManualUnitCreate = async () => {
+    const targetPropertyId = formData.nekretnina_id || matchedPropertyId;
+    if (!targetPropertyId) {
+      toast.error("Za dodavanje podprostora najprije odaberite nekretninu.");
+      return;
+    }
+    const oznakaValue = manualUnitForm.oznaka.trim();
+    if (!oznakaValue) {
+      toast.error("Oznaka podprostora je obavezna.");
+      return;
+    }
+    if (quickCreateLoading.unit) {
+      return;
+    }
+    setQuickCreateLoading((prev) => ({ ...prev, unit: true }));
+    try {
+      const payload = {
+        oznaka: oznakaValue,
+        naziv: manualUnitForm.naziv.trim() || null,
+        kat: manualUnitForm.kat.trim() || null,
+        povrsina_m2: manualUnitForm.povrsina_m2
+          ? parseNumericValue(manualUnitForm.povrsina_m2)
+          : null,
+        status: manualUnitForm.status || "dostupno",
+        osnovna_zakupnina: manualUnitForm.osnovna_zakupnina
+          ? parseNumericValue(manualUnitForm.osnovna_zakupnina)
+          : null,
+        napomena: manualUnitForm.napomena.trim() || null,
+      };
+
+      const response = await api.createUnit(targetPropertyId, payload);
+      const createdUnit = response?.data || null;
+      toast.success("Podprostor je kreiran.");
+
+      if (createdUnit?.id) {
+        latestCreatedUnitRef.current = createdUnit;
+        setFormData((prev) => ({
+          ...prev,
+          nekretnina_id: targetPropertyId,
+          property_unit_id: createdUnit.id,
+        }));
+      } else {
+        toast.warning(
+          "Podprostor je dodan, ali dohvat novog ID-a nije uspio. Osvježite popis ako nije vidljiv.",
+        );
+      }
+
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju podataka nakon kreiranja podprostora:",
+          refreshError,
+        );
+        toast.warning(
+          "Podprostor je kreiran, no prikaz podataka nije automatski osvježen.",
+        );
+      }
+
+      resetManualUnitForm();
+      setShowManualUnitForm(false);
+    } catch (error) {
+      console.error("Greška pri ručnom kreiranju podprostora:", error);
+      const message =
+        error.response?.data?.detail ||
+        "Podprostor nije kreiran. Pokušajte ponovno.";
+      toast.error(message);
+    } finally {
+      setQuickCreateLoading((prev) => ({ ...prev, unit: false }));
+    }
+  };
 
   useEffect(() => {
     if (!formData.property_unit_id) {
@@ -10781,6 +11775,85 @@ const DokumentForm = ({
     }
   };
 
+  const handleCreateUnitFromAI = async () => {
+    const suggestion = propertyUnitSuggestion;
+    const propertyId =
+      formData.nekretnina_id || matchedPropertyId || suggestion?.nekretnina_id;
+    if (!suggestion || !(suggestion.oznaka || suggestion.naziv)) {
+      toast.error(
+        "AI nije prepoznao dovoljno podataka za kreiranje podprostora.",
+      );
+      return;
+    }
+    if (!propertyId) {
+      toast.error(
+        "Odaberite ili kreirajte nekretninu prije dodavanja podprostora.",
+      );
+      return;
+    }
+    if (quickCreateLoading.unit) {
+      return;
+    }
+    setQuickCreateLoading((prev) => ({ ...prev, unit: true }));
+    const payload = {
+      oznaka: suggestion.oznaka || suggestion.naziv || `Jedinica-${Date.now()}`,
+      naziv: suggestion.naziv || null,
+      kat: suggestion.kat || suggestion.kat_zona || null,
+      povrsina_m2: suggestion.povrsina_m2
+        ? parseNumericValue(suggestion.povrsina_m2)
+        : null,
+      status: suggestion.status || "dostupno",
+      osnovna_zakupnina: suggestion.osnovna_zakupnina
+        ? parseNumericValue(suggestion.osnovna_zakupnina)
+        : null,
+      napomena: suggestion.napomena || null,
+    };
+    try {
+      const response = await api.createUnit(propertyId, payload);
+      const createdUnit = response?.data || null;
+      toast.success("Podprostor je kreiran iz AI prijedloga");
+      await refreshEntities();
+      if (createdUnit?.id) {
+        latestCreatedUnitRef.current = createdUnit;
+        setFormData((prev) => ({
+          ...prev,
+          nekretnina_id: propertyId,
+          property_unit_id: createdUnit.id,
+        }));
+      } else {
+        toast.warning(
+          "Podprostor je kreiran, ali dohvat novog ID-a nije uspio. Osvježite prikaz ako nije vidljiv.",
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Greška pri kreiranju podprostora iz AI prijedloga:",
+        error,
+      );
+      toast.error("Greška pri kreiranju podprostora");
+    } finally {
+      setQuickCreateLoading((prev) => ({ ...prev, unit: false }));
+    }
+  };
+
+  const handleUseMatchedUnit = () => {
+    if (!matchedUnit) {
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      nekretnina_id: matchedUnit.nekretnina_id || prev.nekretnina_id,
+      property_unit_id: matchedUnit.id,
+    }));
+    toast.success(
+      `Podprostor ${getUnitDisplayName(matchedUnit)} je povezan s dokumentom.`,
+    );
+  };
+
+  const handleClearUnitSelection = () => {
+    setFormData((prev) => ({ ...prev, property_unit_id: "" }));
+  };
+
   const handleCreateContractFromAI = async () => {
     if (!aiSuggestions?.ugovor) {
       toast.error("AI nije pronašao podatke o ugovoru");
@@ -10896,14 +11969,14 @@ const DokumentForm = ({
             ref={fileInputRef}
             onChange={handleFileChange}
             className="hidden"
-            disabled={aiLoading}
+            disabled={aiLoading || loading}
           />
           {!uploadedFile ? (
             <Button
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={aiLoading}
+              disabled={aiLoading || loading}
               className="inline-flex items-center"
             >
               {aiLoading ? (
@@ -10936,7 +12009,7 @@ const DokumentForm = ({
                     fileInputRef.current.value = "";
                   }
                 }}
-                disabled={aiLoading}
+                disabled={aiLoading || loading}
               >
                 <Trash2 className="mr-2 h-4 w-4" /> Ukloni PDF
               </Button>
@@ -11068,7 +12141,9 @@ const DokumentForm = ({
                   variant="outline"
                   size="sm"
                   disabled={
-                    quickCreateLoading.property || !aiSuggestions.nekretnina
+                    quickCreateLoading.property ||
+                    !aiSuggestions.nekretnina ||
+                    loading
                   }
                   onClick={() => {
                     if (matchedProperty) {
@@ -11090,6 +12165,117 @@ const DokumentForm = ({
                 </Button>
               </div>
             </div>
+
+            {aiSuggestionIsContractDoc && (
+              <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-blue-700 uppercase">
+                    Podprostor
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedUnit ? (
+                      <Badge
+                        variant="outline"
+                        className="text-green-700 border-green-300"
+                      >
+                        Povezano: {getUnitDisplayName(selectedUnit)}
+                      </Badge>
+                    ) : matchedUnit ? (
+                      <Badge variant="outline">Pronađen u sustavu</Badge>
+                    ) : propertyUnitSuggestion ? (
+                      <Badge variant="outline">AI prijedlog</Badge>
+                    ) : (
+                      <Badge variant="outline">Nije prepoznato</Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">
+                    {propertyUnitSuggestion?.oznaka ||
+                      propertyUnitSuggestion?.naziv ||
+                      "Nije prepoznato"}
+                  </p>
+                  {propertyUnitSuggestion?.naziv &&
+                    propertyUnitSuggestion?.oznaka &&
+                    propertyUnitSuggestion.naziv !==
+                      propertyUnitSuggestion.oznaka && (
+                      <p className="text-xs text-muted-foreground/80">
+                        {propertyUnitSuggestion.naziv}
+                      </p>
+                    )}
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground/80">
+                  {propertyUnitSuggestion?.kat && (
+                    <span className="rounded-full bg-blue-50 px-2 py-1">
+                      Kat: {propertyUnitSuggestion.kat}
+                    </span>
+                  )}
+                  {propertyUnitSuggestion?.povrsina_m2 && (
+                    <span className="rounded-full bg-blue-50 px-2 py-1">
+                      Površina: {propertyUnitSuggestion.povrsina_m2} m²
+                    </span>
+                  )}
+                  {propertyUnitSuggestion?.status && (
+                    <span className="rounded-full bg-blue-50 px-2 py-1">
+                      Status: {formatUnitStatus(propertyUnitSuggestion.status)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {matchedUnit &&
+                    (!selectedUnit || selectedUnit.id !== matchedUnit.id) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleUseMatchedUnit}
+                        disabled={loading}
+                      >
+                        Poveži s pronađenim
+                      </Button>
+                    )}
+                  {!matchedUnit &&
+                    propertyUnitSuggestion &&
+                    (propertyUnitSuggestion.oznaka ||
+                      propertyUnitSuggestion.naziv) && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCreateUnitFromAI}
+                        disabled={
+                          quickCreateLoading.unit ||
+                          !matchedPropertyId ||
+                          loading
+                        }
+                      >
+                        {quickCreateLoading.unit
+                          ? "Spremam..."
+                          : matchedPropertyId
+                            ? "Kreiraj podprostor"
+                            : "Odaberite nekretninu"}
+                      </Button>
+                    )}
+                  {selectedUnit && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearUnitSelection}
+                      disabled={loading}
+                    >
+                      Ukloni odabir
+                    </Button>
+                  )}
+                </div>
+                {!matchedPropertyId && propertyUnitSuggestion && (
+                  <p className="text-xs text-amber-600">
+                    Za automatsku poveznicu najprije odaberite nekretninu.
+                  </p>
+                )}
+              </div>
+            )}
+
             {aiSuggestionIsContractDoc && (
               <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2">
                 <p className="text-xs font-semibold text-blue-700 uppercase">
@@ -11120,7 +12306,9 @@ const DokumentForm = ({
                     variant="outline"
                     size="sm"
                     disabled={
-                      quickCreateLoading.tenant || !aiSuggestions.zakupnik
+                      quickCreateLoading.tenant ||
+                      !aiSuggestions.zakupnik ||
+                      loading
                     }
                     onClick={() => {
                       if (matchedTenant) {
@@ -11143,6 +12331,7 @@ const DokumentForm = ({
                 </div>
               </div>
             )}
+
             {aiSuggestionIsContractDoc && (
               <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
                 <p className="text-xs font-semibold text-blue-700 uppercase">
@@ -11168,7 +12357,9 @@ const DokumentForm = ({
                     variant="outline"
                     size="sm"
                     disabled={
-                      quickCreateLoading.contract || !aiSuggestions.ugovor
+                      quickCreateLoading.contract ||
+                      !aiSuggestions.ugovor ||
+                      loading
                     }
                     onClick={() => {
                       if (matchedContract) {
@@ -11242,6 +12433,153 @@ const DokumentForm = ({
           testId="dokument-unit-select"
           disabled={!formData.nekretnina_id}
         />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setShowManualUnitForm((prev) => {
+                const next = !prev;
+                if (!next) {
+                  resetManualUnitForm();
+                }
+                return next;
+              })
+            }
+            disabled={loading}
+          >
+            {showManualUnitForm
+              ? "Zatvori ručno dodavanje"
+              : "Dodaj novi podprostor"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Ručno dodajte podprostor ako ga AI nije pronašao ili ga još nema u
+            sustavu.
+          </p>
+        </div>
+        {showManualUnitForm && (
+          <div className="space-y-4 rounded-lg border border-border/60 bg-white p-4 shadow-sm">
+            {!(formData.nekretnina_id || matchedPropertyId) && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+                Odaberite nekretninu prije spremanja novog podprostora.
+              </div>
+            )}
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <Label>Oznaka *</Label>
+                <Input
+                  value={manualUnitForm.oznaka}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange("oznaka", event.target.value)
+                  }
+                  placeholder="npr. A-101"
+                />
+              </div>
+              <div>
+                <Label>Naziv</Label>
+                <Input
+                  value={manualUnitForm.naziv}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange("naziv", event.target.value)
+                  }
+                  placeholder="npr. Ured A-101"
+                />
+              </div>
+              <div>
+                <Label>Kat / zona</Label>
+                <Input
+                  value={manualUnitForm.kat}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange("kat", event.target.value)
+                  }
+                  placeholder="npr. Kat 2"
+                />
+              </div>
+              <div>
+                <Label>Površina (m²)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={manualUnitForm.povrsina_m2}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange(
+                      "povrsina_m2",
+                      event.target.value,
+                    )
+                  }
+                  placeholder="npr. 125"
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select
+                  value={manualUnitForm.status}
+                  onValueChange={(value) =>
+                    handleManualUnitFieldChange("status", value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Odaberite status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {manualUnitStatusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Osnovna zakupnina (€)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={manualUnitForm.osnovna_zakupnina}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange(
+                      "osnovna_zakupnina",
+                      event.target.value,
+                    )
+                  }
+                  placeholder="npr. 1500"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label>Napomena</Label>
+                <Textarea
+                  value={manualUnitForm.napomena}
+                  onChange={(event) =>
+                    handleManualUnitFieldChange("napomena", event.target.value)
+                  }
+                  rows={3}
+                  placeholder="Dodatne informacije ili posebnosti prostora"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleManualUnitCreate}
+                disabled={quickCreateLoading.unit || loading}
+              >
+                {quickCreateLoading.unit ? "Spremam..." : "Spremi podprostor"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  resetManualUnitForm();
+                  setShowManualUnitForm(false);
+                }}
+                disabled={quickCreateLoading.unit || loading}
+              >
+                Odustani
+              </Button>
+            </div>
+          </div>
+        )}
         <LinkedEntitySelect
           label="Zakupnik"
           placeholder="Nema veze sa zakupnikom"
@@ -11285,6 +12623,7 @@ const DokumentForm = ({
           variant="outline"
           onClick={onCancel}
           data-testid="odustani-dokument-form"
+          disabled={loading}
         >
           Odustani
         </Button>
@@ -11310,6 +12649,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
+      <Toaster />
     </EntityStoreProvider>
   );
 }

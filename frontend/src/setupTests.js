@@ -1,5 +1,7 @@
 import "@testing-library/jest-dom";
 
+jest.mock("axios");
+
 // Polyfill TextEncoder/TextDecoder for Jest (Node < 19)
 import { TextEncoder, TextDecoder } from "util";
 

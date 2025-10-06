@@ -22,12 +22,34 @@ jest.mock(
 
 jest.mock(
   "axios",
-  () => ({
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-  }),
+  () => {
+    const mockInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+      patch: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn(), eject: jest.fn() },
+        response: { use: jest.fn(), eject: jest.fn() },
+      },
+    };
+
+    const axiosMock = {
+      __esModule: true,
+      default: {
+        create: jest.fn(() => ({ ...mockInstance })),
+        get: jest.fn(),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+        interceptors: mockInstance.interceptors,
+      },
+    };
+
+    return axiosMock;
+  },
   { virtual: true },
 );
 

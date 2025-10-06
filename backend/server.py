@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import calendar
 import copy
+import inspect
 import json
 import logging
 import os
@@ -26,11 +27,13 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorClient
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
+from openai import __version__ as openai_version
+from packaging import version as pkg_version
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationError
 from PyPDF2 import PdfReader
@@ -52,6 +55,24 @@ def _get_openai_api_key() -> Optional[str]:
     ):
         key = key[1:-1].strip()
     return key or None
+
+
+def _get_openai_document_model() -> str:
+    model = os.environ.get("OPENAI_DOCUMENT_MODEL", "gpt-4o-mini")
+    model = (model or "gpt-4o-mini").strip()
+    return model or "gpt-4o-mini"
+
+
+try:
+    _OPENAI_SDK_VERSION = pkg_version.parse(openai_version)
+except Exception:
+    _OPENAI_SDK_VERSION = None
+
+OPENAI_INPUT_CONTENT_TYPE = (
+    "input_text"
+    if _OPENAI_SDK_VERSION and _OPENAI_SDK_VERSION >= pkg_version.parse("2.0.0")
+    else "text"
+)
 
 
 DEFAULT_ANEKS_TEMPLATE_PATH = ROOT_DIR.parent / "brand" / "aneks-template.html"
@@ -650,11 +671,6 @@ async def activity_logger(request: Request, call_next):
                 except (ValueError, UnicodeDecodeError):
                     request_payload = None
 
-            async def receive() -> Dict[str, Any]:
-                return {"type": "http.request", "body": body_bytes, "more_body": False}
-
-            request._receive = receive  # type: ignore[attr-defined]
-
     query_params = dict(request.query_params.multi_items())
     client_ip = request.client.host if request.client else None
 
@@ -745,6 +761,22 @@ class StatusUgovora(str, Enum):
 class ZakupnikStatus(str, Enum):
     AKTIVAN = "aktivan"
     ARHIVIRAN = "arhiviran"
+
+
+class ZakupnikTip(str, Enum):
+    ZAKUPNIK = "zakupnik"
+    PARTNER = "partner"
+
+
+class KontaktOsoba(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ime: str
+    uloga: Optional[str] = None
+    email: Optional[EmailStr] = None
+    telefon: Optional[str] = None
+    napomena: Optional[str] = None
+    preferirani_kanal: Optional[str] = None
+    hitnost_odziva_sati: Optional[int] = None
 
 
 class TipDokumenta(str, Enum):
@@ -863,6 +895,24 @@ def _coerce_optional_string(value: Any) -> Optional[str]:
     return str(value)
 
 
+def _coerce_string_list(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        result: List[str] = []
+        for item in value:
+            if item is None:
+                continue
+            text = str(item).strip()
+            if text:
+                result.append(text)
+        return result
+    if isinstance(value, str):
+        parts = re.split(r"[,;]\s*", value)
+        return [part.strip() for part in parts if part.strip()]
+    return [str(value).strip()]
+
+
 def _coerce_enum(value: Any, enum_cls: type[Enum], default: Enum) -> Enum:
     if isinstance(value, enum_cls):
         return value
@@ -934,6 +984,75 @@ def _coerce_int(value: Any, default: int = 0) -> int:
     return default
 
 
+def _coerce_optional_int(value: Any) -> Optional[int]:
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(float(value))
+        except ValueError:
+            return None
+    return None
+
+
+def _normalise_kontakt_osobe(
+    raw_value: Any, fallback_contact: Dict[str, Optional[str]]
+) -> List[Dict[str, Any]]:
+    contacts: List[Dict[str, Any]] = []
+
+    if isinstance(raw_value, list):
+        for item in raw_value:
+            if not isinstance(item, dict):
+                continue
+            name = _coerce_optional_string(item.get("ime"))
+            if not name:
+                name = fallback_contact.get("ime") or "Kontakt"
+            contact_payload: Dict[str, Any] = {
+                "id": item.get("id") or str(uuid.uuid4()),
+                "ime": name,
+                "uloga": _coerce_optional_string(item.get("uloga")),
+                "email": _coerce_optional_string(item.get("email")),
+                "telefon": _coerce_optional_string(item.get("telefon")),
+                "napomena": _coerce_optional_string(item.get("napomena")),
+                "preferirani_kanal": _coerce_optional_string(
+                    item.get("preferirani_kanal")
+                ),
+                "hitnost_odziva_sati": _coerce_optional_int(
+                    item.get("hitnost_odziva_sati")
+                ),
+            }
+            has_payload = any(
+                contact_payload.get(key)
+                for key in ("ime", "email", "telefon", "napomena")
+            )
+            if has_payload:
+                contacts.append(contact_payload)
+
+    if not contacts:
+        fallback_name = _coerce_optional_string(fallback_contact.get("ime"))
+        fallback_email = _coerce_optional_string(fallback_contact.get("email"))
+        fallback_phone = _coerce_optional_string(fallback_contact.get("telefon"))
+        if fallback_name or fallback_email or fallback_phone:
+            contacts.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "ime": fallback_name or "Primarni kontakt",
+                    "email": fallback_email,
+                    "telefon": fallback_phone,
+                    "uloga": None,
+                    "napomena": None,
+                    "preferirani_kanal": None,
+                    "hitnost_odziva_sati": None,
+                }
+            )
+
+    return contacts
+
+
 def _build_zakupnik_model(raw_doc: Dict[str, Any]) -> Zakupnik:
     data = parse_from_mongo(copy.deepcopy(raw_doc))
     data["oib"] = _coerce_string(data.get("oib"))
@@ -947,6 +1066,25 @@ def _build_zakupnik_model(raw_doc: Dict[str, Any]) -> Zakupnik:
     data["status"] = _coerce_enum(
         data.get("status"), ZakupnikStatus, ZakupnikStatus.AKTIVAN
     )
+    data["tip"] = _coerce_enum(data.get("tip"), ZakupnikTip, ZakupnikTip.ZAKUPNIK)
+    data["oznake"] = _coerce_string_list(data.get("oznake"))
+    data["opis_usluge"] = _coerce_optional_string(data.get("opis_usluge"))
+    data["radno_vrijeme"] = _coerce_optional_string(data.get("radno_vrijeme"))
+    data["biljeske"] = _coerce_optional_string(data.get("biljeske"))
+    data["hitnost_odziva_sati"] = _coerce_optional_int(data.get("hitnost_odziva_sati"))
+    data["kontakt_osobe"] = _normalise_kontakt_osobe(
+        data.get("kontakt_osobe"),
+        {
+            "ime": data.get("kontakt_ime"),
+            "email": data.get("kontakt_email"),
+            "telefon": data.get("kontakt_telefon"),
+        },
+    )
+    if data["kontakt_osobe"]:
+        primary = data["kontakt_osobe"][0]
+        data["kontakt_ime"] = primary.get("ime") or data["kontakt_ime"]
+        data["kontakt_email"] = primary.get("email") or data["kontakt_email"]
+        data["kontakt_telefon"] = primary.get("telefon") or data["kontakt_telefon"]
     try:
         return Zakupnik(**data)
     except ValidationError as exc:
@@ -1485,6 +1623,13 @@ class Zakupnik(BaseModel):
     iban: Optional[str] = None
     kreiran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: ZakupnikStatus = ZakupnikStatus.AKTIVAN
+    tip: ZakupnikTip = ZakupnikTip.ZAKUPNIK
+    oznake: List[str] = Field(default_factory=list)
+    opis_usluge: Optional[str] = None
+    radno_vrijeme: Optional[str] = None
+    biljeske: Optional[str] = None
+    hitnost_odziva_sati: Optional[int] = None
+    kontakt_osobe: List[KontaktOsoba] = Field(default_factory=list)
 
 
 class ZakupnikCreate(BaseModel):
@@ -1497,6 +1642,13 @@ class ZakupnikCreate(BaseModel):
     kontakt_telefon: str
     iban: Optional[str] = None
     status: ZakupnikStatus = ZakupnikStatus.AKTIVAN
+    tip: ZakupnikTip = ZakupnikTip.ZAKUPNIK
+    oznake: List[str] = Field(default_factory=list)
+    opis_usluge: Optional[str] = None
+    radno_vrijeme: Optional[str] = None
+    biljeske: Optional[str] = None
+    hitnost_odziva_sati: Optional[int] = None
+    kontakt_osobe: List[KontaktOsoba] = Field(default_factory=list)
 
 
 class Ugovor(BaseModel):
@@ -2373,7 +2525,20 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate, request: R
     dependencies=[Depends(require_scopes("tenants:create"))],
 )
 async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
-    zakupnik_dict = prepare_for_mongo(zakupnik.model_dump())
+    zakupnik_dict = zakupnik.model_dump()
+    if zakupnik_dict.get("kontakt_osobe"):
+        primary = zakupnik_dict["kontakt_osobe"][0]
+        zakupnik_dict["kontakt_ime"] = (
+            zakupnik_dict.get("kontakt_ime") or primary.get("ime") or "Primarni kontakt"
+        )
+        zakupnik_dict["kontakt_email"] = (
+            zakupnik_dict.get("kontakt_email") or primary.get("email") or ""
+        )
+        zakupnik_dict["kontakt_telefon"] = (
+            zakupnik_dict.get("kontakt_telefon") or primary.get("telefon") or ""
+        )
+
+    zakupnik_dict = prepare_for_mongo(zakupnik_dict)
     zakupnik_obj = Zakupnik(**zakupnik_dict)
     await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.model_dump()))
     request.state.audit_context = {
@@ -2389,12 +2554,17 @@ async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
     dependencies=[Depends(require_scopes("tenants:read"))],
 )
 async def get_zakupnici(
-    search: Optional[str] = None, status: Optional[ZakupnikStatus] = None
+    search: Optional[str] = None,
+    status: Optional[ZakupnikStatus] = None,
+    tip: Optional[ZakupnikTip] = None,
 ):
     filters: List[Dict[str, Any]] = []
 
     if status:
         filters.append({"status": status})
+
+    if tip:
+        filters.append({"tip": tip})
 
     if search:
         trimmed = search.strip()
@@ -2465,7 +2635,20 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: R
     if not existing:
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
 
-    update_payload = prepare_for_mongo(zakupnik.model_dump())
+    update_dict = zakupnik.model_dump()
+    if update_dict.get("kontakt_osobe"):
+        primary = update_dict["kontakt_osobe"][0]
+        update_dict["kontakt_ime"] = (
+            update_dict.get("kontakt_ime") or primary.get("ime") or "Primarni kontakt"
+        )
+        update_dict["kontakt_email"] = (
+            update_dict.get("kontakt_email") or primary.get("email") or ""
+        )
+        update_dict["kontakt_telefon"] = (
+            update_dict.get("kontakt_telefon") or primary.get("telefon") or ""
+        )
+
+    update_payload = prepare_for_mongo(update_dict)
     await db.zakupnici.update_one({"id": zakupnik_id}, {"$set": update_payload})
 
     updated = await db.zakupnici.find_one({"id": zakupnik_id})
@@ -4331,21 +4514,642 @@ async def get_contract_template():
     }
 
 
+_DOC_TYPE_KEYWORDS = {
+    "ugovor": ["ugovor", "aneks", "zakup", "najam"],
+    "racun": ["račun", "racun", "invoice", "računa"],
+}
+
+
+def _guess_document_type(text: str) -> str:
+    lowered = text.lower()
+    for doc_type, keywords in _DOC_TYPE_KEYWORDS.items():
+        if any(keyword in lowered for keyword in keywords):
+            return doc_type
+    return "ostalo"
+
+
+def _safe_strip(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+def _to_iso_date(value: str) -> Optional[str]:
+    normalized = value.replace("/", ".").replace("-", ".")
+    parts = normalized.split(".")
+    if len(parts) < 3:
+        return None
+    day, month, year = parts[0], parts[1], parts[2]
+    if len(year) == 2:
+        year = f"20{year}"
+    try:
+        parsed = datetime(int(year), int(month), int(day))
+        return parsed.date().isoformat()
+    except ValueError:
+        return None
+
+
+def _find_first(patterns: List[re.Pattern], text: str) -> Optional[str]:
+    for pattern in patterns:
+        match = pattern.search(text)
+        if match:
+            for group in match.groups():
+                if group:
+                    return group.strip()
+    return None
+
+
+def _parse_amount(value: str) -> Optional[float]:
+    cleaned = value.replace("€", "").replace("EUR", "").replace(" ", "")
+    cleaned = cleaned.replace(".", "").replace(",", ".")
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def _build_empty_extraction(document_type: str = "ostalo") -> Dict[str, Any]:
+    return {
+        "document_type": document_type,
+        "ugovor": {
+            "interna_oznaka": None,
+            "datum_potpisivanja": None,
+            "datum_pocetka": None,
+            "datum_zavrsetka": None,
+            "trajanje_mjeseci": None,
+            "opcija_produljenja": None,
+            "uvjeti_produljenja": None,
+            "rok_otkaza_dani": None,
+        },
+        "nekretnina": {
+            "naziv": None,
+            "adresa": None,
+            "katastarska_opcina": None,
+            "broj_kat_cestice": None,
+            "povrsina": None,
+            "vrsta": None,
+            "namjena_prostora": None,
+        },
+        "property_unit": {
+            "oznaka": None,
+            "naziv": None,
+            "kat": None,
+            "povrsina_m2": None,
+            "status": None,
+            "osnovna_zakupnina": None,
+            "napomena": None,
+            "layout_ref": None,
+        },
+        "zakupnik": {
+            "naziv_firme": None,
+            "ime_prezime": None,
+            "oib": None,
+            "sjediste": None,
+            "kontakt_ime": None,
+            "kontakt_email": None,
+            "kontakt_telefon": None,
+        },
+        "financije": {
+            "osnovna_zakupnina": None,
+            "zakupnina_po_m2": None,
+            "cam_troskovi": None,
+            "polog_depozit": None,
+            "garancija": None,
+            "indeksacija": None,
+            "indeks": None,
+            "formula_indeksacije": None,
+        },
+        "ostalo": {
+            "obveze_odrzavanja": None,
+            "rezije_brojila": None,
+        },
+        "racun": {
+            "dobavljac": None,
+            "broj_racuna": None,
+            "tip_rezije": None,
+            "razdoblje_od": None,
+            "razdoblje_do": None,
+            "datum_izdavanja": None,
+            "datum_dospijeca": None,
+            "iznos_za_platiti": None,
+            "iznos_placen": None,
+            "valuta": None,
+        },
+    }
+
+
+def _heuristic_extract_contract_data(pdf_text: str) -> Dict[str, Any]:
+    document_type = _guess_document_type(pdf_text)
+    extraction = _build_empty_extraction(document_type=document_type)
+
+    line_break_normalized = pdf_text.replace("\r", "\n")
+
+    contract_patterns = [
+        re.compile(
+            r"(?:interna\s+oznaka|oznaka|ugovor\s+br\.?|broj\s+ugovora)[:\-\s]+([^\n]+)",
+            re.IGNORECASE,
+        ),
+        re.compile(r"(?:contract|reference)[:\-\s]+([^\n]+)", re.IGNORECASE),
+    ]
+    contract_value = _find_first(contract_patterns, line_break_normalized)
+    extraction["ugovor"]["interna_oznaka"] = _safe_strip(contract_value)
+
+    date_matches = re.findall(
+        r"\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b", line_break_normalized
+    )
+    unique_dates: List[str] = []
+    for item in date_matches:
+        if item not in unique_dates:
+            unique_dates.append(item)
+
+    if unique_dates:
+        extraction["ugovor"]["datum_potpisivanja"] = _to_iso_date(unique_dates[0])
+    if len(unique_dates) > 1:
+        extraction["ugovor"]["datum_pocetka"] = _to_iso_date(unique_dates[1])
+    if len(unique_dates) > 2:
+        extraction["ugovor"]["datum_zavrsetka"] = _to_iso_date(unique_dates[2])
+
+    duration_match = _find_first(
+        [
+            re.compile(r"trajanje\s+(?:ugovora|najma)[:\s]*(\d{1,3})", re.IGNORECASE),
+            re.compile(r"na\s+razdoblje\s+od\s+(\d{1,3})\s+mjes", re.IGNORECASE),
+        ],
+        line_break_normalized,
+    )
+    extraction["ugovor"]["trajanje_mjeseci"] = (
+        int(duration_match) if duration_match and duration_match.isdigit() else None
+    )
+
+    extension_match = _find_first(
+        [
+            re.compile(r"opci[ja]{2}\s+produljenja[:\s]*(da|ne)", re.IGNORECASE),
+            re.compile(
+                r"produljenje\s+(?:mogu[eć]e|nije)?[:\s]*(da|ne)", re.IGNORECASE
+            ),
+        ],
+        line_break_normalized,
+    )
+    if extension_match:
+        extraction["ugovor"]["opcija_produljenja"] = extension_match.lower() == "da"
+
+    termination_match = _find_first(
+        [
+            re.compile(r"rok\s+otkaza[:\s]*(\d{1,3})", re.IGNORECASE),
+            re.compile(r"otkazni\s+rok[:\s]*(\d{1,3})", re.IGNORECASE),
+        ],
+        line_break_normalized,
+    )
+    extraction["ugovor"]["rok_otkaza_dani"] = (
+        int(termination_match)
+        if termination_match and termination_match.isdigit()
+        else None
+    )
+
+    amount_patterns = re.findall(
+        r"(?:\b|€)(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)\s*(?:€|eur|eur[a-z]*)",
+        line_break_normalized,
+        re.IGNORECASE,
+    )
+    if amount_patterns:
+        extraction["financije"]["osnovna_zakupnina"] = _parse_amount(amount_patterns[0])
+        if len(amount_patterns) > 1:
+            extraction["financije"]["zakupnina_po_m2"] = _parse_amount(
+                amount_patterns[1]
+            )
+
+    deposit_match = _find_first(
+        [
+            re.compile(
+                r"polog[:\s]+(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)", re.IGNORECASE
+            ),
+            re.compile(
+                r"depozit[:\s]+(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)", re.IGNORECASE
+            ),
+        ],
+        line_break_normalized,
+    )
+    if deposit_match:
+        extraction["financije"]["polog_depozit"] = _parse_amount(deposit_match)
+
+    email_match = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", pdf_text)
+    extraction["zakupnik"]["kontakt_email"] = (
+        email_match.group(0) if email_match else None
+    )
+
+    phone_match = re.search(
+        r"(\+?\d{1,3}[\s/\-]?)?(\d{2,3}[\s/\-]?){2,4}\d{2,4}",
+        pdf_text,
+    )
+    if phone_match:
+        extraction["zakupnik"]["kontakt_telefon"] = _safe_strip(phone_match.group(0))
+
+    tenant_patterns = [
+        re.compile(r"zakupnik[:\s]+([^\n]+)", re.IGNORECASE),
+        re.compile(r"najmoprimac[:\s]+([^\n]+)", re.IGNORECASE),
+        re.compile(r"customer[:\s]+([^\n]+)", re.IGNORECASE),
+    ]
+    tenant_name = _find_first(tenant_patterns, line_break_normalized)
+    extraction["zakupnik"]["naziv_firme"] = _safe_strip(tenant_name)
+
+    property_patterns = [
+        re.compile(r"nekretnina[:\s]+([^\n]+)", re.IGNORECASE),
+        re.compile(r"adresa[:\s]+([^\n]+)", re.IGNORECASE),
+        re.compile(r"property[:\s]+([^\n]+)", re.IGNORECASE),
+    ]
+    property_value = _find_first(property_patterns, line_break_normalized)
+    extraction["nekretnina"]["adresa"] = _safe_strip(property_value)
+
+    oib_match = re.search(r"\b\d{11}\b", pdf_text)
+    if oib_match:
+        extraction["zakupnik"]["oib"] = oib_match.group(0)
+
+    return extraction
+
+
+def _document_json_schema() -> Dict[str, Any]:
+    nullable_string = {"type": ["string", "null"]}
+    nullable_number = {"type": ["number", "null"]}
+    nullable_boolean = {"type": ["boolean", "null"]}
+
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "document_type": {
+                "type": "string",
+                "enum": ["ugovor", "racun", "ostalo"],
+            },
+            "ugovor": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "interna_oznaka": nullable_string,
+                    "datum_potpisivanja": nullable_string,
+                    "datum_pocetka": nullable_string,
+                    "datum_zavrsetka": nullable_string,
+                    "trajanje_mjeseci": {"type": ["integer", "null"]},
+                    "opcija_produljenja": nullable_boolean,
+                    "uvjeti_produljenja": nullable_string,
+                    "rok_otkaza_dani": {"type": ["integer", "null"]},
+                },
+                "required": [
+                    "interna_oznaka",
+                    "datum_potpisivanja",
+                    "datum_pocetka",
+                    "datum_zavrsetka",
+                    "trajanje_mjeseci",
+                    "opcija_produljenja",
+                    "uvjeti_produljenja",
+                    "rok_otkaza_dani",
+                ],
+            },
+            "nekretnina": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "naziv": nullable_string,
+                    "adresa": nullable_string,
+                    "katastarska_opcina": nullable_string,
+                    "broj_kat_cestice": nullable_string,
+                    "povrsina": nullable_number,
+                    "vrsta": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "poslovna_zgrada",
+                            "stan",
+                            "zemljiste",
+                            "ostalo",
+                            None,
+                        ],
+                    },
+                    "namjena_prostora": nullable_string,
+                },
+                "required": [
+                    "naziv",
+                    "adresa",
+                    "katastarska_opcina",
+                    "broj_kat_cestice",
+                    "povrsina",
+                    "vrsta",
+                    "namjena_prostora",
+                ],
+            },
+            "property_unit": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "oznaka": nullable_string,
+                    "naziv": nullable_string,
+                    "kat": nullable_string,
+                    "povrsina_m2": nullable_number,
+                    "status": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "dostupno",
+                            "iznajmljeno",
+                            "rezervirano",
+                            "u_odrzavanju",
+                            None,
+                        ],
+                    },
+                    "osnovna_zakupnina": nullable_number,
+                    "napomena": nullable_string,
+                    "layout_ref": nullable_string,
+                },
+                "required": [
+                    "oznaka",
+                    "naziv",
+                    "kat",
+                    "povrsina_m2",
+                    "status",
+                    "osnovna_zakupnina",
+                    "napomena",
+                    "layout_ref",
+                ],
+            },
+            "zakupnik": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "naziv_firme": nullable_string,
+                    "ime_prezime": nullable_string,
+                    "oib": nullable_string,
+                    "sjediste": nullable_string,
+                    "kontakt_ime": nullable_string,
+                    "kontakt_email": nullable_string,
+                    "kontakt_telefon": nullable_string,
+                },
+                "required": [
+                    "naziv_firme",
+                    "ime_prezime",
+                    "oib",
+                    "sjediste",
+                    "kontakt_ime",
+                    "kontakt_email",
+                    "kontakt_telefon",
+                ],
+            },
+            "financije": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "osnovna_zakupnina": nullable_number,
+                    "zakupnina_po_m2": nullable_number,
+                    "cam_troskovi": nullable_number,
+                    "polog_depozit": nullable_number,
+                    "garancija": nullable_number,
+                    "indeksacija": nullable_boolean,
+                    "indeks": nullable_string,
+                    "formula_indeksacije": nullable_string,
+                },
+                "required": [
+                    "osnovna_zakupnina",
+                    "zakupnina_po_m2",
+                    "cam_troskovi",
+                    "polog_depozit",
+                    "garancija",
+                    "indeksacija",
+                    "indeks",
+                    "formula_indeksacije",
+                ],
+            },
+            "ostalo": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "obveze_odrzavanja": nullable_string,
+                    "rezije_brojila": nullable_string,
+                },
+                "required": ["obveze_odrzavanja", "rezije_brojila"],
+            },
+            "racun": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "dobavljac": nullable_string,
+                    "broj_racuna": nullable_string,
+                    "tip_rezije": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "struja",
+                            "voda",
+                            "plin",
+                            "komunalije",
+                            "internet",
+                            "ostalo",
+                            None,
+                        ],
+                    },
+                    "razdoblje_od": nullable_string,
+                    "razdoblje_do": nullable_string,
+                    "datum_izdavanja": nullable_string,
+                    "datum_dospijeca": nullable_string,
+                    "iznos_za_platiti": nullable_number,
+                    "iznos_placen": nullable_number,
+                    "valuta": nullable_string,
+                },
+                "required": [
+                    "dobavljac",
+                    "broj_racuna",
+                    "tip_rezije",
+                    "razdoblje_od",
+                    "razdoblje_do",
+                    "datum_izdavanja",
+                    "datum_dospijeca",
+                    "iznos_za_platiti",
+                    "iznos_placen",
+                    "valuta",
+                ],
+            },
+        },
+        "required": [
+            "document_type",
+            "ugovor",
+            "nekretnina",
+            "property_unit",
+            "zakupnik",
+            "financije",
+            "ostalo",
+            "racun",
+        ],
+    }
+
+
+def _parse_openai_structured_output(response: Any) -> Dict[str, Any]:
+    output_parsed = getattr(response, "output_parsed", None)
+    if isinstance(output_parsed, dict):
+        return output_parsed
+
+    for output in getattr(response, "output", []) or []:
+        for item in getattr(output, "content", []) or []:
+            parsed = getattr(item, "parsed", None)
+            if isinstance(parsed, dict):
+                return parsed
+
+    segments: List[str] = []
+    output_text = getattr(response, "output_text", None)
+    if isinstance(output_text, str) and output_text.strip():
+        segments.append(output_text.strip())
+    elif isinstance(output_text, list):
+        joined = "".join(str(part) for part in output_text if part)
+        if joined.strip():
+            segments.append(joined.strip())
+
+    if not segments:
+        for output in getattr(response, "output", []) or []:
+            for item in getattr(output, "content", []) or []:
+                text_value = getattr(item, "text", None)
+                if isinstance(text_value, str) and text_value.strip():
+                    segments.append(text_value.strip())
+
+    if not segments and hasattr(response, "choices"):
+        for choice in getattr(response, "choices", []) or []:
+            text_value = getattr(choice, "text", None)
+            if isinstance(text_value, str) and text_value.strip():
+                segments.append(text_value.strip())
+            message = getattr(choice, "message", None)
+            if isinstance(message, dict):
+                content_value = message.get("content")
+                if isinstance(content_value, str) and content_value.strip():
+                    segments.append(content_value.strip())
+
+    if not segments:
+        raise ValueError("AI response empty")
+
+    last_error: Optional[json.JSONDecodeError] = None
+    for candidate in segments:
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError as err:
+            last_error = err
+            start = candidate.find("{")
+            end = candidate.rfind("}")
+            if start != -1 and end != -1 and end > start:
+                snippet = candidate[start : end + 1]
+                try:
+                    return json.loads(snippet)
+                except json.JSONDecodeError as nested_err:
+                    last_error = nested_err
+
+    if last_error:
+        raise ValueError(f"AI response nije valjan JSON: {last_error}")
+    raise ValueError("AI response nije valjan JSON")
+
+
+def _extract_with_openai(client: OpenAI, pdf_text: str) -> Dict[str, Any]:
+    schema = _document_json_schema()
+    schema_json = json.dumps(schema)
+
+    system_prompt = (
+        "Ti si digitalni asistent za upravljanje nekretninama. "
+        "Analiziraj učitani PDF (ugovor, račun ili drugi dokument) i vrati strukturirane podatke kao JSON."
+    )
+    user_prompt = (
+        "Vrati strogo valjan JSON koji odgovara shemi u nastavku (bez dodatnog teksta)."
+        " Ako podatak ne postoji, postavi vrijednost na null. Datume formatiraj YYYY-MM-DD."
+        " Brojčane vrijednosti vrati kao brojeve bez valute, osim ako valuta nije jasno navedena."
+        "\n\nShema JSON-a:\n"
+        f"{schema_json}"
+        "\n\nTekst dokumenta:\n"
+        f"{pdf_text}"
+    )
+
+    schema_name = "document_extraction"
+    json_schema_strict = {
+        "type": "json_schema",
+        "name": schema_name,
+        "schema": schema,
+        "strict": True,
+    }
+    json_schema_legacy = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": schema_name,
+            "schema": schema,
+        },
+    }
+
+    response_params = {}
+    try:
+        response_params = inspect.signature(client.responses.create).parameters  # type: ignore[assignment]
+    except (TypeError, ValueError):
+        response_params = {}
+
+    candidate_content_types: List[str] = []
+    for candidate in (OPENAI_INPUT_CONTENT_TYPE, "input_text", "text"):
+        if candidate and candidate not in candidate_content_types:
+            candidate_content_types.append(candidate)
+
+    base_kwargs = {
+        "model": _get_openai_document_model(),
+        "temperature": 0,
+    }
+
+    last_exception: Optional[Exception] = None
+
+    for content_type in candidate_content_types:
+        messages = [
+            {
+                "role": "system",
+                "content": [{"type": content_type, "text": system_prompt}],
+            },
+            {
+                "role": "user",
+                "content": [{"type": content_type, "text": user_prompt}],
+            },
+        ]
+
+        request_kwargs = {**base_kwargs, "input": messages}
+
+        try:
+            if "text" in response_params:
+                response = client.responses.create(
+                    **request_kwargs,
+                    text={"format": json_schema_strict},
+                )
+            elif "response_format" in response_params:
+                response = client.responses.create(
+                    **request_kwargs,
+                    response_format=json_schema_legacy,
+                )
+            else:
+                raise RuntimeError(
+                    "Trenutna verzija OpenAI SDK-a ne podržava strukturirane odgovore."
+                )
+        except BadRequestError as exc:
+            error_text = str(exc)
+            if (
+                f"Invalid value: '{content_type}'" in error_text
+                or f"invalid value: '{content_type}'" in error_text.lower()
+            ) and len(candidate_content_types) > 1:
+                last_exception = exc
+                continue
+            raise
+        except Exception as exc:  # pragma: no cover - defensive fallback
+            last_exception = exc
+            break
+
+        try:
+            return _parse_openai_structured_output(response)
+        except Exception as exc:  # pragma: no cover - parsing fallbacks
+            last_exception = exc
+            break
+
+    if last_exception:
+        raise last_exception
+    raise RuntimeError("AI odgovor nije moguće obraditi")
+
+
 @api_router.post(
     "/ai/parse-pdf-contract",
     dependencies=[Depends(require_scopes("documents:create"))],
 )
-async def parse_pdf_contract(file: UploadFile = File(...)):
+async def parse_pdf_contract(request: Request, file: UploadFile = File(...)):
     """AI funkcija za čitanje i izvlačenje podataka iz PDF ugovora (OpenAI)"""
     try:
         if file.content_type != "application/pdf":
             raise HTTPException(status_code=400, detail="Datoteka mora biti PDF format")
-
-        openai_key = _get_openai_api_key()
-        if not openai_key:
-            raise HTTPException(
-                status_code=500, detail="OPENAI_API_KEY nije postavljen u okruženju"
-            )
 
         pdf_bytes = await file.read()
         if not pdf_bytes:
@@ -4358,7 +5162,7 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
                 status_code=400, detail=f"PDF se ne može pročitati: {exc}"
             )
 
-        pages_text = []
+        pages_text: List[str] = []
         max_pages = min(len(reader.pages), 20)
         for i in range(max_pages):
             try:
@@ -4368,72 +5172,68 @@ async def parse_pdf_contract(file: UploadFile = File(...)):
                 pages_text.append("")
         pdf_text = "\n\n".join(pages_text)
 
-        if len(pdf_text) > 20000:
-            pdf_text = pdf_text[:20000]
+        if len(pdf_text) > 25000:
+            pdf_text = pdf_text[:25000]
 
-        client = OpenAI(api_key=openai_key)
+        openai_key = _get_openai_api_key()
+        extraction_strategy = "heuristic_fallback"
+        parsed_data: Optional[Dict[str, Any]] = None
+        openai_error_message: Optional[str] = None
 
-        system_prompt = (
-            "Ti si digitalni asistent za upravljanje nekretninama. "
-            "Tvoj zadatak je analizirati učitani PDF (ugovor, račun ili drugi dokument) i vratiti strukturirane podatke. "
-            "Vrati STROGO validan JSON prema shemi. Bez dodatnog teksta."
-        )
+        if openai_key:
+            client = OpenAI(api_key=openai_key)
+            try:
+                parsed_data = await asyncio.to_thread(
+                    _extract_with_openai, client, pdf_text
+                )
+                extraction_strategy = "openai_structured"
+            except Exception as exc:  # pragma: no cover - depends on external API
+                openai_error_message = str(exc)
+                logger.error(
+                    "Greška pri AI analizi PDF-a (OpenAI), koristi se fallback: %s",
+                    exc,
+                    exc_info=True,
+                )
 
-        instructions = (
-            "Molim te analiziraj sljedeći tekst dokumenta i vrati JSON u ovom formatu:"
-            '\n\n{\n  "document_type": "ugovor/racun/ostalo",\n  "ugovor": {\n    "interna_oznaka": "string ili null",\n    "datum_potpisivanja": "YYYY-MM-DD ili null",\n    "datum_pocetka": "YYYY-MM-DD ili null",\n    "datum_zavrsetka": "YYYY-MM-DD ili null",\n    "trajanje_mjeseci": "broj ili null",\n    "opcija_produljenja": "boolean ili null",\n    "uvjeti_produljenja": "string ili null",\n    "rok_otkaza_dani": "broj ili null"\n  },\n  "nekretnina": {\n    "naziv": "string ili null",\n    "adresa": "string ili null",\n    "katastarska_opcina": "string ili null",\n    "broj_kat_cestice": "string ili null",\n    "povrsina": "broj ili null",\n    "vrsta": "poslovna_zgrada/stan/zemljiste/ostalo ili null",\n    "namjena_prostora": "string ili null"\n  },\n  "property_unit": {\n    "oznaka": "string ili null",\n    "naziv": "string ili null",\n    "kat": "string ili null",\n    "povrsina_m2": "broj ili null",\n    "status": "dostupno/iznajmljeno/rezervirano/u_odrzavanju ili null",\n    "osnovna_zakupnina": "broj ili null",\n    "napomena": "string ili null",\n    "layout_ref": "string ili null"\n  },\n  "zakupnik": {\n    "naziv_firme": "string ili null",\n    "ime_prezime": "string ili null",\n    "oib": "string ili null",\n    "sjediste": "string ili null",\n    "kontakt_ime": "string ili null",\n    "kontakt_email": "string ili null",\n    "kontakt_telefon": "string ili null"\n  },\n  "financije": {\n    "osnovna_zakupnina": "broj ili null",\n    "zakupnina_po_m2": "broj ili null",\n    "cam_troskovi": "broj ili null",\n    "polog_depozit": "broj ili null",\n    "garancija": "broj ili null",\n    "indeksacija": "boolean ili null",\n    "indeks": "string ili null",\n    "formula_indeksacije": "string ili null"\n  },\n  "ostalo": {\n    "obveze_odrzavanja": "zakupodavac/zakupnik/podijeljeno ili null",\n    "rezije_brojila": "string ili null"\n  },\n  "racun": {\n    "dobavljac": "string ili null",\n    "broj_racuna": "string ili null",\n    "tip_rezije": "struja/voda/plin/komunalije/internet/ostalo ili null",\n    "razdoblje_od": "YYYY-MM-DD ili null",\n    "razdoblje_do": "YYYY-MM-DD ili null",\n    "datum_izdavanja": "YYYY-MM-DD ili null",\n    "datum_dospijeca": "YYYY-MM-DD ili null",\n    "iznos_za_platiti": "broj ili null",\n    "iznos_placen": "broj ili null",\n    "valuta": "string ili null"\n  }\n}\n\n'
-            "VAŽNO: Ako ne možeš pronaći informaciju, stavi null. Datume u YYYY-MM-DD. Brojevi bez valute. Boolean true/false. Enum vrijednosti točno kako su zadane. Ako dokument opisuje konkretan podprostor (npr. oznaka, kat, naziv), popuni polje property_unit. Odgovori SAMO JSON objektom."
-        )
+        if parsed_data is None:
+            parsed_data = _heuristic_extract_contract_data(pdf_text)
 
-        messages = [
-            {"role": "system", "content": system_prompt},
+        response_payload = await build_ai_parse_response(parsed_data)
+        metadata = response_payload.get("metadata")
+        if not isinstance(metadata, dict):
+            metadata = {}
+            response_payload["metadata"] = metadata
+        metadata.update(
             {
-                "role": "user",
-                "content": f"{instructions}\n\nTekst ugovora (sažeto):\n\n{pdf_text}",
-            },
-        ]
-
-        response = await asyncio.to_thread(
-            client.chat.completions.create,
-            model="gpt-4o-mini",
-            messages=messages,
-            temperature=0,
+                "extraction_strategy": extraction_strategy,
+                "text_length": len(pdf_text),
+            }
         )
+        if openai_error_message and extraction_strategy != "openai_structured":
+            metadata["openai_error"] = openai_error_message
+            response_payload["message"] = (
+                response_payload.get("message", "PDF je analiziran")
+                + " (Primijenjen heuristički fallback.)"
+            )
+        return JSONResponse(response_payload)
 
-        ai_text = response.choices[0].message.content if response.choices else ""
-
-        try:
-            parsed_data = json.loads(ai_text)
-            return await build_ai_parse_response(parsed_data)
-        except json.JSONDecodeError:
-            logger.warning("AI response is not valid JSON: %s", ai_text[:200])
-            start = ai_text.find("{")
-            end = ai_text.rfind("}") + 1
-            if start != -1 and end > start:
-                json_part = ai_text[start:end]
-                try:
-                    parsed_data = json.loads(json_part)
-                    return await build_ai_parse_response(parsed_data)
-                except json.JSONDecodeError:
-                    logger.warning(
-                        "Failed to parse extracted JSON fragment: %s", json_part[:200]
-                    )
-                    pass
-            return {
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Greška pri analizi PDF-a: {str(e)}", exc_info=True)
+        return JSONResponse(
+            {
                 "success": False,
                 "data": None,
-                "message": f"AI je analizirao dokument, ali odgovor nije čist JSON: {ai_text[:500]}...",
-            }
-
-    except Exception as e:
-        logger.error(f"Greška pri AI analizi PDF-a (OpenAI): {str(e)}")
-        return {
-            "success": False,
-            "data": None,
-            "message": f"Greška pri analizi PDF-a: {str(e)}",
-        }
+                "message": f"Greška pri analizi PDF-a: {str(e)}",
+            },
+            status_code=500,
+        )
     finally:
-        await file.close()
+        try:
+            await file.close()
+        except Exception:
+            pass
 
 
 # Helper funkcija za kreiranje podsjećanja
