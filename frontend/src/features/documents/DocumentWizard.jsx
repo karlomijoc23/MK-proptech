@@ -1,0 +1,1322 @@
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useContext,
+  useEffect,
+} from "react";
+import { Button } from "../../components/ui/button";
+import { toast } from "../../components/ui/sonner";
+import { Badge } from "../../components/ui/badge";
+import { api } from "../../shared/api";
+import {
+  DOCUMENT_TYPE_LABELS,
+  PROPERTY_DOCUMENT_TYPES,
+  CONTRACT_DOCUMENT_TYPES,
+  resolveDocumentType,
+  formatDocumentType,
+} from "../../shared/documents";
+import {
+  UNIT_STATUS_CONFIG,
+  getUnitDisplayName,
+  sortUnitsByPosition,
+  resolveUnitTenantName,
+} from "../../shared/units";
+import { parseNumericValue } from "../../shared/formatters";
+import UploadStep from "./steps/UploadStep";
+import MetaStep from "./steps/MetaStep";
+import LinkingStep from "./steps/LinkingStep";
+import ManualUnitForm from "./components/ManualUnitForm";
+
+const DocumentWizardContext = React.createContext(null);
+
+export const useDocumentWizard = () => {
+  const context = useContext(DocumentWizardContext);
+  if (!context) {
+    throw new Error("useDocumentWizard must be used within DocumentWizard");
+  }
+  return context;
+};
+
+const steps = [
+  { id: "upload", title: "Učitaj dokument", component: UploadStep },
+  { id: "meta", title: "Detalji", component: MetaStep },
+  { id: "linking", title: "Povezivanje", component: LinkingStep },
+];
+
+const initialManualUnitState = {
+  oznaka: "",
+  naziv: "",
+  kat: "",
+  povrsina_m2: "",
+  status: "dostupno",
+  osnovna_zakupnina: "",
+  napomena: "",
+};
+
+const initialFormState = {
+  naziv: "",
+  tip: "ugovor",
+  opis: "",
+  nekretnina_id: "",
+  zakupnik_id: "",
+  ugovor_id: "",
+  property_unit_id: "",
+  file: null,
+};
+
+const resolveConfidenceScore = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+  if (typeof value === "object") {
+    if (typeof value.confidence === "number") return value.confidence;
+    if (typeof value.score === "number") return value.score;
+    if (typeof value.confidence_score === "number")
+      return value.confidence_score;
+    if (typeof value.value === "number") return value.value;
+  }
+  return null;
+};
+
+const formatConfidenceBadgeClass = (score) => {
+  if (score === null || score === undefined) {
+    return "bg-muted text-muted-foreground";
+  }
+  const percent = score > 1 ? score : score * 100;
+  if (percent >= 80) {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  if (percent >= 50) {
+    return "bg-amber-100 text-amber-700";
+  }
+  return "bg-rose-100 text-rose-700";
+};
+
+const formatConfidenceLabel = (score) => {
+  if (score === null || score === undefined) {
+    return "nije dostupno";
+  }
+  const percent = score > 1 ? score : score * 100;
+  return `${Math.round(percent)}%`;
+};
+
+const DocumentWizard = ({
+  nekretnine,
+  zakupnici,
+  ugovori,
+  propertyUnitsByProperty = {},
+  propertyUnitsById = {},
+  onSubmit,
+  onCancel,
+  refreshEntities,
+  loading,
+}) => {
+  const [formData, setFormData] = useState(initialFormState);
+  const [aiSuggestions, setAiSuggestions] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [tenantOptions, setTenantOptions] = useState(zakupnici);
+  const [manualUnitForm, setManualUnitForm] = useState(initialManualUnitState);
+  const [manualUnitErrors, setManualUnitErrors] = useState({});
+  const [showManualUnitForm, setShowManualUnitForm] = useState(false);
+  const [quickCreateLoading, setQuickCreateLoading] = useState({
+    property: false,
+    tenant: false,
+    contract: false,
+    unit: false,
+  });
+  const [activeStep, setActiveStep] = useState(0);
+  const [aiApplied, setAiApplied] = useState(true);
+
+  const fileInputRef = useRef(null);
+  const latestCreatedUnitRef = useRef(null);
+  const manualSnapshotRef = useRef(null);
+  const aiSnapshotRef = useRef(null);
+
+  const manualUnitStatusOptions = useMemo(
+    () =>
+      Object.entries(UNIT_STATUS_CONFIG).map(([value, config]) => ({
+        value,
+        label: config.label,
+      })),
+    [],
+  );
+
+  const propertyUnitSuggestion = useMemo(
+    () => aiSuggestions?.property_unit || null,
+    [aiSuggestions],
+  );
+
+  const normalizeValue = useCallback(
+    (value) => (value ? value.toString().trim().toLowerCase() : ""),
+    [],
+  );
+
+  useEffect(() => {
+    setTenantOptions(zakupnici);
+  }, [zakupnici]);
+
+  const findPropertyMatch = useCallback(
+    (suggestion) => {
+      if (!suggestion) return null;
+      const name = normalizeValue(suggestion.naziv);
+      const address = normalizeValue(suggestion.adresa);
+      if (!name && !address) return null;
+      return (
+        nekretnine.find((item) => {
+          const itemName = normalizeValue(item.naziv);
+          const itemAddress = normalizeValue(item.adresa);
+          if (name && itemName === name) return true;
+          if (address && itemAddress === address) return true;
+          if (name && itemName.includes(name)) return true;
+          if (address && itemAddress.includes(address)) return true;
+          return false;
+        }) || null
+      );
+    },
+    [nekretnine, normalizeValue],
+  );
+
+  const findPropertyUnitMatch = useCallback(
+    (propertyId, suggestion) => {
+      if (!propertyId || !suggestion) {
+        return null;
+      }
+      const targetOznaka = normalizeValue(suggestion.oznaka);
+      const targetNaziv = normalizeValue(suggestion.naziv);
+      if (!targetOznaka && !targetNaziv) {
+        return null;
+      }
+      const units = propertyUnitsByProperty?.[propertyId] || [];
+      return (
+        units.find((unit) => {
+          const unitOznaka = normalizeValue(unit.oznaka);
+          const unitNaziv = normalizeValue(unit.naziv);
+          if (targetOznaka && unitOznaka === targetOznaka) {
+            return true;
+          }
+          if (targetNaziv && unitNaziv === targetNaziv) {
+            return true;
+          }
+          return false;
+        }) || null
+      );
+    },
+    [normalizeValue, propertyUnitsByProperty],
+  );
+
+  const findTenantMatch = useCallback(
+    (suggestion) => {
+      if (!suggestion) return null;
+      const name = normalizeValue(
+        suggestion.naziv_firme || suggestion.ime_prezime,
+      );
+      const oib = normalizeValue(suggestion.oib);
+      return (
+        tenantOptions.find((tenant) => {
+          const tenantName = normalizeValue(
+            tenant.naziv_firme || tenant.ime_prezime,
+          );
+          const tenantOib = normalizeValue(tenant.oib);
+          if (oib && tenantOib === oib) return true;
+          if (name && tenantName === name) return true;
+          if (name && tenantName.includes(name)) return true;
+          return false;
+        }) || null
+      );
+    },
+    [normalizeValue, tenantOptions],
+  );
+
+  const findContractMatch = useCallback(
+    (suggestion) => {
+      if (!suggestion) return null;
+      const oznaka = normalizeValue(suggestion.interna_oznaka);
+      if (!oznaka) return null;
+      return (
+        ugovori.find(
+          (contract) => normalizeValue(contract.interna_oznaka) === oznaka,
+        ) || null
+      );
+    },
+    [normalizeValue, ugovori],
+  );
+
+  const activeTenantOptions = useMemo(
+    () =>
+      tenantOptions.filter(
+        (tenant) => (tenant.status || "aktivan") !== "arhiviran",
+      ),
+    [tenantOptions],
+  );
+
+  const tenantsById = useMemo(
+    () => Object.fromEntries(zakupnici.map((tenant) => [tenant.id, tenant])),
+    [zakupnici],
+  );
+
+  const contractsForProperty = useMemo(() => {
+    if (!formData.nekretnina_id) {
+      return ugovori;
+    }
+    return ugovori.filter(
+      (contract) => contract.nekretnina_id === formData.nekretnina_id,
+    );
+  }, [ugovori, formData.nekretnina_id]);
+
+  const unitsForSelectedProperty = useMemo(() => {
+    if (!formData.nekretnina_id) {
+      return [];
+    }
+    return sortUnitsByPosition(
+      propertyUnitsByProperty[formData.nekretnina_id] || [],
+    );
+  }, [formData.nekretnina_id, propertyUnitsByProperty]);
+
+  const matchedProperty = useMemo(
+    () => findPropertyMatch(aiSuggestions?.nekretnina),
+    [aiSuggestions, findPropertyMatch],
+  );
+
+  const matchedTenant = useMemo(
+    () => findTenantMatch(aiSuggestions?.zakupnik),
+    [aiSuggestions, findTenantMatch],
+  );
+
+  const matchedContract = useMemo(
+    () => findContractMatch(aiSuggestions?.ugovor),
+    [aiSuggestions, findContractMatch],
+  );
+
+  const matchedPropertyUnit = useMemo(() => {
+    if (!formData.property_unit_id) {
+      return null;
+    }
+    const fallback =
+      latestCreatedUnitRef.current &&
+      latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    return propertyUnitsById?.[formData.property_unit_id] || fallback;
+  }, [formData.property_unit_id, propertyUnitsById]);
+
+  useEffect(() => {
+    if (!formData.property_unit_id) {
+      return;
+    }
+    const fallbackUnit =
+      latestCreatedUnitRef.current &&
+      latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
+    if (!unit) {
+      setFormData((prev) => ({ ...prev, property_unit_id: "" }));
+      return;
+    }
+    if (
+      formData.nekretnina_id &&
+      unit.nekretnina_id !== formData.nekretnina_id
+    ) {
+      setFormData((prev) => ({ ...prev, property_unit_id: "" }));
+    }
+    if (propertyUnitsById?.[formData.property_unit_id]) {
+      latestCreatedUnitRef.current = null;
+    }
+  }, [formData.nekretnina_id, formData.property_unit_id, propertyUnitsById]);
+
+  useEffect(() => {
+    if (!formData.property_unit_id) {
+      return;
+    }
+    const fallbackUnit =
+      latestCreatedUnitRef.current &&
+      latestCreatedUnitRef.current.id === formData.property_unit_id
+        ? latestCreatedUnitRef.current
+        : null;
+    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
+    if (!unit) {
+      return;
+    }
+    setFormData((prev) => {
+      const updates = {};
+      if (!prev.nekretnina_id && unit.nekretnina_id) {
+        updates.nekretnina_id = unit.nekretnina_id;
+      }
+      if (!prev.zakupnik_id && unit.zakupnik_id) {
+        updates.zakupnik_id = unit.zakupnik_id;
+      }
+      if (!prev.ugovor_id && unit.ugovor_id) {
+        updates.ugovor_id = unit.ugovor_id;
+      }
+      return Object.keys(updates).length ? { ...prev, ...updates } : prev;
+    });
+  }, [formData.property_unit_id, propertyUnitsById]);
+
+  const aiSuggestionDocumentType = aiSuggestions
+    ? resolveDocumentType(aiSuggestions.document_type)
+    : null;
+
+  const detectedValues = useMemo(() => {
+    if (!aiSuggestions) {
+      return [];
+    }
+    const rows = [];
+    const propertySuggestion = aiSuggestions.nekretnina || {};
+    const tenantSuggestion = aiSuggestions.zakupnik || {};
+    const contractSuggestion = aiSuggestions.ugovor || {};
+    const propertyUnitCandidate = propertyUnitSuggestion || {};
+
+    rows.push({
+      label: "Tip dokumenta",
+      value: formatDocumentType(
+        aiSuggestionDocumentType || aiSuggestions.document_type,
+      ),
+      confidence: resolveConfidenceScore(
+        aiSuggestions.confidence?.document_type ||
+          aiSuggestions.document_type_confidence ||
+          aiSuggestions.document_type_score ||
+          null,
+      ),
+    });
+
+    rows.push({
+      label: "Nekretnina",
+      value:
+        propertySuggestion.naziv ||
+        propertySuggestion.adresa ||
+        "Nije prepoznato",
+      matched: matchedProperty?.naziv,
+      confidence: resolveConfidenceScore(
+        propertySuggestion.confidence ||
+          aiSuggestions.confidence?.nekretnina ||
+          propertySuggestion.score,
+      ),
+    });
+
+    rows.push({
+      label: "Zakupnik",
+      value:
+        tenantSuggestion.naziv_firme ||
+        tenantSuggestion.ime_prezime ||
+        "Nije prepoznato",
+      matched: matchedTenant?.naziv_firme || matchedTenant?.ime_prezime || null,
+      confidence: resolveConfidenceScore(
+        tenantSuggestion.confidence ||
+          aiSuggestions.confidence?.zakupnik ||
+          tenantSuggestion.score,
+      ),
+    });
+
+    rows.push({
+      label: "Ugovor",
+      value: contractSuggestion.interna_oznaka || "Nije prepoznato",
+      matched: matchedContract?.interna_oznaka,
+      confidence: resolveConfidenceScore(
+        contractSuggestion.confidence ||
+          aiSuggestions.confidence?.ugovor ||
+          contractSuggestion.score,
+      ),
+    });
+
+    rows.push({
+      label: "Podprostor",
+      value:
+        propertyUnitCandidate.oznaka ||
+        propertyUnitCandidate.naziv ||
+        "Nije prepoznato",
+      matched: matchedPropertyUnit
+        ? getUnitDisplayName(matchedPropertyUnit)
+        : null,
+      confidence: resolveConfidenceScore(
+        propertyUnitCandidate.confidence ||
+          aiSuggestions.confidence?.property_unit ||
+          propertyUnitCandidate.score,
+      ),
+    });
+
+    return rows;
+  }, [
+    aiSuggestions,
+    aiSuggestionDocumentType,
+    matchedContract,
+    matchedProperty,
+    matchedPropertyUnit,
+    matchedTenant,
+    propertyUnitSuggestion,
+  ]);
+
+  const handleResetState = useCallback(() => {
+    setFormData(initialFormState);
+    setAiSuggestions(null);
+    setAiLoading(false);
+    setAiError(null);
+    setUploadedFile(null);
+    setTenantOptions(zakupnici);
+    setManualUnitForm(initialManualUnitState);
+    setManualUnitErrors({});
+    setShowManualUnitForm(false);
+    setQuickCreateLoading({
+      property: false,
+      tenant: false,
+      contract: false,
+      unit: false,
+    });
+    setActiveStep(0);
+    setAiApplied(true);
+    manualSnapshotRef.current = null;
+    aiSnapshotRef.current = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [zakupnici]);
+
+  const handleFileChange = useCallback(
+    async (event) => {
+      const file = event.target.files?.[0] || null;
+      setAiSuggestions(null);
+      setAiError(null);
+
+      if (!file) {
+        setUploadedFile(null);
+        setFormData((prev) => ({ ...prev, file: null }));
+        manualSnapshotRef.current = null;
+        aiSnapshotRef.current = null;
+        setAiApplied(true);
+        return;
+      }
+
+      if (file.type !== "application/pdf") {
+        toast.error("Molimo odaberite PDF datoteku");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        setUploadedFile(null);
+        setFormData((prev) => ({ ...prev, file: null }));
+        return;
+      }
+
+      toast.dismiss("document-pdf-parse");
+      toast.loading("Analiziram PDF dokument…", {
+        description: file.name,
+        id: "document-pdf-parse",
+      });
+
+      manualSnapshotRef.current = { ...formData };
+      setUploadedFile(file);
+      setFormData((prev) => ({ ...prev, file }));
+      setAiLoading(true);
+
+      try {
+        const response = await api.parsePdfContract(file);
+        const payload = response.data;
+        if (!payload.success) {
+          const message = payload.message || "AI analiza PDF-a nije uspjela";
+          setAiError(message);
+          toast.error(message);
+          return;
+        }
+
+        const suggestions = payload.data || {};
+        setAiSuggestions(suggestions);
+
+        const contract = suggestions.ugovor || {};
+        const finances = suggestions.financije || {};
+        const propertySuggestion = suggestions.nekretnina || {};
+        const tenantSuggestion = suggestions.zakupnik || {};
+        const propertyUnitSuggestion = suggestions.property_unit || {};
+        const propertyMatch = findPropertyMatch(propertySuggestion);
+        const tenantMatch = findTenantMatch(tenantSuggestion);
+        const contractMatch = findContractMatch(contract);
+        const tenantMatchStatus = tenantMatch
+          ? tenantMatch.status || "aktivan"
+          : null;
+        const tenantMatchIsArchived = tenantMatchStatus === "arhiviran";
+        const documentType = resolveDocumentType(suggestions.document_type);
+        const isPropertyDoc = PROPERTY_DOCUMENT_TYPES.has(documentType);
+        const isContractDoc = CONTRACT_DOCUMENT_TYPES.has(documentType);
+        const matchedPropertyUnitResponse =
+          payload.matched_property_unit || null;
+        const createdPropertyUnit = payload.created_property_unit || null;
+
+        let inferredPropertyUnitId = "";
+
+        if (
+          createdPropertyUnit &&
+          propertyMatch &&
+          createdPropertyUnit.nekretnina_id === propertyMatch.id
+        ) {
+          latestCreatedUnitRef.current = createdPropertyUnit;
+          inferredPropertyUnitId = createdPropertyUnit.id;
+          await refreshEntities();
+          toast.success(
+            `Podprostor ${
+              createdPropertyUnit.oznaka ||
+              createdPropertyUnit.naziv ||
+              createdPropertyUnit.id
+            } je automatski kreiran.`,
+          );
+        } else if (
+          matchedPropertyUnitResponse &&
+          propertyMatch &&
+          matchedPropertyUnitResponse.nekretnina_id === propertyMatch.id
+        ) {
+          inferredPropertyUnitId = matchedPropertyUnitResponse.id;
+          toast.success(
+            `Podprostor ${
+              matchedPropertyUnitResponse.oznaka ||
+              matchedPropertyUnitResponse.naziv ||
+              matchedPropertyUnitResponse.id
+            } je povezan s dokumentom.`,
+          );
+        } else if (
+          propertyMatch &&
+          (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv)
+        ) {
+          const localMatch = findPropertyUnitMatch(
+            propertyMatch.id,
+            propertyUnitSuggestion,
+          );
+          if (localMatch) {
+            inferredPropertyUnitId = localMatch.id;
+            toast.info(
+              `Podprostor ${
+                localMatch.oznaka || localMatch.naziv
+              } je povezan s dokumentom.`,
+            );
+          } else {
+            toast.warning(
+              `AI je identificirao podprostor ${
+                propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv
+              }, ali ga nije pronašao u sustavu.`,
+            );
+          }
+        } else if (
+          (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv) &&
+          !propertyMatch
+        ) {
+          toast.info(
+            "AI je prepoznao podprostor, ali nije pronašao odgovarajuću nekretninu.",
+          );
+        }
+
+        setFormData((prev) => {
+          const updated = { ...prev, tip: documentType };
+
+          if (!prev.naziv) {
+            const suggestedName = (() => {
+              if (documentType === "racun" && suggestions.racun?.broj_racuna) {
+                return `Račun ${suggestions.racun.broj_racuna}`;
+              }
+              if (documentType === "aneks" && contract.interna_oznaka) {
+                return `Aneks ${contract.interna_oznaka}`;
+              }
+              if (documentType === "ugovor" && contract.interna_oznaka) {
+                return `Ugovor ${contract.interna_oznaka}`;
+              }
+              if (isPropertyDoc) {
+                const propertyLabel =
+                  propertyMatch?.naziv || propertySuggestion.naziv;
+                if (propertyLabel) {
+                  const docLabel =
+                    DOCUMENT_TYPE_LABELS[documentType] ||
+                    formatDocumentType(documentType);
+                  return `${docLabel} – ${propertyLabel}`;
+                }
+              }
+              return null;
+            })();
+
+            if (suggestedName) {
+              updated.naziv = suggestedName;
+            }
+          }
+
+          if (propertyMatch) {
+            updated.nekretnina_id = propertyMatch.id;
+          } else if (isContractDoc && contractMatch?.nekretnina_id) {
+            updated.nekretnina_id = contractMatch.nekretnina_id;
+          }
+
+          if (!prev.opis && !isPropertyDoc) {
+            const descriptionSource =
+              tenantSuggestion.naziv_firme ||
+              tenantSuggestion.ime_prezime ||
+              "";
+            if (descriptionSource) {
+              updated.opis = descriptionSource;
+            }
+          }
+
+          if (isPropertyDoc) {
+            updated.zakupnik_id = "";
+            updated.ugovor_id = "";
+          } else {
+            if (tenantMatch && !tenantMatchIsArchived) {
+              updated.zakupnik_id = tenantMatch.id;
+            }
+            if (contractMatch) {
+              updated.ugovor_id = contractMatch.id;
+            }
+          }
+
+          if (isPropertyDoc) {
+            updated.property_unit_id = "";
+          } else if (inferredPropertyUnitId) {
+            updated.property_unit_id = inferredPropertyUnitId;
+          }
+          aiSnapshotRef.current = updated;
+          return updated;
+        });
+
+        if (
+          !isPropertyDoc &&
+          (!tenantMatch || tenantMatchIsArchived) &&
+          (tenantSuggestion.naziv_firme || tenantSuggestion.ime_prezime)
+        ) {
+          await handleCreateTenantFromAI(tenantSuggestion);
+        }
+
+        setAiApplied(true);
+        toast.success("AI prijedlozi spremni – provjerite prijedloge ispod.");
+      } catch (error) {
+        console.error("AI analiza dokumenta nije uspjela:", error);
+        const message =
+          error.response?.data?.detail || "Greška pri AI analizi dokumenta";
+        setAiError(message);
+        toast.error(message);
+      } finally {
+        toast.dismiss("document-pdf-parse");
+        setAiLoading(false);
+      }
+    },
+    [
+      formData,
+      findPropertyMatch,
+      findTenantMatch,
+      findContractMatch,
+      findPropertyUnitMatch,
+      refreshEntities,
+    ],
+  );
+
+  const handleRemoveFile = useCallback(() => {
+    setUploadedFile(null);
+    setFormData((prev) => ({ ...prev, file: null }));
+    setAiSuggestions(null);
+    setAiError(null);
+    setAiApplied(true);
+    manualSnapshotRef.current = null;
+    aiSnapshotRef.current = null;
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
+  const handleAiToggle = useCallback((checked) => {
+    if (checked) {
+      setAiApplied(true);
+      if (aiSnapshotRef.current) {
+        setFormData((prev) => ({ ...prev, ...aiSnapshotRef.current }));
+      }
+    } else {
+      setAiApplied(false);
+      if (manualSnapshotRef.current) {
+        setFormData((prev) => ({ ...prev, ...manualSnapshotRef.current }));
+      }
+    }
+  }, []);
+
+  const handleCreatePropertyFromAI = useCallback(async () => {
+    if (!aiSuggestions?.nekretnina) return;
+    setQuickCreateLoading((prev) => ({ ...prev, property: true }));
+    const suggestion = aiSuggestions.nekretnina;
+    const toNumber = (value, fallback = 0) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    };
+    const toNumberOrNull = (value) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : null;
+    };
+    try {
+      const payload = {
+        naziv: suggestion.naziv || `Nekretnina ${Date.now()}`,
+        adresa: suggestion.adresa || "Nepoznata adresa",
+        katastarska_opcina: suggestion.katastarska_opcina || "Nepoznata općina",
+        broj_kat_cestice: suggestion.broj_kat_cestice || "N/A",
+        vrsta: suggestion.vrsta || "ostalo",
+        povrsina: toNumber(suggestion.povrsina, 0),
+        godina_izgradnje: suggestion.godina_izgradnje || null,
+        vlasnik: suggestion.vlasnik || "Nepoznat vlasnik",
+        udio_vlasnistva: suggestion.udio_vlasnistva || "1/1",
+        nabavna_cijena: toNumberOrNull(suggestion.nabavna_cijena),
+        trzisna_vrijednost: toNumberOrNull(suggestion.trzisna_vrijednost),
+        prosllogodisnji_prihodi: toNumberOrNull(
+          suggestion.prosllogodisnji_prihodi,
+        ),
+        prosllogodisnji_rashodi: toNumberOrNull(
+          suggestion.prosllogodisnji_rashodi,
+        ),
+        amortizacija: toNumberOrNull(suggestion.amortizacija),
+        proslogodisnji_neto_prihod: toNumberOrNull(
+          suggestion.proslogodisnji_neto_prihod || suggestion.neto_prihod,
+        ),
+        zadnja_obnova: suggestion.zadnja_obnova || null,
+        potrebna_ulaganja: suggestion.potrebna_ulaganja || null,
+        troskovi_odrzavanja: toNumberOrNull(suggestion.troskovi_odrzavanja),
+        osiguranje: suggestion.osiguranje || null,
+        sudski_sporovi: suggestion.sudski_sporovi || null,
+        hipoteke: suggestion.hipoteke || null,
+        napomene: suggestion.napomene || null,
+      };
+      const response = await api.createNekretnina(payload);
+      toast.success("Nekretnina je kreirana iz AI prijedloga");
+      await refreshEntities();
+      setFormData((prev) => ({ ...prev, nekretnina_id: response.data.id }));
+    } catch (error) {
+      console.error("Greška pri kreiranju nekretnine iz AI prijedloga:", error);
+      toast.error("Greška pri kreiranju nekretnine");
+    } finally {
+      setQuickCreateLoading((prev) => ({ ...prev, property: false }));
+    }
+  }, [aiSuggestions, refreshEntities]);
+
+  const handleCreateTenantFromAI = useCallback(
+    async (suggestionOverride = null) => {
+      const suggestion = suggestionOverride || aiSuggestions?.zakupnik;
+      if (!suggestion) return;
+      setQuickCreateLoading((prev) => ({ ...prev, tenant: true }));
+      try {
+        const parseFlag = (value) => {
+          if (typeof value === "boolean") {
+            return value;
+          }
+          if (typeof value === "string") {
+            const normalised = value.trim().toLowerCase();
+            return ["da", "yes", "true", "1"].includes(normalised);
+          }
+          return false;
+        };
+
+        const fallbackName =
+          suggestion.naziv_firme ||
+          suggestion.ime_prezime ||
+          suggestion.kontakt_ime ||
+          "Zakupnik";
+
+        const payload = {
+          tip:
+            suggestion.tip || (suggestion.naziv_firme ? "zakupnik" : "partner"),
+          naziv_firme: suggestion.naziv_firme || null,
+          ime_prezime: suggestion.ime_prezime || null,
+          oib: suggestion.oib || `N/A-${Date.now()}`,
+          sjediste: suggestion.sjediste || "Nije navedeno",
+          kontakt_ime: suggestion.kontakt_ime || fallbackName,
+          kontakt_email: suggestion.kontakt_email || "kontakt@nedefinirano.hr",
+          kontakt_telefon: suggestion.kontakt_telefon || "000-000-000",
+          status: suggestion.status || "aktivan",
+          opis_usluge: suggestion.opis_usluge || null,
+          adresa_ulica: suggestion.adresa_ulica || null,
+          adresa_kucni_broj: suggestion.adresa_kucni_broj || null,
+          adresa_postanski_broj: suggestion.adresa_postanski_broj || null,
+          adresa_grad: suggestion.adresa_grad || null,
+          adresa_drzava: suggestion.adresa_drzava || null,
+          pdv_obveznik: parseFlag(suggestion.pdv_obveznik),
+          pdv_id: suggestion.pdv_id || null,
+          maticni_broj: suggestion.maticni_broj || null,
+          registracijski_broj: suggestion.registracijski_broj || null,
+          eracun_dostava_kanal: suggestion.eracun_dostava_kanal || null,
+          eracun_identifikator: suggestion.eracun_identifikator || null,
+          eracun_email: suggestion.eracun_email || null,
+          eracun_posrednik: suggestion.eracun_posrednik || null,
+          fiskalizacija_napomena: suggestion.fiskalizacija_napomena || null,
+          odgovorna_osoba: suggestion.odgovorna_osoba || null,
+        };
+
+        if (!payload.naziv_firme && !payload.ime_prezime) {
+          payload.naziv_firme = fallbackName;
+        }
+
+        const response = await api.createZakupnik(payload);
+        toast.success("Zakupnik je kreiran iz AI prijedloga");
+        await refreshEntities();
+        setFormData((prev) => ({ ...prev, zakupnik_id: response.data.id }));
+      } catch (error) {
+        console.error(
+          "Greška pri kreiranju zakupnika iz AI prijedloga:",
+          error,
+        );
+        toast.error("Greška pri kreiranju zakupnika");
+      } finally {
+        setQuickCreateLoading((prev) => ({ ...prev, tenant: false }));
+      }
+    },
+    [aiSuggestions, refreshEntities],
+  );
+
+  const handleCreateContractFromAI = useCallback(async () => {
+    if (!aiSuggestions?.ugovor) {
+      toast.error("AI nije pronašao podatke o ugovoru");
+      return;
+    }
+    if (!formData.nekretnina_id || !formData.zakupnik_id) {
+      toast.error("Povežite nekretninu i zakupnika prije kreiranja ugovora");
+      return;
+    }
+    setQuickCreateLoading((prev) => ({ ...prev, contract: true }));
+    const contract = aiSuggestions.ugovor || {};
+    const finances = aiSuggestions.financije || {};
+    const other = aiSuggestions.ostalo || {};
+    const toNumber = (value, fallback = 0) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : fallback;
+    };
+    const toNumberOrNull = (value) => {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : null;
+    };
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const payload = {
+        interna_oznaka: contract.interna_oznaka || `UG-${Date.now()}`,
+        nekretnina_id: formData.nekretnina_id,
+        zakupnik_id: formData.zakupnik_id,
+        datum_potpisivanja: contract.datum_potpisivanja || today,
+        datum_pocetka: contract.datum_pocetka || today,
+        datum_zavrsetka: contract.datum_zavrsetka || today,
+        trajanje_mjeseci: contract.trajanje_mjeseci || 12,
+        rok_otkaza_dani: contract.rok_otkaza_dani || 30,
+        osnovna_zakupnina: toNumber(finances.osnovna_zakupnina, 0),
+        zakupnina_po_m2: toNumberOrNull(finances.zakupnina_po_m2),
+        cam_troskovi: toNumberOrNull(finances.cam_troskovi),
+        polog_depozit: toNumberOrNull(finances.polog_depozit),
+        garancija: toNumberOrNull(finances.garancija),
+        indeksacija: finances.indeksacija ?? false,
+        indeks: finances.indeks || null,
+        formula_indeksacije: finances.formula_indeksacije || null,
+        obveze_odrzavanja: other.obveze_odrzavanja || null,
+        namjena_prostora:
+          aiSuggestions.nekretnina?.namjena_prostora ||
+          contract.namjena_prostora ||
+          "",
+        rezije_brojila: other.rezije_brojila || "",
+      };
+      const propertyUnitId = formData.property_unit_id;
+      if (!propertyUnitId) {
+        toast.error(
+          "AI nije uspio povezati podprostor. Molimo odaberite podprostor ručno prije kreiranja ugovora.",
+        );
+        return;
+      }
+      payload.property_unit_id = propertyUnitId;
+      const response = await api.createUgovor(payload);
+      toast.success("Ugovor je kreiran iz AI prijedloga");
+      await refreshEntities();
+      setFormData((prev) => ({
+        ...prev,
+        ugovor_id: response.data.id,
+        naziv: prev.naziv || `Ugovor ${response.data.interna_oznaka}`,
+      }));
+    } catch (error) {
+      console.error("Greška pri kreiranju ugovora iz AI prijedloga:", error);
+      toast.error("Greška pri kreiranju ugovora");
+    } finally {
+      setQuickCreateLoading((prev) => ({ ...prev, contract: false }));
+    }
+  }, [aiSuggestions, formData, refreshEntities]);
+
+  const openManualUnitForm = useCallback(
+    ({ prefill = null, reset = false } = {}) => {
+      const propertyId = formData.nekretnina_id || matchedProperty?.id || null;
+      if (!propertyId) {
+        toast.error("Povežite nekretninu prije dodavanja podprostora.");
+        return false;
+      }
+
+      if (!formData.nekretnina_id && matchedProperty?.id === propertyId) {
+        setFormData((prev) => ({ ...prev, nekretnina_id: propertyId }));
+      }
+
+      setManualUnitErrors({});
+      setShowManualUnitForm(true);
+
+      if (prefill) {
+        const toInputValue = (value) => {
+          if (value === null || value === undefined) {
+            return "";
+          }
+          if (typeof value === "number") {
+            return Number.isFinite(value) ? String(value) : "";
+          }
+          if (typeof value === "object") {
+            if (value.value !== undefined) {
+              return toInputValue(value.value);
+            }
+            if (value.raw !== undefined) {
+              return toInputValue(value.raw);
+            }
+          }
+          return String(value);
+        };
+
+        setManualUnitForm(() => ({
+          ...initialManualUnitState,
+          oznaka: prefill.oznaka ?? "",
+          naziv: prefill.naziv ?? "",
+          kat: prefill.kat ?? prefill.lokacija ?? "",
+          povrsina_m2: toInputValue(
+            prefill.povrsina_m2 ?? prefill.povrsina ?? "",
+          ),
+          status: prefill.status || initialManualUnitState.status,
+          osnovna_zakupnina: toInputValue(
+            prefill.osnovna_zakupnina ?? prefill.cijena ?? "",
+          ),
+          napomena: prefill.napomena ?? "",
+        }));
+      } else if (reset) {
+        setManualUnitForm(initialManualUnitState);
+      }
+
+      return true;
+    },
+    [
+      formData.nekretnina_id,
+      matchedProperty,
+      setFormData,
+      setManualUnitErrors,
+      setManualUnitForm,
+    ],
+  );
+
+  const handleApplyUnitSuggestion = useCallback(() => {
+    const propertyId = formData.nekretnina_id || matchedProperty?.id || null;
+    if (!propertyId) {
+      toast.error("Povežite nekretninu prije dodavanja podprostora.");
+      return;
+    }
+
+    if (!formData.nekretnina_id && matchedProperty?.id === propertyId) {
+      setFormData((prev) => ({ ...prev, nekretnina_id: propertyId }));
+    }
+
+    if (!propertyUnitSuggestion) {
+      const opened = openManualUnitForm();
+      if (opened) {
+        toast.info("AI nije prepoznao podprostor. Unesite ga ručno.");
+      }
+      return;
+    }
+
+    const localMatch = findPropertyUnitMatch(
+      propertyId,
+      propertyUnitSuggestion,
+    );
+    if (localMatch) {
+      setFormData((prev) => ({
+        ...prev,
+        nekretnina_id: propertyId,
+        property_unit_id: localMatch.id,
+      }));
+      toast.success(
+        `Podprostor ${
+          localMatch.oznaka || localMatch.naziv || localMatch.id
+        } je povezan s dokumentom.`,
+      );
+      return;
+    }
+
+    openManualUnitForm({ prefill: propertyUnitSuggestion, reset: true });
+    toast.info(
+      "Podprostor iz AI prijedloga nije pronađen u sustavu. Unesite detalje ručno.",
+    );
+  }, [
+    findPropertyUnitMatch,
+    formData.nekretnina_id,
+    matchedProperty,
+    openManualUnitForm,
+    propertyUnitSuggestion,
+    setFormData,
+  ]);
+
+  const handleManualUnitSubmit = useCallback(async () => {
+    setManualUnitErrors({});
+    const targetPropertyId = formData.nekretnina_id || matchedProperty?.id;
+    const errors = {};
+    if (!targetPropertyId) {
+      errors.property = "Odaberite nekretninu prije spremanja podprostora.";
+    }
+    if (!manualUnitForm.oznaka.trim()) {
+      errors.oznaka = "Oznaka je obavezna.";
+    }
+
+    if (Object.keys(errors).length) {
+      setManualUnitErrors(errors);
+      return;
+    }
+
+    if (quickCreateLoading.unit) {
+      return;
+    }
+    setQuickCreateLoading((prev) => ({ ...prev, unit: true }));
+    try {
+      const payload = {
+        oznaka: manualUnitForm.oznaka.trim(),
+        naziv: manualUnitForm.naziv.trim() || null,
+        kat: manualUnitForm.kat.trim() || null,
+        povrsina_m2: manualUnitForm.povrsina_m2
+          ? parseNumericValue(manualUnitForm.povrsina_m2)
+          : null,
+        status: manualUnitForm.status || "dostupno",
+        osnovna_zakupnina: manualUnitForm.osnovna_zakupnina
+          ? parseNumericValue(manualUnitForm.osnovna_zakupnina)
+          : null,
+        napomena: manualUnitForm.napomena.trim() || null,
+      };
+
+      const response = await api.createUnit(targetPropertyId, payload);
+      const createdUnit = response?.data || null;
+      toast.success("Podprostor je kreiran.");
+
+      if (createdUnit?.id) {
+        latestCreatedUnitRef.current = createdUnit;
+        setFormData((prev) => ({
+          ...prev,
+          nekretnina_id: targetPropertyId,
+          property_unit_id: createdUnit.id,
+        }));
+      }
+
+      try {
+        await refreshEntities();
+      } catch (refreshError) {
+        console.error(
+          "Greška pri osvježavanju podataka nakon kreiranja podprostora:",
+          refreshError,
+        );
+      }
+
+      setManualUnitForm(initialManualUnitState);
+      setShowManualUnitForm(false);
+    } catch (error) {
+      console.error("Greška pri ručnom kreiranju podprostora:", error);
+      const message =
+        error.response?.data?.detail ||
+        "Podprostor nije kreiran. Pokušajte ponovno.";
+      toast.error(message);
+    } finally {
+      setQuickCreateLoading((prev) => ({ ...prev, unit: false }));
+    }
+  }, [
+    formData.nekretnina_id,
+    manualUnitForm,
+    matchedProperty,
+    quickCreateLoading.unit,
+    refreshEntities,
+  ]);
+
+  const resetManualUnitForm = useCallback(() => {
+    setManualUnitForm(initialManualUnitState);
+    setManualUnitErrors({});
+  }, []);
+
+  const canProceedToNextStep = useMemo(() => {
+    if (activeStep === 0) {
+      return Boolean(uploadedFile || formData.file);
+    }
+    if (activeStep === 1) {
+      return Boolean(formData.naziv.trim() && formData.tip);
+    }
+    return true;
+  }, [activeStep, formData.file, formData.naziv, formData.tip, uploadedFile]);
+
+  const handleNext = useCallback(() => {
+    if (activeStep < steps.length - 1) {
+      setActiveStep((prev) => prev + 1);
+    }
+  }, [activeStep]);
+
+  const handlePrev = useCallback(() => {
+    if (activeStep > 0) {
+      setActiveStep((prev) => prev - 1);
+    }
+  }, [activeStep]);
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (!formData.file) {
+        toast.error("PDF dokument je obavezan. Učitajte PDF prije spremanja.");
+        return;
+      }
+      if (
+        PROPERTY_DOCUMENT_TYPES.has(formData.tip) &&
+        !formData.nekretnina_id
+      ) {
+        toast.error("Za ovaj tip dokumenta odaberite pripadajuću nekretninu.");
+        setActiveStep(2);
+        return;
+      }
+      try {
+        await onSubmit({
+          ...formData,
+          nekretnina_id: formData.nekretnina_id || null,
+          zakupnik_id: formData.zakupnik_id || null,
+          ugovor_id: formData.ugovor_id || null,
+          property_unit_id: formData.property_unit_id || null,
+        });
+        handleResetState();
+      } catch (error) {
+        console.error("Greška pri spremanju dokumenta:", error);
+      }
+    },
+    [formData, handleResetState, onSubmit],
+  );
+
+  const currentStep = steps[activeStep];
+  const StepComponent = currentStep.component;
+
+  const contextValue = {
+    formData,
+    setFormData,
+    aiSuggestions,
+    aiLoading,
+    aiError,
+    uploadedFile,
+    setUploadedFile,
+    fileInputRef,
+    aiApplied,
+    handleAiToggle,
+    detectedValues,
+    quickCreateLoading,
+    handleFileChange,
+    handleRemoveFile,
+    handleCreatePropertyFromAI,
+    handleCreateTenantFromAI,
+    handleCreateContractFromAI,
+    manualUnitForm,
+    setManualUnitForm,
+    manualUnitErrors,
+    setManualUnitErrors,
+    showManualUnitForm,
+    setShowManualUnitForm,
+    manualUnitStatusOptions,
+    activeTenantOptions,
+    contractsForProperty,
+    unitsForSelectedProperty,
+    matchedProperty,
+    matchedTenant,
+    matchedContract,
+    matchedPropertyUnit,
+    propertyUnitSuggestion,
+    propertyUnitsByProperty,
+    propertyUnitsById,
+    nekretnine,
+    zakupnici,
+    ugovori,
+    tenantsById,
+    handleManualUnitSubmit,
+    handleApplyUnitSuggestion,
+    openManualUnitForm,
+    resetManualUnitForm,
+    resolveConfidenceScore,
+    formatConfidenceBadgeClass,
+    formatConfidenceLabel,
+    DOCUMENT_TYPE_LABELS,
+    PROPERTY_DOCUMENT_TYPES,
+    CONTRACT_DOCUMENT_TYPES,
+    formatDocumentType,
+  };
+
+  return (
+    <DocumentWizardContext.Provider value={contextValue}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              {steps.map((step, index) => (
+                <React.Fragment key={step.id}>
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                      index === activeStep
+                        ? "bg-primary text-white"
+                        : index < activeStep
+                          ? "bg-primary/80 text-white"
+                          : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  <span
+                    className={
+                      index === activeStep
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {step.title}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <span className="mx-2 h-px w-8 bg-border" aria-hidden />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <StepComponent />
+
+        {showManualUnitForm && <ManualUnitForm />}
+
+        <div className="flex items-center justify-between border-t border-border/60 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Odustani
+          </Button>
+          <div className="flex items-center gap-2">
+            {activeStep > 0 && (
+              <Button type="button" variant="ghost" onClick={handlePrev}>
+                Nazad
+              </Button>
+            )}
+            {activeStep < steps.length - 1 && (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={!canProceedToNextStep}
+              >
+                Sljedeći korak
+              </Button>
+            )}
+            {activeStep === steps.length - 1 && (
+              <Button
+                type="submit"
+                disabled={loading}
+                data-testid="potvrdi-dokument-form"
+              >
+                {loading ? "Spremam..." : "Dodaj dokument"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
+    </DocumentWizardContext.Provider>
+  );
+};
+
+export default DocumentWizard;

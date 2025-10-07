@@ -2,9 +2,9 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useContext,
   useCallback,
   useMemo,
+  Suspense,
 } from "react";
 import {
   BrowserRouter,
@@ -14,7 +14,6 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import axios from "axios";
 import jsPDF from "jspdf";
 import { Button } from "./components/ui/button";
 import {
@@ -45,7 +44,15 @@ import {
 } from "./components/ui/dialog";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { Checkbox } from "./components/ui/checkbox";
+import { Switch } from "./components/ui/switch";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./components/ui/accordion";
 import { Progress } from "./components/ui/progress";
+import { Separator } from "./components/ui/separator";
 import { Toaster, toast } from "./components/ui/sonner";
 import {
   Home,
@@ -64,257 +71,77 @@ import {
   Sparkles,
   ArrowRight,
   Printer,
-  Phone,
-  Mail,
-  MapPin,
   Archive,
   ArchiveRestore,
   Wrench,
 } from "lucide-react";
 import logoMain from "./assets/riforma-logo.png";
 import "./App.css";
+import { api, BACKEND_URL, buildDocumentUrl } from "./shared/api";
+import {
+  parseNumericValue,
+  formatCurrency,
+  formatArea,
+  formatPercentage,
+  formatDeltaPercentage,
+  formatDate,
+  formatDateTime,
+  formatBooleanish,
+  formatPropertyType,
+} from "./shared/formatters";
+import {
+  DOCUMENT_TYPE_LABELS,
+  PROPERTY_DOCUMENT_TYPES,
+  CONTRACT_DOCUMENT_TYPES,
+  resolveDocumentType,
+  formatDocumentType,
+} from "./shared/documents";
+import {
+  EntityStoreProvider,
+  useEntityStore,
+  EntityStoreContext,
+} from "./shared/entityStore";
+import {
+  UNIT_STATUS_CONFIG,
+  getUnitStatusBadgeClass,
+  getUnitStatusDotClass,
+  formatUnitStatus,
+  getUnitDisplayName,
+  computeUnitsSummary,
+  sortUnitsByPosition,
+  convertUnitDraftToPayload,
+  normaliseNekretninaPayload,
+  resolveUnitTenantName,
+} from "./shared/units";
+import DocumentViewer from "./features/documents/components/DocumentViewer";
+import { UnitStatusMap } from "./features/properties";
+import LinkedEntitySelect from "./components/LinkedEntitySelect";
 
-const apiClient = axios.create();
-
-apiClient.interceptors.request.use((config) => {
-  let storedToken = null;
-  if (typeof window !== "undefined") {
-    storedToken = localStorage.getItem("authToken");
-    if (storedToken && ["null", "undefined", ""].includes(storedToken)) {
-      storedToken = null;
-    }
-  }
-
-  const token = storedToken || process.env.REACT_APP_DEV_AUTH_TOKEN || null;
-
-  if (!storedToken && typeof window !== "undefined" && token) {
-    localStorage.setItem("authToken", token);
-  }
-  if (token) {
-    config.headers = config.headers || {};
-    if (!config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error?.response?.status === 401) {
-      window.dispatchEvent(new Event("auth:unauthorized"));
-    }
-    return Promise.reject(error);
-  },
+const DocumentsPageLazy = React.lazy(
+  () => import("./features/documents/DocumentsPage"),
 );
 
-const getBackendUrl = () => {
-  const envValue = process.env.REACT_APP_BACKEND_URL?.trim();
-  if (envValue) {
-    return envValue.replace(/\/$/, "");
-  }
+const InfoField = ({ label, value, fallback = "—" }) => (
+  <div className="space-y-1.5">
+    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+      {label}
+    </p>
+    <p className="text-sm font-medium text-foreground">{value ?? fallback}</p>
+  </div>
+);
 
-  if (typeof window !== "undefined") {
-    const { protocol, hostname, port } = window.location;
-    const derivedPort = port === "3000" ? "8000" : port;
-    const portSegment = derivedPort ? `:${derivedPort}` : "";
-    return `${protocol}//${hostname}${portSegment}`;
+const isContractExpiring = (ugovor, windowInDays = 90) => {
+  if (!ugovor?.datum_zavrsetka) {
+    return false;
   }
-
-  return "http://localhost:8000";
+  const today = new Date();
+  const endDate = new Date(ugovor.datum_zavrsetka);
+  const diffInDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+  return diffInDays > 0 && diffInDays <= windowInDays;
 };
 
-const BACKEND_URL = getBackendUrl();
-const API = `${BACKEND_URL}/api`;
-
-// API functions
-const api = {
-  // Nekretnine
-  getNekretnine: () => apiClient.get(`${API}/nekretnine`),
-  createNekretnina: (data) => apiClient.post(`${API}/nekretnine`, data),
-  updateNekretnina: (id, data) =>
-    apiClient.put(`${API}/nekretnine/${id}`, data),
-  deleteNekretnina: (id) => apiClient.delete(`${API}/nekretnine/${id}`),
-
-  // Zakupnici
-  getZakupnici: (params = {}) => apiClient.get(`${API}/zakupnici`, { params }),
-  createZakupnik: (data) => apiClient.post(`${API}/zakupnici`, data),
-  updateZakupnik: (id, data) => apiClient.put(`${API}/zakupnici/${id}`, data),
-
-  // Ugovori
-  getUgovori: () => apiClient.get(`${API}/ugovori`),
-  createUgovor: (data) => apiClient.post(`${API}/ugovori`, data),
-  updateUgovor: (id, data) => apiClient.put(`${API}/ugovori/${id}`, data),
-  updateStatusUgovora: (id, status) =>
-    apiClient.put(`${API}/ugovori/${id}/status`, { novi_status: status }),
-
-  // Dokumenti
-  getDokumenti: () => apiClient.get(`${API}/dokumenti`),
-  getDokumentiNekretnine: (id) =>
-    apiClient.get(`${API}/dokumenti/nekretnina/${id}`),
-  getDokumentiZakupnika: (id) =>
-    apiClient.get(`${API}/dokumenti/zakupnik/${id}`),
-  getDokumentiUgovora: (id) => apiClient.get(`${API}/dokumenti/ugovor/${id}`),
-  getDokumentiPropertyUnit: (id) =>
-    apiClient.get(`${API}/dokumenti/property-unit/${id}`),
-  createDokument: (data) => {
-    const formData = new FormData();
-    formData.append("naziv", data.naziv);
-    formData.append("tip", data.tip);
-    if (data.opis) {
-      formData.append("opis", data.opis);
-    }
-
-    if (data.nekretnina_id) {
-      formData.append("nekretnina_id", data.nekretnina_id);
-    }
-    if (data.zakupnik_id) {
-      formData.append("zakupnik_id", data.zakupnik_id);
-    }
-    if (data.ugovor_id) {
-      formData.append("ugovor_id", data.ugovor_id);
-    }
-    if (data.property_unit_id) {
-      formData.append("property_unit_id", data.property_unit_id);
-    }
-    if (data.file) {
-      formData.append("file", data.file);
-    }
-
-    return apiClient.post(`${API}/dokumenti`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-  },
-
-  // Podprostori / jedinice
-  getUnits: (params = {}) => apiClient.get(`${API}/units`, { params }),
-  getUnitsForProperty: (propertyId) =>
-    apiClient.get(`${API}/nekretnine/${propertyId}/units`),
-  getUnit: (unitId) => apiClient.get(`${API}/units/${unitId}`),
-  createUnit: (propertyId, payload) =>
-    apiClient.post(`${API}/nekretnine/${propertyId}/units`, payload),
-  updateUnit: (unitId, payload) =>
-    apiClient.put(`${API}/units/${unitId}`, payload),
-  deleteUnit: (unitId) => apiClient.delete(`${API}/units/${unitId}`),
-  bulkUpdateUnits: (payload) =>
-    apiClient.post(`${API}/units/bulk-update`, payload),
-
-  // Dashboard
-  getDashboard: () => apiClient.get(`${API}/dashboard`),
-
-  // Podsjećanja
-  getPodsjetnici: () => apiClient.get(`${API}/podsjetnici`),
-  getAktivniPodsjetnici: () => apiClient.get(`${API}/podsjetnici/aktivni`),
-
-  // AI PDF parsing
-  parsePdfContract: (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return apiClient.post(`${API}/ai/parse-pdf-contract`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-  },
-
-  // Maintenance
-  getMaintenanceTasks: (params = {}) =>
-    apiClient.get(`${API}/maintenance-tasks`, { params }),
-  getMaintenanceTask: (id) => apiClient.get(`${API}/maintenance-tasks/${id}`),
-  createMaintenanceTask: (payload) =>
-    apiClient.post(`${API}/maintenance-tasks`, payload),
-  updateMaintenanceTask: (id, payload) =>
-    apiClient.patch(`${API}/maintenance-tasks/${id}`, payload),
-  deleteMaintenanceTask: (id) =>
-    apiClient.delete(`${API}/maintenance-tasks/${id}`),
-  addMaintenanceComment: (id, payload) =>
-    apiClient.post(`${API}/maintenance-tasks/${id}/comments`, payload),
-
-  // Audit
-  getAuditLogs: (params = {}) => apiClient.get(`${API}/audit/logs`, { params }),
-
-  // Podsjetnici actions
-  markReminderAsSent: (id) =>
-    apiClient.put(`${API}/podsjetnici/${id}/oznaci-poslan`),
-};
-
-const parseNumericValue = (value) => {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (typeof value === "string") {
-    const normalised = value.replace(/[^0-9,.-]/g, "").replace(/,/g, "");
-    const parsed = Number(normalised);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-
-const formatCurrency = (value) => {
-  const numeric = parseNumericValue(value);
-  if (numeric === null) {
-    return "—";
-  }
-  return `${numeric.toLocaleString("hr-HR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-};
-
-const formatArea = (value) => {
-  const numeric = parseNumericValue(value);
-  if (numeric === null) {
-    return "—";
-  }
-  return `${numeric.toLocaleString("hr-HR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} m²`;
-};
-
-const formatPercentage = (value) => {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  return `${value.toFixed(1)} %`;
-};
-
-const formatDeltaPercentage = (value) => {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  const rounded = value.toFixed(1);
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${rounded} %`;
-};
-
-const formatDate = (value) => {
-  if (!value) {
-    return "—";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleDateString("hr-HR");
-};
-
-const formatDateTime = (value) => {
-  if (!value) {
-    return "—";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleString("hr-HR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const ARCHIVED_CONTRACT_STATUSES = new Set(["arhivirano", "raskinuto"]);
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const useAuditTimeline = (
   entityType,
@@ -544,429 +371,6 @@ const AuditTimelinePanel = ({
   );
 };
 
-const formatPropertyType = (value) => {
-  if (!value) {
-    return "Nepoznata vrsta";
-  }
-  const map = {
-    poslovna_zgrada: "Poslovna zgrada",
-    stan: "Stan",
-    zemljiste: "Zemljište",
-    ostalo: "Ostalo",
-  };
-  return map[value] || value;
-};
-
-const UNIT_STATUS_CONFIG = {
-  dostupno: {
-    label: "Dostupno",
-    badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    dot: "bg-emerald-500",
-  },
-  rezervirano: {
-    label: "Rezervirano",
-    badge: "border-amber-200 bg-amber-50 text-amber-700",
-    dot: "bg-amber-500",
-  },
-  iznajmljeno: {
-    label: "Iznajmljeno",
-    badge: "border-sky-200 bg-sky-50 text-sky-700",
-    dot: "bg-sky-500",
-  },
-  u_odrzavanju: {
-    label: "U održavanju",
-    badge: "border-slate-200 bg-slate-100 text-slate-700",
-    dot: "bg-slate-500",
-  },
-};
-
-const MAINTENANCE_STATUS_META = {
-  novi: {
-    title: "Novi",
-    description: "Prijave koje čekaju trijažu",
-    cardBorderClass: "border-l-4 border-sky-500",
-    badgeClass: "border border-sky-200 bg-sky-100 text-sky-700",
-  },
-  planiran: {
-    title: "Planiran",
-    description: "Termin i resursi su definirani",
-    cardBorderClass: "border-l-4 border-amber-500",
-    badgeClass: "border border-amber-200 bg-amber-100 text-amber-700",
-  },
-  u_tijeku: {
-    title: "U tijeku",
-    description: "Radovi su u tijeku",
-    cardBorderClass: "border-l-4 border-blue-500",
-    badgeClass: "border border-blue-200 bg-blue-100 text-blue-700",
-  },
-  ceka_dobavljaca: {
-    title: "Čeka dobavljača",
-    description: "Blokirano dok ne stigne dobavljač",
-    cardBorderClass: "border-l-4 border-purple-500",
-    badgeClass: "border border-purple-200 bg-purple-100 text-purple-700",
-  },
-  potrebna_odluka: {
-    title: "Potrebna odluka",
-    description: "Čeka odobrenje ili dodatni input",
-    cardBorderClass: "border-l-4 border-rose-500",
-    badgeClass: "border border-rose-200 bg-rose-100 text-rose-700",
-  },
-  zavrseno: {
-    title: "Završeno",
-    description: "Radni nalog je izvršen",
-    cardBorderClass: "border-l-4 border-emerald-500",
-    badgeClass: "border border-emerald-200 bg-emerald-100 text-emerald-700",
-  },
-  arhivirano: {
-    title: "Arhivirano",
-    description: "Ostavljeno za evidenciju",
-    cardBorderClass: "border-l-4 border-slate-400",
-    badgeClass: "border border-slate-200 bg-slate-100 text-slate-600",
-  },
-};
-
-const MAINTENANCE_STATUS_ORDER = [
-  "novi",
-  "planiran",
-  "u_tijeku",
-  "ceka_dobavljaca",
-  "potrebna_odluka",
-  "zavrseno",
-];
-const ALL_MAINTENANCE_STATUSES = [...MAINTENANCE_STATUS_ORDER, "arhivirano"];
-
-const MAINTENANCE_PRIORITY_CONFIG = {
-  nisko: {
-    label: "Nizak prioritet",
-    className: "border border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  srednje: {
-    label: "Srednji prioritet",
-    className: "border border-sky-200 bg-sky-50 text-sky-700",
-  },
-  visoko: {
-    label: "Visok prioritet",
-    className: "border border-orange-200 bg-orange-50 text-orange-700",
-  },
-  kriticno: {
-    label: "Kritično",
-    className: "border border-red-200 bg-red-50 text-red-700",
-  },
-};
-
-const MAINTENANCE_PRIORITY_ORDER = ["kriticno", "visoko", "srednje", "nisko"];
-
-const EMPTY_MAINTENANCE_FORM = {
-  naziv: "",
-  opis: "",
-  prioritet: "srednje",
-  status: "novi",
-  nekretnina_id: "",
-  property_unit_id: "",
-  prijavio: "",
-  dodijeljeno: "",
-  rok: "",
-  oznake: "",
-  procijenjeni_trosak: "",
-  stvarni_trosak: "",
-};
-
-const formatUnitStatus = (status) => {
-  if (!status) {
-    return "Nepoznato";
-  }
-  return UNIT_STATUS_CONFIG[status]?.label || status;
-};
-
-const getUnitStatusBadgeClass = (status) =>
-  UNIT_STATUS_CONFIG[status]?.badge ||
-  "border-border bg-muted text-muted-foreground";
-const getUnitStatusDotClass = (status) =>
-  UNIT_STATUS_CONFIG[status]?.dot || "bg-muted-foreground/70";
-
-const getUnitDisplayName = (unit) => {
-  if (!unit) {
-    return "Nepoznata jedinica";
-  }
-  if (unit.naziv && unit.naziv.trim()) {
-    return unit.naziv.trim();
-  }
-  if (unit.oznaka && unit.oznaka.trim()) {
-    return unit.oznaka.trim();
-  }
-  return "Nepoznata jedinica";
-};
-
-const computeUnitsSummary = (units = []) => {
-  const summary = {
-    total: units.length,
-    leased: 0,
-    reserved: 0,
-    available: 0,
-    maintenance: 0,
-  };
-
-  units.forEach((unit) => {
-    switch (unit?.status) {
-      case "iznajmljeno":
-        summary.leased += 1;
-        break;
-      case "rezervirano":
-        summary.reserved += 1;
-        break;
-      case "u_odrzavanju":
-        summary.maintenance += 1;
-        break;
-      case "dostupno":
-      default:
-        summary.available += 1;
-        break;
-    }
-  });
-
-  summary.occupancy = summary.total
-    ? (summary.leased / summary.total) * 100
-    : 0;
-  summary.vacancy = summary.total
-    ? (summary.available / summary.total) * 100
-    : 0;
-  return summary;
-};
-
-const sortUnitsByPosition = (units = []) => {
-  return [...units].sort((a, b) => {
-    const floorCompare = (a.kat || "").localeCompare(b.kat || "");
-    if (floorCompare !== 0) {
-      return floorCompare;
-    }
-    return (a.oznaka || "").localeCompare(b.oznaka || "");
-  });
-};
-
-const convertUnitDraftToPayload = (unitDraft = {}) => {
-  const trimOrNull = (value) => {
-    if (value === null || value === undefined) {
-      return null;
-    }
-    if (typeof value !== "string") {
-      return value;
-    }
-    const trimmed = value.trim();
-    return trimmed.length ? trimmed : null;
-  };
-
-  const payload = {
-    oznaka: trimOrNull(unitDraft.oznaka) || "",
-    naziv: trimOrNull(unitDraft.naziv),
-    kat: trimOrNull(unitDraft.kat),
-    povrsina_m2: parseNumericValue(unitDraft.povrsina_m2),
-    status: unitDraft.status || "dostupno",
-    osnovna_zakupnina: parseNumericValue(unitDraft.osnovna_zakupnina),
-    zakupnik_id: unitDraft.zakupnik_id || null,
-    ugovor_id: unitDraft.ugovor_id || null,
-    raspolozivo_od: unitDraft.raspolozivo_od || null,
-    layout_ref: trimOrNull(unitDraft.layout_ref),
-    napomena: trimOrNull(unitDraft.napomena),
-    opis: trimOrNull(unitDraft.opis),
-    metadata: unitDraft.metadata || null,
-  };
-
-  return payload;
-};
-
-const normaliseNekretninaPayload = (formPayload = {}) => {
-  const property = { ...(formPayload.nekretnina || {}) };
-  const units = Array.isArray(formPayload.units)
-    ? formPayload.units
-        .map((unit) => convertUnitDraftToPayload(unit))
-        .filter((unit) => unit.oznaka)
-    : [];
-
-  return { property, units };
-};
-
-const resolveUnitTenantName = (unit, tenantsById) => {
-  if (!unit?.zakupnik_id) {
-    return "—";
-  }
-  const tenant = tenantsById?.[unit.zakupnik_id];
-  if (!tenant) {
-    return "Nepoznat zakupnik";
-  }
-  return tenant.naziv_firme || tenant.ime_prezime || "Nepoznat zakupnik";
-};
-
-const formatBooleanish = (value) => {
-  if (value === true || value === "DA") {
-    return "Da";
-  }
-  if (value === false || value === "NE") {
-    return "Ne";
-  }
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
-  return value;
-};
-
-const getRiskBadges = (nekretnina) => {
-  const badges = [];
-  if (nekretnina?.sudski_sporovi) {
-    badges.push({ label: "Spor", variant: "destructive" });
-  }
-  if (nekretnina?.hipoteke) {
-    badges.push({ label: "Hipoteka", variant: "secondary" });
-  }
-  if (nekretnina?.napomene) {
-    badges.push({ label: "Napomena", variant: "outline" });
-  }
-  return badges;
-};
-
-const buildDocumentUrl = (dokument) => {
-  if (!dokument || !dokument.putanja_datoteke) {
-    return null;
-  }
-  return `${BACKEND_URL}/${dokument.putanja_datoteke}`;
-};
-
-const DocumentViewer = ({ dokument, heightClass = "h-[60vh] md:h-[72vh]" }) => {
-  if (!dokument || !dokument.putanja_datoteke) {
-    return (
-      <div
-        className={`flex ${heightClass} items-center justify-center rounded-xl border border-dashed border-border/50 bg-muted/20 text-sm text-muted-foreground/80`}
-      >
-        PDF nije dostupan. Preuzmite datoteku putem opcije ispod.
-      </div>
-    );
-  }
-
-  const viewerUrl = `${buildDocumentUrl(dokument)}#toolbar=0&view=FitH`;
-
-  return (
-    <div
-      data-document-preview
-      className={`w-full overflow-hidden rounded-xl border border-border/60 bg-white shadow-inner ${heightClass}`}
-    >
-      <object
-        data={viewerUrl}
-        type="application/pdf"
-        className="h-full w-full"
-        style={{ border: "none" }}
-      >
-        <iframe
-          src={viewerUrl}
-          title={`Pregled: ${dokument.naziv}`}
-          className="h-full w-full"
-          loading="lazy"
-          style={{ border: "none" }}
-        />
-        <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground/80">
-          Pregled nije podržan u ovom pregledniku. Koristite gumb za otvaranje u
-          novom prozoru.
-        </div>
-      </object>
-    </div>
-  );
-};
-
-const DOCUMENT_TYPE_LABELS = {
-  ugovor: "Ugovor",
-  aneks: "Aneks",
-  certifikat: "Certifikat",
-  osiguranje: "Osiguranje",
-  zemljisnoknjizni_izvadak: "Zemljišnoknjižni izvadak",
-  uporabna_dozvola: "Uporabna dozvola",
-  gradevinska_dozvola: "Građevinska dozvola",
-  energetski_certifikat: "Energetski certifikat",
-  izvadak_iz_registra: "Izvadak iz registra",
-  bon_2: "BON-2",
-  racun: "Račun",
-  procjena_vrijednosti: "Procjena vrijednosti",
-  lokacijska_informacija: "Lokacijska informacija",
-  ostalo: "Ostalo",
-};
-
-const formatDocumentType = (tip) => DOCUMENT_TYPE_LABELS[tip] || tip;
-
-const PROPERTY_DOCUMENT_TYPES = new Set([
-  "gradevinska_dozvola",
-  "uporabna_dozvola",
-  "energetski_certifikat",
-  "zemljisnoknjizni_izvadak",
-  "izvadak_iz_registra",
-  "procjena_vrijednosti",
-  "lokacijska_informacija",
-  "certifikat",
-  "osiguranje",
-]);
-
-const CONTRACT_DOCUMENT_TYPES = new Set(["ugovor", "aneks", "racun", "bon_2"]);
-
-const DOCUMENT_TYPE_ALIASES = {
-  ugovor_o_zakupu: "ugovor",
-  lease_agreement: "ugovor",
-  contract: "ugovor",
-  aneks_ugovora: "aneks",
-  annex: "aneks",
-  invoice: "racun",
-  bill: "racun",
-  building_permit: "gradevinska_dozvola",
-  construction_permit: "gradevinska_dozvola",
-  usage_permit: "uporabna_dozvola",
-  location_information: "lokacijska_informacija",
-  location_permit: "lokacijska_informacija",
-  property_valuation: "procjena_vrijednosti",
-  valuation: "procjena_vrijednosti",
-  energy_certificate: "energetski_certifikat",
-  land_registry_extract: "zemljisnoknjizni_izvadak",
-  register_extract: "izvadak_iz_registra",
-  insurance_policy: "osiguranje",
-  certificate: "certifikat",
-};
-
-const normaliseDocumentTypeKey = (value) => {
-  if (!value) {
-    return "";
-  }
-  return value
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_");
-};
-
-const resolveDocumentType = (value) => {
-  const key = normaliseDocumentTypeKey(value);
-  if (!key) {
-    return "ugovor";
-  }
-  if (DOCUMENT_TYPE_ALIASES[key]) {
-    return DOCUMENT_TYPE_ALIASES[key];
-  }
-  if (
-    PROPERTY_DOCUMENT_TYPES.has(key) ||
-    CONTRACT_DOCUMENT_TYPES.has(key) ||
-    key === "certifikat" ||
-    key === "ostalo"
-  ) {
-    return key;
-  }
-  return "ostalo";
-};
-
-const InfoField = ({ label, value, fallback = "—" }) => (
-  <div className="space-y-1.5">
-    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
-      {label}
-    </p>
-    <p className="text-sm font-medium text-foreground">{value ?? fallback}</p>
-  </div>
-);
-
-const ARCHIVED_CONTRACT_STATUSES = new Set(["arhivirano", "raskinuto"]);
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
 const dedupeRemindersById = (items = []) => {
   const map = new Map();
   for (const reminder of items || []) {
@@ -989,175 +393,6 @@ const dedupeRemindersById = (items = []) => {
     }
   }
   return Array.from(map.values());
-};
-
-const EntityStoreContext = React.createContext(null);
-
-const EntityStoreProvider = ({ children }) => {
-  const [state, setState] = useState({
-    nekretnine: [],
-    zakupnici: [],
-    ugovori: [],
-    dokumenti: [],
-    propertyUnits: [],
-    maintenanceTasks: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const loadEntities = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [nekRes, zakRes, ugRes, dokRes, unitRes, maintenanceRes] =
-        await Promise.all([
-          api.getNekretnine(),
-          api.getZakupnici(),
-          api.getUgovori(),
-          api.getDokumenti(),
-          api.getUnits(),
-          api.getMaintenanceTasks(),
-        ]);
-
-      setState({
-        nekretnine: nekRes.data,
-        zakupnici: zakRes.data,
-        ugovori: ugRes.data,
-        dokumenti: dokRes.data,
-        propertyUnits: unitRes.data,
-        maintenanceTasks: maintenanceRes.data,
-      });
-      setError(null);
-    } catch (err) {
-      console.error("Greška pri učitavanju entiteta:", err);
-      setError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const refreshMaintenanceTasks = useCallback(async () => {
-    try {
-      const response = await api.getMaintenanceTasks();
-      setState((prev) => ({ ...prev, maintenanceTasks: response.data }));
-    } catch (err) {
-      console.error("Greška pri učitavanju radnih naloga:", err);
-    }
-  }, []);
-
-  const syncDocument = useCallback((document) => {
-    if (!document || !document.id) {
-      return;
-    }
-    setState((prev) => {
-      const current = Array.isArray(prev.dokumenti) ? prev.dokumenti : [];
-      const index = current.findIndex((item) => item?.id === document.id);
-      const nextDocuments =
-        index === -1 ? [document, ...current] : [...current];
-      if (index !== -1) {
-        nextDocuments[index] = { ...current[index], ...document };
-      }
-      return { ...prev, dokumenti: nextDocuments };
-    });
-  }, []);
-
-  const syncMaintenanceTask = useCallback((task) => {
-    if (!task || !task.id) {
-      return;
-    }
-    setState((prev) => {
-      const current = Array.isArray(prev.maintenanceTasks)
-        ? prev.maintenanceTasks
-        : [];
-      let replaced = false;
-      const nextTasks = current.map((item) => {
-        if (item?.id === task.id) {
-          replaced = true;
-          return { ...item, ...task };
-        }
-        return item;
-      });
-
-      if (!replaced) {
-        nextTasks.unshift(task);
-      }
-
-      return { ...prev, maintenanceTasks: nextTasks };
-    });
-  }, []);
-
-  useEffect(() => {
-    loadEntities();
-  }, [loadEntities]);
-
-  const propertyUnitsById = useMemo(() => {
-    const map = {};
-    for (const unit of state.propertyUnits) {
-      if (unit && unit.id) {
-        map[unit.id] = unit;
-      }
-    }
-    return map;
-  }, [state.propertyUnits]);
-
-  const propertyUnitsByProperty = useMemo(() => {
-    const map = {};
-    for (const unit of state.propertyUnits) {
-      if (!unit || !unit.nekretnina_id) {
-        continue;
-      }
-      if (!map[unit.nekretnina_id]) {
-        map[unit.nekretnina_id] = [];
-      }
-      map[unit.nekretnina_id].push(unit);
-    }
-
-    Object.entries(map).forEach(([key, collection]) => {
-      map[key] = sortUnitsByPosition(collection);
-    });
-
-    return map;
-  }, [state.propertyUnits]);
-
-  const value = useMemo(
-    () => ({
-      ...state,
-      propertyUnitsById,
-      propertyUnitsByProperty,
-      loading,
-      error,
-      refresh: loadEntities,
-      refreshMaintenanceTasks,
-      syncDocument,
-      syncMaintenanceTask,
-    }),
-    [
-      state,
-      propertyUnitsById,
-      propertyUnitsByProperty,
-      loading,
-      error,
-      loadEntities,
-      refreshMaintenanceTasks,
-      syncDocument,
-      syncMaintenanceTask,
-    ],
-  );
-
-  return (
-    <EntityStoreContext.Provider value={value}>
-      {children}
-    </EntityStoreContext.Provider>
-  );
-};
-
-const useEntityStore = () => {
-  const context = useContext(EntityStoreContext);
-  if (!context) {
-    throw new Error(
-      "useEntityStore must be used within an EntityStoreProvider",
-    );
-  }
-  return context;
 };
 
 // Navigation Component
@@ -1621,6 +856,97 @@ const ClickableReminder = ({ podsjetnik }) => {
 };
 
 // Dashboard Component
+const MAINTENANCE_STATUS_META = {
+  novi: {
+    title: "Novi",
+    description: "Prijave koje čekaju trijažu",
+    cardBorderClass: "border-l-4 border-sky-500",
+    badgeClass: "border border-sky-200 bg-sky-100 text-sky-700",
+  },
+  planiran: {
+    title: "Planiran",
+    description: "Termin i resursi su definirani",
+    cardBorderClass: "border-l-4 border-amber-500",
+    badgeClass: "border border-amber-200 bg-amber-100 text-amber-700",
+  },
+  u_tijeku: {
+    title: "U tijeku",
+    description: "Radovi su u tijeku",
+    cardBorderClass: "border-l-4 border-blue-500",
+    badgeClass: "border border-blue-200 bg-blue-100 text-blue-700",
+  },
+  ceka_dobavljaca: {
+    title: "Čeka dobavljača",
+    description: "Blokirano dok ne stigne dobavljač",
+    cardBorderClass: "border-l-4 border-purple-500",
+    badgeClass: "border border-purple-200 bg-purple-100 text-purple-700",
+  },
+  potrebna_odluka: {
+    title: "Potrebna odluka",
+    description: "Čeka odobrenje ili dodatni input",
+    cardBorderClass: "border-l-4 border-rose-500",
+    badgeClass: "border border-rose-200 bg-rose-100 text-rose-700",
+  },
+  zavrseno: {
+    title: "Završeno",
+    description: "Radni nalog je izvršen",
+    cardBorderClass: "border-l-4 border-emerald-500",
+    badgeClass: "border border-emerald-200 bg-emerald-100 text-emerald-700",
+  },
+  arhivirano: {
+    title: "Arhivirano",
+    description: "Ostavljeno za evidenciju",
+    cardBorderClass: "border-l-4 border-slate-400",
+    badgeClass: "border border-slate-200 bg-slate-100 text-slate-600",
+  },
+};
+
+const MAINTENANCE_STATUS_ORDER = [
+  "novi",
+  "planiran",
+  "u_tijeku",
+  "ceka_dobavljaca",
+  "potrebna_odluka",
+  "zavrseno",
+];
+const ALL_MAINTENANCE_STATUSES = [...MAINTENANCE_STATUS_ORDER, "arhivirano"];
+
+const MAINTENANCE_PRIORITY_CONFIG = {
+  nisko: {
+    label: "Nizak prioritet",
+    className: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  srednje: {
+    label: "Srednji prioritet",
+    className: "border border-sky-200 bg-sky-50 text-sky-700",
+  },
+  visoko: {
+    label: "Visok prioritet",
+    className: "border border-orange-200 bg-orange-50 text-orange-700",
+  },
+  kriticno: {
+    label: "Kritično",
+    className: "border border-red-200 bg-red-50 text-red-700",
+  },
+};
+
+const MAINTENANCE_PRIORITY_ORDER = ["kriticno", "visoko", "srednje", "nisko"];
+
+const EMPTY_MAINTENANCE_FORM = {
+  naziv: "",
+  opis: "",
+  prioritet: "srednje",
+  status: "novi",
+  nekretnina_id: "",
+  property_unit_id: "",
+  prijavio: "",
+  dodijeljeno: "",
+  rok: "",
+  oznake: "",
+  procijenjeni_trosak: "",
+  stvarni_trosak: "",
+};
+
 const MaintenanceBoard = ({
   enableFilters = false,
   enableList = false,
@@ -4285,6 +3611,7 @@ const PropertyUnitsPanel = ({
     osnovna_zakupnina: "",
   });
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [unitFilter, setUnitFilter] = useState("svi");
 
   useEffect(() => {
     setSelectedIds((prev) => {
@@ -4298,17 +3625,7 @@ const PropertyUnitsPanel = ({
     });
   }, [units, property?.id]);
 
-  const summary = useMemo(() => computeUnitsSummary(units), [units]);
-  const statusBreakdown = useMemo(
-    () => [
-      { status: "iznajmljeno", count: summary.leased },
-      { status: "rezervirano", count: summary.reserved },
-      { status: "dostupno", count: summary.available },
-      { status: "u_odrzavanju", count: summary.maintenance },
-    ],
-    [summary],
-  );
-
+  const overallSummary = useMemo(() => computeUnitsSummary(units), [units]);
   const contractsById = useMemo(
     () =>
       Object.fromEntries(
@@ -4334,9 +3651,23 @@ const PropertyUnitsPanel = ({
     [],
   );
 
+  const filteredUnits = useMemo(() => {
+    if (unitFilter === "svi") {
+      return units;
+    }
+    return units.filter((unit) => unit.status === unitFilter);
+  }, [units, unitFilter]);
+
+  const allFilteredSelected = useMemo(
+    () =>
+      filteredUnits.length > 0 &&
+      filteredUnits.every((unit) => selectedIds.has(unit.id)),
+    [filteredUnits, selectedIds],
+  );
+
   const selectedUnits = useMemo(
-    () => units.filter((unit) => selectedIds.has(unit.id)),
-    [units, selectedIds],
+    () => filteredUnits.filter((unit) => selectedIds.has(unit.id)),
+    [filteredUnits, selectedIds],
   );
   const resolvedUnitDetail = useMemo(() => {
     if (!unitDetailId) {
@@ -4347,7 +3678,7 @@ const PropertyUnitsPanel = ({
 
   const toggleSelectAll = (checked) => {
     if (checked) {
-      setSelectedIds(new Set(units.map((unit) => unit.id)));
+      setSelectedIds(new Set(filteredUnits.map((unit) => unit.id)));
     } else {
       setSelectedIds(new Set());
     }
@@ -4556,63 +3887,52 @@ const PropertyUnitsPanel = ({
   return (
     <div className="space-y-5">
       <Card className="border border-border/60 shadow-sm">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg font-semibold text-foreground">
-              Pregled podprostora
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Ukupno {summary.total} jedinica • {summary.leased} iznajmljeno •{" "}
-              {summary.available} dostupno
-            </p>
+        <CardContent className="space-y-4 p-4">
+          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold text-foreground">
+                Pregled podprostora
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Ukupno {overallSummary.total} jedinica • {overallSummary.leased}{" "}
+                iznajmljeno • {overallSummary.available} dostupno
+              </p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Popunjenost:{" "}
+              {overallSummary.total
+                ? formatPercentage(overallSummary.occupancy)
+                : "—"}
+            </div>
           </div>
-          <div className="flex flex-col items-start gap-2 md:items-end">
-            <div className="flex items-center gap-3">
-              <div className="w-40">
-                <Progress
-                  value={
-                    summary.total
-                      ? Math.min(100, Math.max(0, summary.occupancy))
-                      : 0
-                  }
-                />
-              </div>
-              <span className="text-sm font-semibold text-foreground">
-                {summary.total ? formatPercentage(summary.occupancy) : "—"}{" "}
-                popunjeno
-              </span>
+
+          <UnitStatusMap
+            units={units}
+            filter={unitFilter}
+            onFilterChange={setUnitFilter}
+          />
+
+          <Separator className="bg-border/60" />
+
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="text-sm text-muted-foreground">
+              {selectedIds.size > 0
+                ? `${selectedIds.size} odabranih jedinica`
+                : "Odaberite jedinice za bulk radnje"}
             </div>
             <div className="flex flex-wrap gap-2">
-              {statusBreakdown.map(({ status, count }) => (
-                <Badge
-                  key={status}
-                  variant="outline"
-                  className={`rounded-full text-[11px] ${getUnitStatusBadgeClass(status)}`}
-                >
-                  {formatUnitStatus(status)}: {count}
-                </Badge>
-              ))}
+              <Button size="sm" variant="outline" onClick={openCreateForm}>
+                <Plus className="mr-2 h-4 w-4" /> Dodaj jedinicu
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!selectedIds.size}
+                onClick={() => setBulkDialogOpen(true)}
+              >
+                <Archive className="mr-2 h-4 w-4" /> Bulk radnje
+              </Button>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-muted-foreground">
-            {selectedIds.size > 0
-              ? `${selectedIds.size} odabranih jedinica`
-              : "Odaberite jedinice za bulk radnje"}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={openCreateForm}>
-              <Plus className="mr-2 h-4 w-4" /> Dodaj jedinicu
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!selectedIds.size}
-              onClick={() => setBulkDialogOpen(true)}
-            >
-              <Archive className="mr-2 h-4 w-4" /> Bulk radnje
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -4624,9 +3944,7 @@ const PropertyUnitsPanel = ({
               <th className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={
-                      selectedIds.size > 0 && selectedIds.size === units.length
-                    }
+                    checked={allFilteredSelected}
                     onCheckedChange={(checked) =>
                       toggleSelectAll(Boolean(checked))
                     }
@@ -4646,7 +3964,7 @@ const PropertyUnitsPanel = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
-            {units.length === 0 ? (
+            {filteredUnits.length === 0 ? (
               <tr>
                 <td
                   colSpan={9}
@@ -4657,7 +3975,7 @@ const PropertyUnitsPanel = ({
                 </td>
               </tr>
             ) : (
-              units.map((unit) => {
+              filteredUnits.map((unit) => {
                 const isSelected = selectedIds.has(unit.id);
                 const tenantName = resolveUnitTenantName(unit, tenantsById);
                 return (
@@ -5650,6 +4968,85 @@ const Nekretnine = () => {
     return (neto / osnova) * 100;
   };
 
+  const getRiskBadges = (nekretnina) => {
+    if (!nekretnina) {
+      return [];
+    }
+
+    const badges = [];
+    const hasMeaningfulValue = (value) => {
+      if (value === null || value === undefined) {
+        return false;
+      }
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return false;
+        }
+        const normalised = trimmed.toLowerCase();
+        const neutralKeywords = [
+          "nema",
+          "bez",
+          "nije evidentirano",
+          "nije dostupno",
+          "n/a",
+        ];
+        if (
+          neutralKeywords.some(
+            (keyword) =>
+              normalised === keyword ||
+              normalised.startsWith(`${keyword} `) ||
+              normalised.endsWith(` ${keyword}`),
+          ) ||
+          normalised === "-" ||
+          normalised === "—"
+        ) {
+          return false;
+        }
+        return true;
+      }
+      if (typeof value === "number") {
+        return !Number.isNaN(value) && value !== 0;
+      }
+      return true;
+    };
+
+    if (hasMeaningfulValue(nekretnina.sudski_sporovi)) {
+      badges.push({ label: "Sudski sporovi", variant: "destructive" });
+    }
+
+    if (hasMeaningfulValue(nekretnina.hipoteke)) {
+      badges.push({ label: "Hipoteka", variant: "destructive" });
+    }
+
+    if (hasMeaningfulValue(nekretnina.potrebna_ulaganja)) {
+      badges.push({ label: "Potrebna ulaganja", variant: "secondary" });
+    }
+
+    if (hasMeaningfulValue(nekretnina.napomene)) {
+      badges.push({ label: "Napomena upravitelja", variant: "outline" });
+    }
+
+    const netIncome = parseNumericValue(nekretnina.proslogodisnji_neto_prihod);
+    if (typeof netIncome === "number" && netIncome < 0) {
+      badges.push({ label: "Negativan neto prihod", variant: "destructive" });
+    }
+
+    const grossIncome = parseNumericValue(nekretnina.prosllogodisnji_prihodi);
+    const operatingExpense = parseNumericValue(
+      nekretnina.prosllogodisnji_rashodi,
+    );
+    if (
+      grossIncome !== null &&
+      operatingExpense !== null &&
+      grossIncome < operatingExpense
+    ) {
+      badges.push({ label: "Rashodi veći od prihoda", variant: "secondary" });
+    }
+
+    return badges;
+  };
+
   const filteredProperties = useMemo(() => {
     const search = propertySearch.trim().toLowerCase();
 
@@ -5957,7 +5354,8 @@ const Nekretnine = () => {
             (ugovor) => ugovor.status === "aktivno",
           );
           const expiringContracts = propertyContracts.filter(
-            (ugovor) => ugovor.status === "na_isteku",
+            (ugovor) =>
+              ugovor.status === "aktivno" && isContractExpiring(ugovor),
           );
           const occupancy = propertyContracts.length
             ? (activeContracts.length / propertyContracts.length) * 100
@@ -7987,6 +7385,107 @@ const Zakupnici = () => {
             const tags = Array.isArray(zakupnik.oznake)
               ? zakupnik.oznake.filter(Boolean)
               : [];
+            const fiskalAddressParts = [
+              zakupnik.adresa_ulica,
+              zakupnik.adresa_kucni_broj,
+              zakupnik.adresa_postanski_broj,
+              zakupnik.adresa_grad,
+            ].filter(Boolean);
+            const fiskalAddress = fiskalAddressParts.join(" ");
+            const addressDisplay =
+              fiskalAddress || zakupnik.sjediste || "Adresa nije navedena";
+
+            const summaryFields = [
+              { label: "OIB", value: zakupnik.oib || "—" },
+              {
+                label: "Telefon",
+                value: primaryPhone || "Telefon nije zabilježen",
+              },
+              primaryEmail && {
+                label: "Email",
+                value: (
+                  <a
+                    href={`mailto:${primaryEmail}`}
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
+                    {primaryEmail}
+                  </a>
+                ),
+              },
+              { label: "Adresa", value: addressDisplay },
+              primaryName && {
+                label: "Primarni kontakt",
+                value: primaryRole
+                  ? `${primaryName} (${primaryRole})`
+                  : primaryName,
+              },
+              preferredChannel && {
+                label: "Preferirani kanal",
+                value: preferredChannel,
+              },
+              slaValue && {
+                label: "SLA odziv",
+                value: slaValue,
+              },
+              zakupnik.odgovorna_osoba && {
+                label: "Odgovorna osoba",
+                value: zakupnik.odgovorna_osoba,
+              },
+              zakupnik.iban && {
+                label: "IBAN",
+                value: zakupnik.iban,
+              },
+              zakupnik.pdv_obveznik !== undefined &&
+                zakupnik.pdv_obveznik !== null && {
+                  label: "PDV obveznik",
+                  value: formatBooleanish(zakupnik.pdv_obveznik),
+                },
+              zakupnik.pdv_id && {
+                label: "PDV ID",
+                value: zakupnik.pdv_id,
+              },
+              zakupnik.maticni_broj && {
+                label: "Matični broj",
+                value: zakupnik.maticni_broj,
+              },
+              zakupnik.registracijski_broj && {
+                label: "Registracijski broj",
+                value: zakupnik.registracijski_broj,
+              },
+            ].filter(Boolean);
+
+            const eracunFields = [
+              zakupnik.eracun_identifikator && {
+                label: "Identifikator",
+                value: zakupnik.eracun_identifikator,
+              },
+              zakupnik.eracun_dostava_kanal && {
+                label: "Kanal dostave",
+                value: zakupnik.eracun_dostava_kanal,
+              },
+              zakupnik.eracun_posrednik && {
+                label: "Posrednik",
+                value: zakupnik.eracun_posrednik,
+              },
+              zakupnik.eracun_email && {
+                label: "Kontakt email",
+                value: (
+                  <a
+                    href={`mailto:${zakupnik.eracun_email}`}
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
+                    {zakupnik.eracun_email}
+                  </a>
+                ),
+              },
+            ].filter(Boolean);
+
+            const operationsFields = [
+              zakupnik.radno_vrijeme && {
+                label: "Radno vrijeme",
+                value: zakupnik.radno_vrijeme,
+              },
+            ].filter(Boolean);
 
             return (
               <Card
@@ -8028,68 +7527,17 @@ const Zakupnici = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 px-5 py-6 text-sm text-muted-foreground">
-                  <div className="space-y-2 text-foreground">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="inline-flex items-center gap-2 font-medium">
-                        <Phone className="h-4 w-4 text-primary/70" />
-                        {primaryPhone || "Telefon nije zabilježen"}
-                      </span>
-                      {primaryEmail && (
-                        <a
-                          href={`mailto:${primaryEmail}`}
-                          className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
-                        >
-                          <Mail className="h-3 w-3" />
-                          {primaryEmail}
-                        </a>
-                      )}
+                  {summaryFields.length > 0 && (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {summaryFields.map((field) => (
+                        <InfoField
+                          key={`${zakupnik.id}-${field.label}`}
+                          label={field.label}
+                          value={field.value}
+                        />
+                      ))}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-muted-foreground/80">
-                      <MapPin className="h-4 w-4 text-primary/60" />
-                      <span>{zakupnik.sjediste || "Adresa nije navedena"}</span>
-                    </div>
-                    {primaryName && (
-                      <div className="space-y-1 text-muted-foreground/80">
-                        <p>
-                          Kontakt osoba:{" "}
-                          <span className="font-medium text-foreground">
-                            {primaryName}
-                          </span>
-                          {primaryRole && (
-                            <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground/70">
-                              {primaryRole}
-                            </span>
-                          )}
-                        </p>
-                        {preferredChannel && (
-                          <p className="text-xs text-muted-foreground/70">
-                            Preferirani kanal: {preferredChannel}
-                          </p>
-                        )}
-                        {slaValue && (
-                          <p className="text-xs text-muted-foreground/70">
-                            SLA odziv: {slaValue}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    <Badge variant="outline" className="bg-white">
-                      OIB: {zakupnik.oib || "—"}
-                    </Badge>
-                    {zakupnik.iban && (
-                      <Badge variant="outline" className="bg-white">
-                        IBAN: {zakupnik.iban}
-                      </Badge>
-                    )}
-                    {zakupnik.radno_vrijeme && (
-                      <Badge variant="outline" className="bg-white">
-                        Radno vrijeme: {zakupnik.radno_vrijeme}
-                      </Badge>
-                    )}
-                  </div>
+                  )}
 
                   {tags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
@@ -8105,83 +7553,126 @@ const Zakupnici = () => {
                     </div>
                   )}
 
-                  {isPartner && zakupnik.opis_usluge && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-sm text-amber-900">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-                        Opis suradnje
-                      </p>
-                      <p>{zakupnik.opis_usluge}</p>
-                    </div>
-                  )}
-
-                  {zakupnik.biljeske && (
-                    <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
-                        Bilješke
-                      </p>
-                      <p className="text-sm text-foreground/90">
-                        {zakupnik.biljeske}
-                      </p>
-                    </div>
-                  )}
-
-                  {additionalContacts.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
-                        Dodatni kontakti
-                      </p>
-                      <div className="space-y-2">
-                        {additionalContacts.map((kontakt) => (
-                          <div
-                            key={kontakt.id || `${zakupnik.id}-${kontakt.ime}`}
-                            className="rounded-lg border border-border/40 bg-white/70 p-2 text-xs text-muted-foreground"
-                          >
-                            <p className="font-semibold text-foreground">
-                              {kontakt.ime}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {kontakt.uloga && (
-                                <Badge
-                                  variant="outline"
-                                  className="rounded-full"
-                                >
-                                  {kontakt.uloga}
-                                </Badge>
-                              )}
-                              {kontakt.email && (
-                                <a
-                                  href={`mailto:${kontakt.email}`}
-                                  className="text-primary underline-offset-2 hover:underline"
-                                >
-                                  {kontakt.email}
-                                </a>
-                              )}
-                              {kontakt.telefon && (
-                                <span>{kontakt.telefon}</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between gap-2 pt-2">
-                    <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-muted-foreground/70">
-                      <Badge
-                        variant="outline"
-                        className="rounded-full border-primary/30 bg-white/70 text-primary"
-                      >
-                        {entityType}
-                      </Badge>
-                      {slaValue && (
-                        <Badge
-                          variant="outline"
-                          className="rounded-full bg-white/80 text-muted-foreground"
-                        >
-                          SLA: {slaValue}
-                        </Badge>
+                  {(eracunFields.length > 0 ||
+                    operationsFields.length > 0 ||
+                    zakupnik.fiskalizacija_napomena ||
+                    additionalContacts.length > 0) && (
+                    <Accordion
+                      type="multiple"
+                      className="rounded-lg border border-border/40 bg-muted/10"
+                    >
+                      {(eracunFields.length > 0 ||
+                        zakupnik.fiskalizacija_napomena) && (
+                        <AccordionItem value="eracun">
+                          <AccordionTrigger className="px-3 text-sm font-semibold text-foreground">
+                            eRačun & fiskalizacija
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-3 px-3">
+                            {eracunFields.length > 0 && (
+                              <div className="grid gap-3 md:grid-cols-2">
+                                {eracunFields.map((field) => (
+                                  <InfoField
+                                    key={`${zakupnik.id}-eracun-${field.label}`}
+                                    label={field.label}
+                                    value={field.value}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            {zakupnik.fiskalizacija_napomena && (
+                              <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+                                {zakupnik.fiskalizacija_napomena}
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
                       )}
+
+                      {(operationsFields.length > 0 ||
+                        zakupnik.biljeske ||
+                        (isPartner && zakupnik.opis_usluge)) && (
+                        <AccordionItem value="operations">
+                          <AccordionTrigger className="px-3 text-sm font-semibold text-foreground">
+                            Operativne bilješke
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-3 px-3">
+                            {operationsFields.length > 0 && (
+                              <div className="grid gap-3 md:grid-cols-2">
+                                {operationsFields.map((field) => (
+                                  <InfoField
+                                    key={`${zakupnik.id}-ops-${field.label}`}
+                                    label={field.label}
+                                    value={field.value}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            {isPartner && zakupnik.opis_usluge && (
+                              <div className="rounded-md border border-amber-200 bg-amber-50/70 px-3 py-2 text-xs text-amber-900">
+                                {zakupnik.opis_usluge}
+                              </div>
+                            )}
+                            {zakupnik.biljeske && (
+                              <div className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs text-muted-foreground">
+                                {zakupnik.biljeske}
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
+                      )}
+
+                      {additionalContacts.length > 0 && (
+                        <AccordionItem value="contacts">
+                          <AccordionTrigger className="px-3 text-sm font-semibold text-foreground">
+                            Dodatni kontakti
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-2 px-3">
+                            {additionalContacts.map((kontakt) => (
+                              <div
+                                key={
+                                  kontakt.id || `${zakupnik.id}-${kontakt.ime}`
+                                }
+                                className="rounded-lg border border-border/40 bg-white/80 p-2 text-xs text-muted-foreground"
+                              >
+                                <p className="font-semibold text-foreground">
+                                  {kontakt.ime}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {kontakt.uloga && (
+                                    <Badge
+                                      variant="outline"
+                                      className="rounded-full"
+                                    >
+                                      {kontakt.uloga}
+                                    </Badge>
+                                  )}
+                                  {kontakt.email && (
+                                    <a
+                                      href={`mailto:${kontakt.email}`}
+                                      className="text-primary underline-offset-2 hover:underline"
+                                    >
+                                      {kontakt.email}
+                                    </a>
+                                  )}
+                                  {kontakt.telefon && (
+                                    <span>{kontakt.telefon}</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </AccordionContent>
+                        </AccordionItem>
+                      )}
+                    </Accordion>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                    <div className="text-xs text-muted-foreground/70">
+                      Tip kontakta:{" "}
+                      <span className="font-medium text-foreground">
+                        {entityType}
+                      </span>
+                      {slaValue ? ` • SLA ${slaValue}` : ""}
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -8316,11 +7807,26 @@ const ZakupnikForm = ({
       ime_prezime: zakupnik?.ime_prezime || "",
       oib: zakupnik?.oib || "",
       sjediste: zakupnik?.sjediste || "",
+      adresa_ulica: zakupnik?.adresa_ulica || "",
+      adresa_kucni_broj: zakupnik?.adresa_kucni_broj || "",
+      adresa_postanski_broj: zakupnik?.adresa_postanski_broj || "",
+      adresa_grad: zakupnik?.adresa_grad || "",
+      adresa_drzava: zakupnik?.adresa_drzava || "",
       kontakt_ime: primaryContact?.ime || zakupnik?.kontakt_ime || "",
       kontakt_email: primaryContact?.email || zakupnik?.kontakt_email || "",
       kontakt_telefon:
         primaryContact?.telefon || zakupnik?.kontakt_telefon || "",
       iban: zakupnik?.iban || "",
+      pdv_obveznik: Boolean(zakupnik?.pdv_obveznik),
+      pdv_id: zakupnik?.pdv_id || "",
+      maticni_broj: zakupnik?.maticni_broj || "",
+      registracijski_broj: zakupnik?.registracijski_broj || "",
+      eracun_dostava_kanal: zakupnik?.eracun_dostava_kanal || "",
+      eracun_identifikator: zakupnik?.eracun_identifikator || "",
+      eracun_email: zakupnik?.eracun_email || "",
+      eracun_posrednik: zakupnik?.eracun_posrednik || "",
+      fiskalizacija_napomena: zakupnik?.fiskalizacija_napomena || "",
+      odgovorna_osoba: zakupnik?.odgovorna_osoba || "",
       status: zakupnik?.status || "aktivan",
       primary_uloga: primaryContact?.uloga || "",
       primary_preferirani_kanal: primaryContact?.preferirani_kanal || "",
@@ -8413,7 +7919,15 @@ const ZakupnikForm = ({
     );
   };
 
-  const trimString = (value) => (value ?? "").trim();
+  const trimString = (value) => {
+    if (value === null || value === undefined) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value.trim();
+    }
+    return String(value).trim();
+  };
   const parseOptionalInt = (value) => {
     if (value === "" || value === null || value === undefined) {
       return null;
@@ -8464,16 +7978,42 @@ const ZakupnikForm = ({
 
     const kontakt_osobe = [primaryContactPayload, ...normalisedExtraContacts];
 
+    const composedAddress = [
+      trimString(formData.adresa_ulica),
+      trimString(formData.adresa_kucni_broj),
+      trimString(formData.adresa_postanski_broj),
+      trimString(formData.adresa_grad),
+      trimString(formData.adresa_drzava),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const payload = {
       tip: formData.tip,
       naziv_firme: trimString(formData.naziv_firme) || null,
       ime_prezime: trimString(formData.ime_prezime) || null,
       oib: trimString(formData.oib),
-      sjediste: trimString(formData.sjediste),
+      sjediste: composedAddress || trimString(formData.sjediste),
+      adresa_ulica: trimString(formData.adresa_ulica) || null,
+      adresa_kucni_broj: trimString(formData.adresa_kucni_broj) || null,
+      adresa_postanski_broj: trimString(formData.adresa_postanski_broj) || null,
+      adresa_grad: trimString(formData.adresa_grad) || null,
+      adresa_drzava: trimString(formData.adresa_drzava) || null,
       kontakt_ime: trimString(formData.kontakt_ime),
       kontakt_email: trimString(formData.kontakt_email),
       kontakt_telefon: trimString(formData.kontakt_telefon),
       iban: trimString(formData.iban) || null,
+      pdv_obveznik: Boolean(formData.pdv_obveznik),
+      pdv_id: trimString(formData.pdv_id) || null,
+      maticni_broj: trimString(formData.maticni_broj) || null,
+      registracijski_broj: trimString(formData.registracijski_broj) || null,
+      eracun_dostava_kanal: trimString(formData.eracun_dostava_kanal) || null,
+      eracun_identifikator: trimString(formData.eracun_identifikator) || null,
+      eracun_email: trimString(formData.eracun_email) || null,
+      eracun_posrednik: trimString(formData.eracun_posrednik) || null,
+      fiskalizacija_napomena:
+        trimString(formData.fiskalizacija_napomena) || null,
+      odgovorna_osoba: trimString(formData.odgovorna_osoba) || null,
       status: formData.status || "aktivan",
       oznake: resolvedTags,
       opis_usluge: trimString(formData.opis_usluge) || null,
@@ -8574,17 +8114,6 @@ const ZakupnikForm = ({
             data-testid="zakupnik-iban-input"
           />
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="sjediste">Sjedište / adresa *</Label>
-        <Input
-          id="sjediste"
-          value={formData.sjediste}
-          onChange={(event) => updateForm("sjediste", event.target.value)}
-          data-testid="zakupnik-sjediste-input"
-          required
-        />
       </div>
 
       <div className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
@@ -8727,28 +8256,269 @@ const ZakupnikForm = ({
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <Label htmlFor="radno_vrijeme">Radno vrijeme</Label>
-          <Input
-            id="radno_vrijeme"
-            value={formData.radno_vrijeme}
-            onChange={(event) =>
-              updateForm("radno_vrijeme", event.target.value)
-            }
-            placeholder="npr. Pon-Pet 08-16"
-          />
-        </div>
-        <div>
-          <Label htmlFor="biljeske">Bilješke</Label>
-          <Textarea
-            id="biljeske"
-            value={formData.biljeske}
-            onChange={(event) => updateForm("biljeske", event.target.value)}
-            rows={3}
-          />
-        </div>
-      </div>
+      <Accordion
+        type="multiple"
+        defaultValue={["address"]}
+        className="overflow-hidden rounded-xl border border-border/60 bg-white/70"
+      >
+        <AccordionItem
+          value="address"
+          className="border-border/60 last:border-b-0"
+        >
+          <AccordionTrigger className="px-4 text-sm font-semibold text-foreground">
+            Adresni podaci
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3 px-4">
+            <p className="text-xs text-muted-foreground">
+              Adresa se koristi za fiskalizaciju i generiranje ugovora.
+            </p>
+            {formData.sjediste &&
+              !formData.adresa_ulica &&
+              !formData.adresa_kucni_broj &&
+              !formData.adresa_postanski_broj &&
+              !formData.adresa_grad && (
+                <p className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs text-muted-foreground">
+                  Trenutno sjedište: {formData.sjediste}
+                </p>
+              )}
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <Label htmlFor="adresa_ulica">Ulica</Label>
+                <Input
+                  id="adresa_ulica"
+                  value={formData.adresa_ulica}
+                  onChange={(event) =>
+                    updateForm("adresa_ulica", event.target.value)
+                  }
+                  placeholder="npr. Ulica Ivana Gorana Kovačića"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adresa_kucni_broj">Kućni broj</Label>
+                <Input
+                  id="adresa_kucni_broj"
+                  value={formData.adresa_kucni_broj}
+                  onChange={(event) =>
+                    updateForm("adresa_kucni_broj", event.target.value)
+                  }
+                  placeholder="npr. 12A"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adresa_postanski_broj">Poštanski broj</Label>
+                <Input
+                  id="adresa_postanski_broj"
+                  value={formData.adresa_postanski_broj}
+                  onChange={(event) =>
+                    updateForm("adresa_postanski_broj", event.target.value)
+                  }
+                  placeholder="npr. 10000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adresa_grad">Grad / mjesto</Label>
+                <Input
+                  id="adresa_grad"
+                  value={formData.adresa_grad}
+                  onChange={(event) =>
+                    updateForm("adresa_grad", event.target.value)
+                  }
+                  placeholder="npr. Zagreb"
+                />
+              </div>
+              <div>
+                <Label htmlFor="adresa_drzava">Država</Label>
+                <Input
+                  id="adresa_drzava"
+                  value={formData.adresa_drzava}
+                  onChange={(event) =>
+                    updateForm("adresa_drzava", event.target.value)
+                  }
+                  placeholder="npr. Hrvatska"
+                />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem
+          value="compliance"
+          className="border-border/60 last:border-b-0"
+        >
+          <AccordionTrigger className="px-4 text-sm font-semibold text-foreground">
+            PDV i registri
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3 px-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="pdv_obveznik">PDV obveznik</Label>
+                <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/20 px-3 py-2">
+                  <Switch
+                    id="pdv_obveznik"
+                    checked={Boolean(formData.pdv_obveznik)}
+                    onCheckedChange={(value) =>
+                      updateForm("pdv_obveznik", Boolean(value))
+                    }
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {formData.pdv_obveznik ? "Da" : "Ne"}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="pdv_id">PDV ID</Label>
+                <Input
+                  id="pdv_id"
+                  value={formData.pdv_id}
+                  onChange={(event) => updateForm("pdv_id", event.target.value)}
+                  placeholder="npr. HR12345678901"
+                />
+              </div>
+              <div>
+                <Label htmlFor="maticni_broj">Matični broj</Label>
+                <Input
+                  id="maticni_broj"
+                  value={formData.maticni_broj}
+                  onChange={(event) =>
+                    updateForm("maticni_broj", event.target.value)
+                  }
+                  placeholder="npr. 081234567"
+                />
+              </div>
+              <div>
+                <Label htmlFor="registracijski_broj">Registracijski broj</Label>
+                <Input
+                  id="registracijski_broj"
+                  value={formData.registracijski_broj}
+                  onChange={(event) =>
+                    updateForm("registracijski_broj", event.target.value)
+                  }
+                  placeholder="npr. MBS 081234567"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label htmlFor="odgovorna_osoba">Odgovorna osoba</Label>
+                <Input
+                  id="odgovorna_osoba"
+                  value={formData.odgovorna_osoba}
+                  onChange={(event) =>
+                    updateForm("odgovorna_osoba", event.target.value)
+                  }
+                  placeholder="npr. Ivana Horvat"
+                />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem
+          value="eracun"
+          className="border-border/60 last:border-b-0"
+        >
+          <AccordionTrigger className="px-4 text-sm font-semibold text-foreground">
+            eRačun i fiskalizacija
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3 px-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <Label htmlFor="eracun_dostava_kanal">Kanal dostave</Label>
+                <Input
+                  id="eracun_dostava_kanal"
+                  value={formData.eracun_dostava_kanal}
+                  onChange={(event) =>
+                    updateForm("eracun_dostava_kanal", event.target.value)
+                  }
+                  placeholder="npr. PEPPOL, Fina"
+                />
+              </div>
+              <div>
+                <Label htmlFor="eracun_identifikator">Identifikator</Label>
+                <Input
+                  id="eracun_identifikator"
+                  value={formData.eracun_identifikator}
+                  onChange={(event) =>
+                    updateForm("eracun_identifikator", event.target.value)
+                  }
+                  placeholder="npr. HR:12345678901"
+                />
+              </div>
+              <div>
+                <Label htmlFor="eracun_email">eRačun email</Label>
+                <Input
+                  id="eracun_email"
+                  type="email"
+                  value={formData.eracun_email}
+                  onChange={(event) =>
+                    updateForm("eracun_email", event.target.value)
+                  }
+                  placeholder="npr. eracun@primatelj.hr"
+                />
+              </div>
+              <div>
+                <Label htmlFor="eracun_posrednik">Posrednik</Label>
+                <Input
+                  id="eracun_posrednik"
+                  value={formData.eracun_posrednik}
+                  onChange={(event) =>
+                    updateForm("eracun_posrednik", event.target.value)
+                  }
+                  placeholder="npr. Fina, Moj-eRačun"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="fiskalizacija_napomena">
+                Napomena za fiskalizaciju / eRačun
+              </Label>
+              <Textarea
+                id="fiskalizacija_napomena"
+                rows={3}
+                value={formData.fiskalizacija_napomena}
+                onChange={(event) =>
+                  updateForm("fiskalizacija_napomena", event.target.value)
+                }
+                placeholder="Kontrolne napomene, npr. zahtjev za posebnim certifikatom"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem
+          value="notes"
+          className="border-border/60 last:border-b-0"
+        >
+          <AccordionTrigger className="px-4 text-sm font-semibold text-foreground">
+            Operativne bilješke
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3 px-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <Label htmlFor="radno_vrijeme">Radno vrijeme</Label>
+                <Input
+                  id="radno_vrijeme"
+                  value={formData.radno_vrijeme}
+                  onChange={(event) =>
+                    updateForm("radno_vrijeme", event.target.value)
+                  }
+                  placeholder="npr. Pon-Pet 08-16"
+                />
+              </div>
+              <div>
+                <Label htmlFor="biljeske">Bilješke</Label>
+                <Textarea
+                  id="biljeske"
+                  value={formData.biljeske}
+                  onChange={(event) =>
+                    updateForm("biljeske", event.target.value)
+                  }
+                  rows={3}
+                  placeholder="Interna napomena, SLA dogovor..."
+                />
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -9076,13 +8846,6 @@ const Ugovori = () => {
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
-  const isUgovorNaIsteku = (ugovor) => {
-    const danas = new Date();
-    const datumZavrsetka = new Date(ugovor.datum_zavrsetka);
-    const daniDo = Math.ceil((datumZavrsetka - danas) / (1000 * 60 * 60 * 24));
-    return daniDo <= 90 && daniDo > 0; // Ugovori koji ističu u sljedećih 90 dana
-  };
-
   const handleDownloadContractDocument = (dokument) => {
     const url = getDocumentUrl(dokument);
     if (!url) {
@@ -9108,7 +8871,7 @@ const Ugovori = () => {
   );
   const expiringContractsCount = useMemo(
     () =>
-      ugovori.filter((u) => u.status === "aktivno" && isUgovorNaIsteku(u))
+      ugovori.filter((u) => u.status === "aktivno" && isContractExpiring(u))
         .length,
     [ugovori],
   );
@@ -9140,7 +8903,9 @@ const Ugovori = () => {
         nekretnina?.adresa.toLowerCase().includes(query) ||
         zakupnik?.naziv_firme?.toLowerCase().includes(query) ||
         zakupnik?.ime_prezime?.toLowerCase().includes(query) ||
-        zakupnik?.oib.includes(query);
+        zakupnik?.oib.includes(query) ||
+        zakupnik?.pdv_id?.toLowerCase().includes(query) ||
+        zakupnik?.eracun_identifikator?.toLowerCase().includes(query);
     }
 
     return matches;
@@ -9231,7 +8996,7 @@ const Ugovori = () => {
         {filteredUgovori.map((ugovor) => {
           const nekretnina = getNekretnina(ugovor.nekretnina_id);
           const zakupnik = getZakupnik(ugovor.zakupnik_id);
-          const naIsteku = isUgovorNaIsteku(ugovor);
+          const naIsteku = isContractExpiring(ugovor);
           const contractDocuments = documentsByContract[ugovor.id] || [];
           const propertyUnit = ugovor.property_unit_id
             ? propertyUnitsById?.[ugovor.property_unit_id]
@@ -9281,6 +9046,23 @@ const Ugovori = () => {
                   <p className="text-sm text-muted-foreground">
                     OIB: {zakupnik?.oib}
                   </p>
+                  <p className="text-xs text-muted-foreground/80">
+                    PDV: {formatBooleanish(zakupnik?.pdv_obveznik)}
+                    {zakupnik?.pdv_id ? ` • ID: ${zakupnik.pdv_id}` : ""}
+                  </p>
+                  {(zakupnik?.eracun_identifikator ||
+                    zakupnik?.eracun_dostava_kanal ||
+                    zakupnik?.eracun_posrednik) && (
+                    <p className="text-xs text-muted-foreground/70">
+                      eRačun: {zakupnik?.eracun_identifikator || "—"}
+                      {zakupnik?.eracun_dostava_kanal
+                        ? ` • Kanal: ${zakupnik.eracun_dostava_kanal}`
+                        : ""}
+                      {zakupnik?.eracun_posrednik
+                        ? ` • Posrednik: ${zakupnik.eracun_posrednik}`
+                        : ""}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-foreground">
@@ -10603,2035 +10385,6 @@ const UgovorForm = ({
   );
 };
 
-// Dokumenti Component
-const Dokumenti = () => {
-  const {
-    dokumenti,
-    nekretnine,
-    zakupnici,
-    ugovori,
-    propertyUnitsByProperty,
-    propertyUnitsById,
-    loading: storeLoading,
-    refresh,
-    syncDocument,
-  } = useEntityStore();
-  const [isMutating, setIsMutating] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [filterCategory, setFilterCategory] = useState("svi");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [previewDocument, setPreviewDocument] = useState(null);
-
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  useEffect(() => {
-    if (!storeLoading) {
-      setInitialLoadComplete(true);
-    }
-  }, [storeLoading]);
-
-  const refreshingStore = storeLoading;
-  const loading = isMutating;
-
-  const getLinkedEntity = useCallback(
-    (dokument) => {
-      if (dokument.property_unit_id) {
-        const unit = propertyUnitsById?.[dokument.property_unit_id];
-        if (unit) {
-          const property = nekretnine.find((n) => n.id === unit.nekretnina_id);
-          const tenant = zakupnici.find((z) => z.id === unit.zakupnik_id);
-          const descriptor = [
-            getUnitDisplayName(unit),
-            property?.naziv,
-            tenant ? tenant.naziv_firme || tenant.ime_prezime : null,
-          ]
-            .filter(Boolean)
-            .join(" • ");
-          return {
-            tip: "Podprostor",
-            naziv: descriptor || getUnitDisplayName(unit),
-          };
-        }
-        return { tip: "Podprostor", naziv: "Povezana jedinica" };
-      }
-      if (dokument.nekretnina_id) {
-        const nekretnina = nekretnine.find(
-          (n) => n.id === dokument.nekretnina_id,
-        );
-        return {
-          tip: "Nekretnina",
-          naziv: nekretnina?.naziv || "Nepoznata nekretnina",
-        };
-      }
-      if (dokument.zakupnik_id) {
-        const zakupnik = zakupnici.find((z) => z.id === dokument.zakupnik_id);
-        return {
-          tip: "Zakupnik",
-          naziv:
-            zakupnik?.naziv_firme ||
-            zakupnik?.ime_prezime ||
-            "Nepoznat zakupnik",
-        };
-      }
-      if (dokument.ugovor_id) {
-        const ugovor = ugovori.find((u) => u.id === dokument.ugovor_id);
-        return { tip: "Ugovor", naziv: ugovor?.interna_oznaka || "N/A" };
-      }
-      return { tip: "Općenito", naziv: "Nema povezanosti" };
-    },
-    [nekretnine, zakupnici, ugovori, propertyUnitsById],
-  );
-
-  const filteredDokumenti = useMemo(() => {
-    return dokumenti.filter((dokument) => {
-      if (filterCategory !== "svi" && dokument.tip !== filterCategory) {
-        return false;
-      }
-
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const linked = getLinkedEntity(dokument);
-        return (
-          dokument.naziv.toLowerCase().includes(query) ||
-          dokument.opis?.toLowerCase().includes(query) ||
-          formatDocumentType(dokument.tip).toLowerCase().includes(query) ||
-          linked.naziv?.toLowerCase().includes(query)
-        );
-      }
-
-      return true;
-    });
-  }, [dokumenti, filterCategory, searchQuery, getLinkedEntity]);
-
-  const categoryCounts = useMemo(() => {
-    return dokumenti.reduce((acc, dokument) => {
-      acc[dokument.tip] = (acc[dokument.tip] || 0) + 1;
-      return acc;
-    }, {});
-  }, [dokumenti]);
-
-  const getDocumentUrl = useCallback(
-    (dokument) => buildDocumentUrl(dokument),
-    [],
-  );
-
-  const handleCreateDokument = async (formData) => {
-    setIsMutating(true);
-    const toastId = toast.loading("Spremam dokument…");
-    try {
-      const response = await api.createDokument(formData);
-      if (response?.data) {
-        syncDocument(response.data);
-      }
-      toast.success("Dokument je uspješno dodan", { id: toastId });
-      setShowCreateForm(false);
-      try {
-        await refresh();
-      } catch (refreshError) {
-        console.error("Greška pri osvježavanju dokumenata:", refreshError);
-      }
-    } catch (error) {
-      console.error("Greška pri dodavanju dokumenta:", error);
-      const message =
-        error.response?.data?.detail || "Greška pri dodavanju dokumenta";
-      toast.error(message, { id: toastId });
-      throw error;
-    } finally {
-      setIsMutating(false);
-    }
-  };
-
-  const handleDocumentPreview = (dokument) => {
-    setPreviewDocument(dokument);
-    setShowPreviewDialog(true);
-  };
-
-  if (!initialLoadComplete && refreshingStore) {
-    return <div className="p-8">Učitava dokumente...</div>;
-  }
-
-  return (
-    <div className="p-8 space-y-6">
-      {refreshingStore && initialLoadComplete && (
-        <div className="text-xs text-gray-400">Osvježavanje podataka...</div>
-      )}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Dokumenti</h1>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Pretraži dokumente..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64"
-              data-testid="search-documents-input"
-            />
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            data-testid="dodaj-dokument-btn"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Dodaj dokument
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex space-x-2 flex-wrap">
-        <Button
-          variant={filterCategory === "svi" ? "default" : "outline"}
-          onClick={() => setFilterCategory("svi")}
-          size="sm"
-        >
-          Svi ({dokumenti.length})
-        </Button>
-        <Button
-          variant={filterCategory === "ugovor" ? "default" : "outline"}
-          onClick={() => setFilterCategory("ugovor")}
-          size="sm"
-        >
-          Ugovori ({categoryCounts.ugovor || 0})
-        </Button>
-        <Button
-          variant={
-            filterCategory === "zemljisnoknjizni_izvadak"
-              ? "default"
-              : "outline"
-          }
-          onClick={() => setFilterCategory("zemljisnoknjizni_izvadak")}
-          size="sm"
-        >
-          Z.K. izvadci ({categoryCounts.zemljisnoknjizni_izvadak || 0})
-        </Button>
-        <Button
-          variant={filterCategory === "osiguranje" ? "default" : "outline"}
-          onClick={() => setFilterCategory("osiguranje")}
-          size="sm"
-        >
-          Osiguranja ({categoryCounts.osiguranje || 0})
-        </Button>
-        <Button
-          variant={filterCategory === "certifikat" ? "default" : "outline"}
-          onClick={() => setFilterCategory("certifikat")}
-          size="sm"
-        >
-          Certifikati ({categoryCounts.certifikat || 0})
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDokumenti.map((dokument) => {
-          const linkedEntity = getLinkedEntity(dokument);
-          return (
-            <Card
-              key={dokument.id}
-              data-testid={`dokument-card-${dokument.id}`}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="truncate">{dokument.naziv}</span>
-                  <Badge variant="outline">
-                    {formatDocumentType(dokument.tip)}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm">
-                  <span className="font-medium">Vezano za:</span>{" "}
-                  {linkedEntity.tip}
-                </p>
-                <p
-                  className="text-sm text-blue-600 truncate"
-                  title={linkedEntity.naziv}
-                >
-                  {linkedEntity.naziv}
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">Datum:</span>{" "}
-                  {new Date(dokument.kreiran).toLocaleDateString()}
-                </p>
-                {dokument.opis && (
-                  <p className="text-sm text-muted-foreground">
-                    {dokument.opis}
-                  </p>
-                )}
-                <div className="pt-2 flex space-x-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleDocumentPreview(dokument)}
-                    data-testid={`preview-document-${dokument.id}`}
-                  >
-                    <Eye className="w-4 h-4 mr-1" /> Pregledaj
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      const url = getDocumentUrl(dokument);
-                      if (!url) {
-                        toast.error(
-                          "PDF datoteka nije učitana za ovaj dokument",
-                        );
-                        return;
-                      }
-                      window.open(url, "_blank", "noopener");
-                    }}
-                    data-testid={`open-document-${dokument.id}`}
-                    disabled={!dokument.putanja_datoteke}
-                  >
-                    <Download className="w-4 h-4 mr-1" /> Otvori
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-        <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          aria-describedby="dokument-form-description"
-        >
-          <DialogHeader>
-            <DialogTitle>Dodaj novi dokument</DialogTitle>
-          </DialogHeader>
-          <div id="dokument-form-description" className="sr-only">
-            Forma za dodavanje dokumenta i povezivanje s entitetima
-          </div>
-          <DokumentForm
-            nekretnine={nekretnine}
-            zakupnici={zakupnici}
-            ugovori={ugovori}
-            propertyUnitsByProperty={propertyUnitsByProperty}
-            propertyUnitsById={propertyUnitsById}
-            onSubmit={handleCreateDokument}
-            onCancel={() => setShowCreateForm(false)}
-            refreshEntities={refresh}
-            loading={loading}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-        <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
-          aria-describedby="document-preview-description"
-        >
-          <DialogHeader>
-            <DialogTitle>
-              Pregled dokumenta: {previewDocument?.naziv}
-            </DialogTitle>
-          </DialogHeader>
-          <div id="document-preview-description" className="sr-only">
-            Pregled dokumenta u aplikaciji
-          </div>
-
-          {previewDocument && (
-            <div className="space-y-4">
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Naziv:</span>{" "}
-                    {previewDocument.naziv}
-                  </div>
-                  <div>
-                    <span className="font-medium">Tip:</span>{" "}
-                    {formatDocumentType(previewDocument.tip)}
-                  </div>
-                  <div>
-                    <span className="font-medium">Datum:</span>{" "}
-                    {new Date(previewDocument.kreiran).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <span className="font-medium">Vezano za:</span>{" "}
-                    {getLinkedEntity(previewDocument).tip}
-                  </div>
-                </div>
-                {previewDocument.opis && (
-                  <div className="mt-3">
-                    <span className="font-medium">Opis:</span>
-                    <p className="mt-1 text-muted-foreground">
-                      {previewDocument.opis}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-end">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const url = getDocumentUrl(previewDocument);
-                        if (!url) {
-                          toast.error(
-                            "PDF datoteka nije učitana za ovaj dokument",
-                          );
-                          return;
-                        }
-                        window.open(url, "_blank", "noopener");
-                      }}
-                      disabled={!previewDocument.putanja_datoteke}
-                      data-testid="download-document"
-                    >
-                      <Download className="w-4 h-4 mr-2" /> Otvori u novom
-                      prozoru
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const holder = document.querySelector(
-                          "[data-document-preview]",
-                        );
-                        const iframe = holder
-                          ? holder.querySelector("iframe")
-                          : null;
-                        const url = getDocumentUrl(previewDocument);
-                        if (iframe && iframe.contentWindow) {
-                          iframe.contentWindow.focus();
-                          iframe.contentWindow.print();
-                          return;
-                        }
-                        if (url) {
-                          const printWindow = window.open(
-                            url,
-                            "_blank",
-                            "noopener",
-                          );
-                          if (printWindow) {
-                            printWindow.addEventListener(
-                              "load",
-                              () => printWindow.print(),
-                              { once: true },
-                            );
-                          }
-                        } else {
-                          toast.error(
-                            "PDF datoteka nije učitana za ovaj dokument",
-                          );
-                        }
-                      }}
-                      disabled={!previewDocument.putanja_datoteke}
-                      data-testid="print-document"
-                    >
-                      <Printer className="w-4 h-4 mr-2" /> Ispiši
-                    </Button>
-                  </div>
-                </div>
-                <DocumentViewer dokument={previewDocument} />
-                <div className="text-xs text-muted-foreground/80">
-                  Datoteka:{" "}
-                  {previewDocument.putanja_datoteke || "Nije prenesena"}
-                  {previewDocument.velicina_datoteke > 0 && (
-                    <>
-                      {" "}
-                      • Veličina:{" "}
-                      {(previewDocument.velicina_datoteke / 1024).toFixed(1)} KB
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowPreviewDialog(false)}
-                  className="flex-1"
-                >
-                  Zatvori
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
-
-const emptySelectValue = "none";
-
-const normalizeSelectValue = (value) =>
-  value === emptySelectValue ? "" : value;
-
-const LinkedEntitySelect = ({
-  label,
-  placeholder,
-  entities,
-  value,
-  onChange,
-  renderLabel,
-  testId,
-  allowNone = true,
-  disabled = false,
-}) => {
-  const selectValue = allowNone
-    ? value || emptySelectValue
-    : value || undefined;
-  const handleChange = (selected) => {
-    if (disabled) {
-      return;
-    }
-    if (allowNone) {
-      onChange(normalizeSelectValue(selected));
-    } else {
-      onChange(selected);
-    }
-  };
-
-  return (
-    <div>
-      <Label>{label}</Label>
-      <Select value={selectValue} onValueChange={handleChange}>
-        <SelectTrigger data-testid={testId} disabled={disabled}>
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {allowNone && (
-            <SelectItem value={emptySelectValue}>{placeholder}</SelectItem>
-          )}
-          {entities.map((entity) => (
-            <SelectItem key={entity.id} value={entity.id}>
-              {renderLabel
-                ? renderLabel(entity)
-                : entity.naziv || entity.interna_oznaka}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-};
-
-const DokumentForm = ({
-  nekretnine,
-  zakupnici,
-  ugovori,
-  propertyUnitsByProperty = {},
-  propertyUnitsById = {},
-  onSubmit,
-  onCancel,
-  refreshEntities,
-  loading,
-}) => {
-  const fileInputRef = useRef(null);
-  const latestCreatedUnitRef = useRef(null);
-  const initialFormState = {
-    naziv: "",
-    tip: "ugovor",
-    opis: "",
-    nekretnina_id: "",
-    zakupnik_id: "",
-    ugovor_id: "",
-    property_unit_id: "",
-    file: null,
-  };
-  const [formData, setFormData] = useState(initialFormState);
-  const [aiSuggestions, setAiSuggestions] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(null);
-  const [quickCreateLoading, setQuickCreateLoading] = useState({
-    property: false,
-    tenant: false,
-    contract: false,
-    unit: false,
-  });
-  const [manualUnitForm, setManualUnitForm] = useState(() => ({
-    oznaka: "",
-    naziv: "",
-    kat: "",
-    povrsina_m2: "",
-    status: "dostupno",
-    osnovna_zakupnina: "",
-    napomena: "",
-  }));
-  const [showManualUnitForm, setShowManualUnitForm] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [tenantOptions, setTenantOptions] = useState(zakupnici);
-
-  const manualUnitStatusOptions = useMemo(
-    () =>
-      Object.entries(UNIT_STATUS_CONFIG).map(([value, config]) => ({
-        value,
-        label: config.label,
-      })),
-    [],
-  );
-
-  const activeTenantOptions = useMemo(
-    () =>
-      tenantOptions.filter(
-        (tenant) => (tenant.status || "aktivan") !== "arhiviran",
-      ),
-    [tenantOptions],
-  );
-
-  const tenantsById = useMemo(
-    () => Object.fromEntries(zakupnici.map((tenant) => [tenant.id, tenant])),
-    [zakupnici],
-  );
-
-  const contractsForProperty = useMemo(() => {
-    if (!formData.nekretnina_id) {
-      return ugovori;
-    }
-    return ugovori.filter(
-      (contract) => contract.nekretnina_id === formData.nekretnina_id,
-    );
-  }, [ugovori, formData.nekretnina_id]);
-
-  const unitsForSelectedProperty = useMemo(() => {
-    if (!formData.nekretnina_id) {
-      return [];
-    }
-    return sortUnitsByPosition(
-      propertyUnitsByProperty[formData.nekretnina_id] || [],
-    );
-  }, [formData.nekretnina_id, propertyUnitsByProperty]);
-
-  const toNumber = (value, fallback = 0) => {
-    const num = Number(value);
-    return Number.isFinite(num) ? num : fallback;
-  };
-
-  const toNumberOrNull = (value) => {
-    const num = Number(value);
-    return Number.isFinite(num) ? num : null;
-  };
-
-  const normalize = (value) =>
-    value ? value.toString().trim().toLowerCase() : "";
-
-  const findPropertyMatch = useCallback(
-    (suggestion) => {
-      if (!suggestion) return null;
-      const name = normalize(suggestion.naziv);
-      const address = normalize(suggestion.adresa);
-      if (!name && !address) return null;
-      return (
-        nekretnine.find((item) => {
-          const itemName = normalize(item.naziv);
-          const itemAddress = normalize(item.adresa);
-          if (name && itemName === name) return true;
-          if (address && itemAddress === address) return true;
-          if (name && itemName.includes(name)) return true;
-          if (address && itemAddress.includes(address)) return true;
-          return false;
-        }) || null
-      );
-    },
-    [nekretnine],
-  );
-
-  const findPropertyUnitMatch = useCallback(
-    (propertyId, suggestion) => {
-      if (!propertyId || !suggestion) {
-        return null;
-      }
-      const targetOznaka = normalize(suggestion.oznaka);
-      const targetNaziv = normalize(suggestion.naziv);
-      if (!targetOznaka && !targetNaziv) {
-        return null;
-      }
-      const units = propertyUnitsByProperty?.[propertyId] || [];
-      return (
-        units.find((unit) => {
-          const unitOznaka = normalize(unit.oznaka);
-          const unitNaziv = normalize(unit.naziv);
-          if (targetOznaka && unitOznaka === targetOznaka) {
-            return true;
-          }
-          if (targetNaziv && unitNaziv === targetNaziv) {
-            return true;
-          }
-          return false;
-        }) || null
-      );
-    },
-    [propertyUnitsByProperty],
-  );
-
-  const findTenantMatch = useCallback(
-    (suggestion) => {
-      if (!suggestion) return null;
-      const name = normalize(suggestion.naziv_firme || suggestion.ime_prezime);
-      const oib = normalize(suggestion.oib);
-      return (
-        tenantOptions.find((item) => {
-          const itemName = normalize(item.naziv_firme || item.ime_prezime);
-          const itemOib = normalize(item.oib);
-          if (oib && itemOib === oib) return true;
-          if (name && itemName === name) return true;
-          if (name && itemName.includes(name)) return true;
-          return false;
-        }) || null
-      );
-    },
-    [tenantOptions],
-  );
-
-  const findContractMatch = useCallback(
-    (suggestion) => {
-      if (!suggestion) return null;
-      const oznaka = normalize(suggestion.interna_oznaka);
-      if (!oznaka) return null;
-      return (
-        ugovori.find((item) => normalize(item.interna_oznaka) === oznaka) ||
-        null
-      );
-    },
-    [ugovori],
-  );
-
-  const matchedProperty = useMemo(
-    () => findPropertyMatch(aiSuggestions?.nekretnina),
-    [aiSuggestions, findPropertyMatch],
-  );
-  const matchedTenant = useMemo(
-    () => findTenantMatch(aiSuggestions?.zakupnik),
-    [aiSuggestions, findTenantMatch],
-  );
-  const matchedContract = useMemo(
-    () => findContractMatch(aiSuggestions?.ugovor),
-    [aiSuggestions, findContractMatch],
-  );
-  const aiSuggestionDocumentType = aiSuggestions
-    ? resolveDocumentType(aiSuggestions.document_type)
-    : null;
-  const aiSuggestionIsPropertyDoc = aiSuggestionDocumentType
-    ? PROPERTY_DOCUMENT_TYPES.has(aiSuggestionDocumentType)
-    : false;
-  const aiSuggestionIsContractDoc = aiSuggestionDocumentType
-    ? CONTRACT_DOCUMENT_TYPES.has(aiSuggestionDocumentType)
-    : false;
-  const propertyUnitSuggestion = aiSuggestions?.property_unit || null;
-
-  const matchedPropertyId = useMemo(() => {
-    if (formData.nekretnina_id) {
-      return formData.nekretnina_id;
-    }
-    if (matchedProperty?.id) {
-      return matchedProperty.id;
-    }
-    if (propertyUnitSuggestion?.nekretnina_id) {
-      return propertyUnitSuggestion.nekretnina_id;
-    }
-    return null;
-  }, [formData.nekretnina_id, matchedProperty, propertyUnitSuggestion]);
-
-  const matchedUnit = useMemo(
-    () =>
-      matchedPropertyId && propertyUnitSuggestion
-        ? findPropertyUnitMatch(matchedPropertyId, propertyUnitSuggestion)
-        : null,
-    [matchedPropertyId, propertyUnitSuggestion, findPropertyUnitMatch],
-  );
-
-  const selectedUnit = useMemo(() => {
-    if (!formData.property_unit_id) {
-      return null;
-    }
-    const fallback =
-      latestCreatedUnitRef.current &&
-      latestCreatedUnitRef.current.id === formData.property_unit_id
-        ? latestCreatedUnitRef.current
-        : null;
-    return propertyUnitsById?.[formData.property_unit_id] || fallback;
-  }, [formData.property_unit_id, propertyUnitsById]);
-
-  const resetManualUnitForm = () => {
-    setManualUnitForm({
-      oznaka: "",
-      naziv: "",
-      kat: "",
-      povrsina_m2: "",
-      status: "dostupno",
-      osnovna_zakupnina: "",
-      napomena: "",
-    });
-  };
-
-  const handleManualUnitFieldChange = (field, value) => {
-    setManualUnitForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleManualUnitCreate = async () => {
-    const targetPropertyId = formData.nekretnina_id || matchedPropertyId;
-    if (!targetPropertyId) {
-      toast.error("Za dodavanje podprostora najprije odaberite nekretninu.");
-      return;
-    }
-    const oznakaValue = manualUnitForm.oznaka.trim();
-    if (!oznakaValue) {
-      toast.error("Oznaka podprostora je obavezna.");
-      return;
-    }
-    if (quickCreateLoading.unit) {
-      return;
-    }
-    setQuickCreateLoading((prev) => ({ ...prev, unit: true }));
-    try {
-      const payload = {
-        oznaka: oznakaValue,
-        naziv: manualUnitForm.naziv.trim() || null,
-        kat: manualUnitForm.kat.trim() || null,
-        povrsina_m2: manualUnitForm.povrsina_m2
-          ? parseNumericValue(manualUnitForm.povrsina_m2)
-          : null,
-        status: manualUnitForm.status || "dostupno",
-        osnovna_zakupnina: manualUnitForm.osnovna_zakupnina
-          ? parseNumericValue(manualUnitForm.osnovna_zakupnina)
-          : null,
-        napomena: manualUnitForm.napomena.trim() || null,
-      };
-
-      const response = await api.createUnit(targetPropertyId, payload);
-      const createdUnit = response?.data || null;
-      toast.success("Podprostor je kreiran.");
-
-      if (createdUnit?.id) {
-        latestCreatedUnitRef.current = createdUnit;
-        setFormData((prev) => ({
-          ...prev,
-          nekretnina_id: targetPropertyId,
-          property_unit_id: createdUnit.id,
-        }));
-      } else {
-        toast.warning(
-          "Podprostor je dodan, ali dohvat novog ID-a nije uspio. Osvježite popis ako nije vidljiv.",
-        );
-      }
-
-      try {
-        await refreshEntities();
-      } catch (refreshError) {
-        console.error(
-          "Greška pri osvježavanju podataka nakon kreiranja podprostora:",
-          refreshError,
-        );
-        toast.warning(
-          "Podprostor je kreiran, no prikaz podataka nije automatski osvježen.",
-        );
-      }
-
-      resetManualUnitForm();
-      setShowManualUnitForm(false);
-    } catch (error) {
-      console.error("Greška pri ručnom kreiranju podprostora:", error);
-      const message =
-        error.response?.data?.detail ||
-        "Podprostor nije kreiran. Pokušajte ponovno.";
-      toast.error(message);
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, unit: false }));
-    }
-  };
-
-  useEffect(() => {
-    if (!formData.property_unit_id) {
-      return;
-    }
-    const fallbackUnit =
-      latestCreatedUnitRef.current &&
-      latestCreatedUnitRef.current.id === formData.property_unit_id
-        ? latestCreatedUnitRef.current
-        : null;
-    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
-    if (!unit) {
-      setFormData((prev) => ({ ...prev, property_unit_id: "" }));
-      return;
-    }
-    if (
-      formData.nekretnina_id &&
-      unit.nekretnina_id !== formData.nekretnina_id
-    ) {
-      setFormData((prev) => ({ ...prev, property_unit_id: "" }));
-    }
-    if (propertyUnitsById?.[formData.property_unit_id]) {
-      latestCreatedUnitRef.current = null;
-    }
-  }, [formData.nekretnina_id, formData.property_unit_id, propertyUnitsById]);
-
-  useEffect(() => {
-    if (!formData.property_unit_id) {
-      return;
-    }
-    const fallbackUnit =
-      latestCreatedUnitRef.current &&
-      latestCreatedUnitRef.current.id === formData.property_unit_id
-        ? latestCreatedUnitRef.current
-        : null;
-    const unit = propertyUnitsById?.[formData.property_unit_id] || fallbackUnit;
-    if (!unit) {
-      return;
-    }
-    setFormData((prev) => {
-      const updates = {};
-      if (!prev.nekretnina_id && unit.nekretnina_id) {
-        updates.nekretnina_id = unit.nekretnina_id;
-      }
-      if (!prev.zakupnik_id && unit.zakupnik_id) {
-        updates.zakupnik_id = unit.zakupnik_id;
-      }
-      if (!prev.ugovor_id && unit.ugovor_id) {
-        updates.ugovor_id = unit.ugovor_id;
-      }
-      return Object.keys(updates).length ? { ...prev, ...updates } : prev;
-    });
-  }, [formData.property_unit_id, propertyUnitsById]);
-
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0] || null;
-    setAiSuggestions(null);
-    setAiError(null);
-
-    if (!file) {
-      setUploadedFile(null);
-      setFormData((prev) => ({ ...prev, file: null }));
-      return;
-    }
-
-    if (file.type !== "application/pdf") {
-      toast.error("Molimo odaberite PDF datoteku");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      setUploadedFile(null);
-      setFormData((prev) => ({ ...prev, file: null }));
-      return;
-    }
-
-    toast.dismiss("document-pdf-parse");
-    toast.loading("Analiziram PDF dokument…", {
-      description: file.name,
-      id: "document-pdf-parse",
-    });
-
-    setUploadedFile(file);
-    setFormData((prev) => ({ ...prev, file }));
-    setAiLoading(true);
-    try {
-      const response = await api.parsePdfContract(file);
-      const payload = response.data;
-      if (!payload.success) {
-        setAiError(payload.message || "AI analiza PDF-a nije uspjela");
-        toast.error(payload.message || "AI analiza PDF-a nije uspjela");
-        return;
-      }
-
-      const suggestions = payload.data || {};
-      setAiSuggestions(suggestions);
-
-      const contract = suggestions.ugovor || {};
-      const finances = suggestions.financije || {};
-      const propertySuggestion = suggestions.nekretnina || {};
-      const tenantSuggestion = suggestions.zakupnik || {};
-      const propertyUnitSuggestion = suggestions.property_unit || {};
-      const propertyMatch = findPropertyMatch(propertySuggestion);
-      const tenantMatch = findTenantMatch(tenantSuggestion);
-      const contractMatch = findContractMatch(contract);
-      const tenantMatchStatus = tenantMatch
-        ? tenantMatch.status || "aktivan"
-        : null;
-      const tenantMatchIsArchived = tenantMatchStatus === "arhiviran";
-      const documentType = resolveDocumentType(suggestions.document_type);
-      const isPropertyDoc = PROPERTY_DOCUMENT_TYPES.has(documentType);
-      const isContractDoc = CONTRACT_DOCUMENT_TYPES.has(documentType);
-      const matchedPropertyUnit = payload.matched_property_unit || null;
-      const createdPropertyUnit = payload.created_property_unit || null;
-
-      let inferredPropertyUnitId = "";
-
-      if (
-        createdPropertyUnit &&
-        propertyMatch &&
-        createdPropertyUnit.nekretnina_id === propertyMatch.id
-      ) {
-        latestCreatedUnitRef.current = createdPropertyUnit;
-        inferredPropertyUnitId = createdPropertyUnit.id;
-        await refreshEntities();
-        toast.success(
-          `Podprostor ${createdPropertyUnit.oznaka || createdPropertyUnit.naziv || createdPropertyUnit.id} je automatski kreiran.`,
-        );
-      } else if (
-        matchedPropertyUnit &&
-        propertyMatch &&
-        matchedPropertyUnit.nekretnina_id === propertyMatch.id
-      ) {
-        inferredPropertyUnitId = matchedPropertyUnit.id;
-        toast.success(
-          `Podprostor ${matchedPropertyUnit.oznaka || matchedPropertyUnit.naziv || matchedPropertyUnit.id} je povezan s dokumentom.`,
-        );
-      } else if (
-        propertyMatch &&
-        (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv)
-      ) {
-        const localMatch = findPropertyUnitMatch(
-          propertyMatch.id,
-          propertyUnitSuggestion,
-        );
-        if (localMatch) {
-          inferredPropertyUnitId = localMatch.id;
-          toast.info(
-            `Podprostor ${localMatch.oznaka || localMatch.naziv} je povezan s dokumentom.`,
-          );
-        } else {
-          toast.warning(
-            `AI je identificirao podprostor ${propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv}, ali ga nije pronašao u sustavu.`,
-          );
-        }
-      } else if (
-        (propertyUnitSuggestion.oznaka || propertyUnitSuggestion.naziv) &&
-        !propertyMatch
-      ) {
-        toast.info(
-          "AI je prepoznao podprostor, ali nije pronašao odgovarajuću nekretninu.",
-        );
-      }
-
-      const suggestedName = (() => {
-        if (documentType === "racun" && suggestions.racun?.broj_racuna) {
-          return `Račun ${suggestions.racun.broj_racuna}`;
-        }
-        if (documentType === "aneks" && contract.interna_oznaka) {
-          return `Aneks ${contract.interna_oznaka}`;
-        }
-        if (documentType === "ugovor" && contract.interna_oznaka) {
-          return `Ugovor ${contract.interna_oznaka}`;
-        }
-        if (isPropertyDoc) {
-          const propertyLabel =
-            propertyMatch?.naziv || propertySuggestion.naziv;
-          if (propertyLabel) {
-            const docLabel =
-              DOCUMENT_TYPE_LABELS[documentType] ||
-              formatDocumentType(documentType);
-            return `${docLabel} – ${propertyLabel}`;
-          }
-        }
-        return null;
-      })();
-
-      setFormData((prev) => {
-        const updated = { ...prev, tip: documentType };
-
-        if (!prev.naziv && suggestedName) {
-          updated.naziv = suggestedName;
-        }
-
-        if (propertyMatch) {
-          updated.nekretnina_id = propertyMatch.id;
-        } else if (isContractDoc && contractMatch?.nekretnina_id) {
-          updated.nekretnina_id = contractMatch.nekretnina_id;
-        }
-
-        if (!prev.opis && !isPropertyDoc) {
-          const descriptionSource =
-            tenantSuggestion.naziv_firme || tenantSuggestion.ime_prezime || "";
-          if (descriptionSource) {
-            updated.opis = descriptionSource;
-          }
-        }
-
-        if (isPropertyDoc) {
-          updated.zakupnik_id = "";
-          updated.ugovor_id = "";
-        } else {
-          if (tenantMatch && !tenantMatchIsArchived) {
-            updated.zakupnik_id = tenantMatch.id;
-          }
-          if (contractMatch) {
-            updated.ugovor_id = contractMatch.id;
-          }
-        }
-
-        if (
-          !prev.naziv &&
-          documentType === "racun" &&
-          suggestions.racun?.broj_racuna
-        ) {
-          updated.naziv = `Račun ${suggestions.racun.broj_racuna}`;
-        }
-
-        if (isPropertyDoc) {
-          updated.property_unit_id = "";
-        } else if (inferredPropertyUnitId) {
-          updated.property_unit_id = inferredPropertyUnitId;
-        }
-
-        return updated;
-      });
-
-      if (
-        !isPropertyDoc &&
-        (!tenantMatch || tenantMatchIsArchived) &&
-        (tenantSuggestion.naziv_firme || tenantSuggestion.ime_prezime)
-      ) {
-        await handleCreateTenantFromAI(tenantSuggestion);
-      }
-      toast.success("AI prijedlozi spremni – provjerite prijedloge ispod.");
-    } catch (error) {
-      console.error("AI analiza dokumenta nije uspjela:", error);
-      const message =
-        error.response?.data?.detail || "Greška pri AI analizi dokumenta";
-      setAiError(message);
-      toast.error(message);
-    } finally {
-      toast.dismiss("document-pdf-parse");
-      setAiLoading(false);
-    }
-  };
-
-  const handleCreatePropertyFromAI = async () => {
-    if (!aiSuggestions?.nekretnina) return;
-    setQuickCreateLoading((prev) => ({ ...prev, property: true }));
-    const suggestion = aiSuggestions.nekretnina;
-    try {
-      const payload = {
-        naziv: suggestion.naziv || `Nekretnina ${Date.now()}`,
-        adresa: suggestion.adresa || "Nepoznata adresa",
-        katastarska_opcina: suggestion.katastarska_opcina || "Nepoznata općina",
-        broj_kat_cestice: suggestion.broj_kat_cestice || "N/A",
-        vrsta: suggestion.vrsta || "ostalo",
-        povrsina: toNumber(suggestion.povrsina, 0),
-        godina_izgradnje: suggestion.godina_izgradnje || null,
-        vlasnik: suggestion.vlasnik || "Nepoznat vlasnik",
-        udio_vlasnistva: suggestion.udio_vlasnistva || "1/1",
-        nabavna_cijena: toNumberOrNull(suggestion.nabavna_cijena),
-        trzisna_vrijednost: toNumberOrNull(suggestion.trzisna_vrijednost),
-        prosllogodisnji_prihodi: toNumberOrNull(
-          suggestion.prosllogodisnji_prihodi,
-        ),
-        prosllogodisnji_rashodi: toNumberOrNull(
-          suggestion.prosllogodisnji_rashodi,
-        ),
-        amortizacija: toNumberOrNull(suggestion.amortizacija),
-        proslogodisnji_neto_prihod: toNumberOrNull(
-          suggestion.proslogodisnji_neto_prihod || suggestion.neto_prihod,
-        ),
-        zadnja_obnova: suggestion.zadnja_obnova || null,
-        potrebna_ulaganja: suggestion.potrebna_ulaganja || null,
-        troskovi_odrzavanja: toNumberOrNull(suggestion.troskovi_odrzavanja),
-        osiguranje: suggestion.osiguranje || null,
-        sudski_sporovi: suggestion.sudski_sporovi || null,
-        hipoteke: suggestion.hipoteke || null,
-        napomene: suggestion.napomene || null,
-      };
-      const response = await api.createNekretnina(payload);
-      toast.success("Nekretnina je kreirana iz AI prijedloga");
-      await refreshEntities();
-      setFormData((prev) => ({ ...prev, nekretnina_id: response.data.id }));
-    } catch (error) {
-      console.error("Greška pri kreiranju nekretnine iz AI prijedloga:", error);
-      toast.error("Greška pri kreiranju nekretnine");
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, property: false }));
-    }
-  };
-
-  const handleCreateTenantFromAI = async (suggestionOverride = null) => {
-    const suggestion = suggestionOverride || aiSuggestions?.zakupnik;
-    if (!suggestion) return;
-    setQuickCreateLoading((prev) => ({ ...prev, tenant: true }));
-    try {
-      const payload = {
-        naziv_firme: suggestion.naziv_firme || null,
-        ime_prezime: suggestion.ime_prezime || null,
-        oib: suggestion.oib || `N/A-${Date.now()}`,
-        sjediste: suggestion.sjediste || "Nije navedeno",
-        kontakt_ime:
-          suggestion.kontakt_ime ||
-          suggestion.naziv_firme ||
-          suggestion.ime_prezime ||
-          "Kontakt osoba",
-        kontakt_email: suggestion.kontakt_email || "kontakt@nedefinirano.hr",
-        kontakt_telefon: suggestion.kontakt_telefon || "000-000-000",
-        iban: suggestion.iban || "",
-      };
-      const response = await api.createZakupnik(payload);
-      const created = response.data;
-      toast.success("Zakupnik je kreiran iz AI prijedloga");
-      await refreshEntities();
-      if (created?.id) {
-        setTenantOptions((prev) =>
-          prev.some((item) => item.id === created.id)
-            ? prev
-            : [...prev, created],
-        );
-        setFormData((prev) => ({ ...prev, zakupnik_id: created.id }));
-      }
-    } catch (error) {
-      console.error("Greška pri kreiranju zakupnika iz AI prijedloga:", error);
-      toast.error("Greška pri kreiranju zakupnika");
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, tenant: false }));
-    }
-  };
-
-  const handleCreateUnitFromAI = async () => {
-    const suggestion = propertyUnitSuggestion;
-    const propertyId =
-      formData.nekretnina_id || matchedPropertyId || suggestion?.nekretnina_id;
-    if (!suggestion || !(suggestion.oznaka || suggestion.naziv)) {
-      toast.error(
-        "AI nije prepoznao dovoljno podataka za kreiranje podprostora.",
-      );
-      return;
-    }
-    if (!propertyId) {
-      toast.error(
-        "Odaberite ili kreirajte nekretninu prije dodavanja podprostora.",
-      );
-      return;
-    }
-    if (quickCreateLoading.unit) {
-      return;
-    }
-    setQuickCreateLoading((prev) => ({ ...prev, unit: true }));
-    const payload = {
-      oznaka: suggestion.oznaka || suggestion.naziv || `Jedinica-${Date.now()}`,
-      naziv: suggestion.naziv || null,
-      kat: suggestion.kat || suggestion.kat_zona || null,
-      povrsina_m2: suggestion.povrsina_m2
-        ? parseNumericValue(suggestion.povrsina_m2)
-        : null,
-      status: suggestion.status || "dostupno",
-      osnovna_zakupnina: suggestion.osnovna_zakupnina
-        ? parseNumericValue(suggestion.osnovna_zakupnina)
-        : null,
-      napomena: suggestion.napomena || null,
-    };
-    try {
-      const response = await api.createUnit(propertyId, payload);
-      const createdUnit = response?.data || null;
-      toast.success("Podprostor je kreiran iz AI prijedloga");
-      await refreshEntities();
-      if (createdUnit?.id) {
-        latestCreatedUnitRef.current = createdUnit;
-        setFormData((prev) => ({
-          ...prev,
-          nekretnina_id: propertyId,
-          property_unit_id: createdUnit.id,
-        }));
-      } else {
-        toast.warning(
-          "Podprostor je kreiran, ali dohvat novog ID-a nije uspio. Osvježite prikaz ako nije vidljiv.",
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Greška pri kreiranju podprostora iz AI prijedloga:",
-        error,
-      );
-      toast.error("Greška pri kreiranju podprostora");
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, unit: false }));
-    }
-  };
-
-  const handleUseMatchedUnit = () => {
-    if (!matchedUnit) {
-      return;
-    }
-    setFormData((prev) => ({
-      ...prev,
-      nekretnina_id: matchedUnit.nekretnina_id || prev.nekretnina_id,
-      property_unit_id: matchedUnit.id,
-    }));
-    toast.success(
-      `Podprostor ${getUnitDisplayName(matchedUnit)} je povezan s dokumentom.`,
-    );
-  };
-
-  const handleClearUnitSelection = () => {
-    setFormData((prev) => ({ ...prev, property_unit_id: "" }));
-  };
-
-  const handleCreateContractFromAI = async () => {
-    if (!aiSuggestions?.ugovor) {
-      toast.error("AI nije pronašao podatke o ugovoru");
-      return;
-    }
-    if (!formData.nekretnina_id || !formData.zakupnik_id) {
-      toast.error("Povežite nekretninu i zakupnika prije kreiranja ugovora");
-      return;
-    }
-    setQuickCreateLoading((prev) => ({ ...prev, contract: true }));
-    const contract = aiSuggestions.ugovor || {};
-    const finances = aiSuggestions.financije || {};
-    const other = aiSuggestions.ostalo || {};
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      const payload = {
-        interna_oznaka: contract.interna_oznaka || `UG-${Date.now()}`,
-        nekretnina_id: formData.nekretnina_id,
-        zakupnik_id: formData.zakupnik_id,
-        datum_potpisivanja: contract.datum_potpisivanja || today,
-        datum_pocetka: contract.datum_pocetka || today,
-        datum_zavrsetka: contract.datum_zavrsetka || today,
-        trajanje_mjeseci: contract.trajanje_mjeseci || 12,
-        rok_otkaza_dani: contract.rok_otkaza_dani || 30,
-        osnovna_zakupnina: toNumber(finances.osnovna_zakupnina, 0),
-        zakupnina_po_m2: toNumberOrNull(finances.zakupnina_po_m2),
-        cam_troskovi: toNumberOrNull(finances.cam_troskovi),
-        polog_depozit: toNumberOrNull(finances.polog_depozit),
-        garancija: toNumberOrNull(finances.garancija),
-        indeksacija: finances.indeksacija ?? false,
-        indeks: finances.indeks || null,
-        formula_indeksacije: finances.formula_indeksacije || null,
-        obveze_odrzavanja: other.obveze_odrzavanja || null,
-        namjena_prostora:
-          aiSuggestions.nekretnina?.namjena_prostora ||
-          contract.namjena_prostora ||
-          "",
-        rezije_brojila: other.rezije_brojila || "",
-      };
-      const propertyUnitId = formData.property_unit_id;
-      if (!propertyUnitId) {
-        toast.error(
-          "AI nije uspio povezati podprostor. Molimo odaberite podprostor ručno prije kreiranja ugovora.",
-        );
-        return;
-      }
-      payload.property_unit_id = propertyUnitId;
-      const response = await api.createUgovor(payload);
-      toast.success("Ugovor je kreiran iz AI prijedloga");
-      await refreshEntities();
-      setFormData((prev) => ({
-        ...prev,
-        ugovor_id: response.data.id,
-        naziv: prev.naziv || `Ugovor ${response.data.interna_oznaka}`,
-      }));
-    } catch (error) {
-      console.error("Greška pri kreiranju ugovora iz AI prijedloga:", error);
-      toast.error("Greška pri kreiranju ugovora");
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, contract: false }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.file) {
-      toast.error("PDF dokument je obavezan. Učitajte PDF prije spremanja.");
-      return;
-    }
-    if (PROPERTY_DOCUMENT_TYPES.has(formData.tip) && !formData.nekretnina_id) {
-      toast.error("Za ovaj tip dokumenta odaberite pripadajuću nekretninu.");
-      return;
-    }
-    try {
-      await onSubmit({
-        ...formData,
-        nekretnina_id: formData.nekretnina_id || null,
-        zakupnik_id: formData.zakupnik_id || null,
-        ugovor_id: formData.ugovor_id || null,
-        property_unit_id: formData.property_unit_id || null,
-      });
-      setFormData({ ...initialFormState });
-      setAiSuggestions(null);
-      setAiError(null);
-      setUploadedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      console.error("Greška pri spremanju dokumenta:", error);
-    }
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4"
-      data-testid="dokument-form"
-    >
-      <div className="border-2 border-dashed border-border/50 rounded-lg bg-primary/5 p-5">
-        <div className="text-center space-y-3">
-          <h3 className="text-lg font-medium text-foreground">
-            📄 Učitaj PDF dokument
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            PDF je obavezan i koristi se za AI prijedloge, automatsko
-            povezivanje i spremanje u arhivu.
-          </p>
-          <input
-            id="dokument-pdf-upload"
-            type="file"
-            accept=".pdf"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={aiLoading || loading}
-          />
-          {!uploadedFile ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={aiLoading || loading}
-              className="inline-flex items-center"
-            >
-              {aiLoading ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
-                  Analiziram PDF...
-                </>
-              ) : (
-                <>
-                  <FileText className="mr-2 h-4 w-4" /> Odaberite PDF
-                </>
-              )}
-            </Button>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white px-4 py-2 text-sm font-medium text-primary">
-                <FileText className="h-4 w-4" />
-                {uploadedFile.name}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setUploadedFile(null);
-                  setFormData((prev) => ({ ...prev, file: null }));
-                  setAiSuggestions(null);
-                  setAiError(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }}
-                disabled={aiLoading || loading}
-              >
-                <Trash2 className="mr-2 h-4 w-4" /> Ukloni PDF
-              </Button>
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground/80">
-            Podržani format: PDF
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="naziv">Naziv dokumenta *</Label>
-          <Input
-            id="naziv"
-            value={formData.naziv}
-            onChange={(e) =>
-              setFormData({ ...formData, naziv: e.target.value })
-            }
-            data-testid="dokument-naziv-input"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="tip">Tip dokumenta *</Label>
-          <Select
-            value={formData.tip}
-            onValueChange={(value) =>
-              setFormData((prev) => {
-                const next = { ...prev, tip: value };
-                if (PROPERTY_DOCUMENT_TYPES.has(value)) {
-                  next.zakupnik_id = "";
-                  next.ugovor_id = "";
-                }
-                return next;
-              })
-            }
-          >
-            <SelectTrigger data-testid="dokument-tip-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ugovor">Ugovor</SelectItem>
-              <SelectItem value="racun">Račun</SelectItem>
-              <SelectItem value="procjena_vrijednosti">
-                Procjena vrijednosti
-              </SelectItem>
-              <SelectItem value="lokacijska_informacija">
-                Lokacijska informacija
-              </SelectItem>
-              <SelectItem value="aneks">Aneks</SelectItem>
-              <SelectItem value="zemljisnoknjizni_izvadak">
-                Zemljišnoknjižni izvadak
-              </SelectItem>
-              <SelectItem value="uporabna_dozvola">Uporabna dozvola</SelectItem>
-              <SelectItem value="gradevinska_dozvola">
-                Građevinska dozvola
-              </SelectItem>
-              <SelectItem value="energetski_certifikat">
-                Energetski certifikat
-              </SelectItem>
-              <SelectItem value="osiguranje">Osiguranje</SelectItem>
-              <SelectItem value="izvadak_iz_registra">
-                Izvadak iz registra
-              </SelectItem>
-              <SelectItem value="bon_2">BON-2</SelectItem>
-              <SelectItem value="certifikat">Certifikat</SelectItem>
-              <SelectItem value="ostalo">Ostalo</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="opis">Opis dokumenta</Label>
-        <Textarea
-          id="opis"
-          value={formData.opis}
-          onChange={(e) => setFormData({ ...formData, opis: e.target.value })}
-          data-testid="dokument-opis-input"
-        />
-      </div>
-
-      {aiLoading && (
-        <div className="text-sm text-blue-600">Analiziram PDF dokument...</div>
-      )}
-      {aiError && <div className="text-sm text-red-600">{aiError}</div>}
-
-      {aiSuggestions && (
-        <div className="border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-blue-900">
-              AI prijedlozi iz PDF-a
-            </h4>
-            <div className="flex items-center space-x-2">
-              {aiSuggestions.document_type && (
-                <Badge variant="outline">
-                  Vrsta: {aiSuggestions.document_type}
-                </Badge>
-              )}
-              <Badge variant="outline">Eksperimentalno</Badge>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-3">
-            <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2">
-              <p className="text-xs font-semibold text-blue-700 uppercase">
-                Nekretnina
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {aiSuggestions.nekretnina?.naziv || "Nije prepoznato"}
-              </p>
-              <p className="text-xs text-muted-foreground/80">
-                {aiSuggestions.nekretnina?.adresa}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {matchedProperty ? (
-                  <Badge
-                    variant="outline"
-                    className="text-green-700 border-green-300"
-                  >
-                    Pronađena: {matchedProperty.naziv}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">Nije pronađena postojeća</Badge>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={
-                    quickCreateLoading.property ||
-                    !aiSuggestions.nekretnina ||
-                    loading
-                  }
-                  onClick={() => {
-                    if (matchedProperty) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        nekretnina_id: matchedProperty.id,
-                      }));
-                      toast.success("Nekretnina je povezana");
-                    } else {
-                      handleCreatePropertyFromAI();
-                    }
-                  }}
-                >
-                  {quickCreateLoading.property
-                    ? "Spremam..."
-                    : matchedProperty
-                      ? "Poveži s pronađenom"
-                      : "Kreiraj nekretninu"}
-                </Button>
-              </div>
-            </div>
-
-            {aiSuggestionIsContractDoc && (
-              <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-blue-700 uppercase">
-                    Podprostor
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUnit ? (
-                      <Badge
-                        variant="outline"
-                        className="text-green-700 border-green-300"
-                      >
-                        Povezano: {getUnitDisplayName(selectedUnit)}
-                      </Badge>
-                    ) : matchedUnit ? (
-                      <Badge variant="outline">Pronađen u sustavu</Badge>
-                    ) : propertyUnitSuggestion ? (
-                      <Badge variant="outline">AI prijedlog</Badge>
-                    ) : (
-                      <Badge variant="outline">Nije prepoznato</Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-1 text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground">
-                    {propertyUnitSuggestion?.oznaka ||
-                      propertyUnitSuggestion?.naziv ||
-                      "Nije prepoznato"}
-                  </p>
-                  {propertyUnitSuggestion?.naziv &&
-                    propertyUnitSuggestion?.oznaka &&
-                    propertyUnitSuggestion.naziv !==
-                      propertyUnitSuggestion.oznaka && (
-                      <p className="text-xs text-muted-foreground/80">
-                        {propertyUnitSuggestion.naziv}
-                      </p>
-                    )}
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground/80">
-                  {propertyUnitSuggestion?.kat && (
-                    <span className="rounded-full bg-blue-50 px-2 py-1">
-                      Kat: {propertyUnitSuggestion.kat}
-                    </span>
-                  )}
-                  {propertyUnitSuggestion?.povrsina_m2 && (
-                    <span className="rounded-full bg-blue-50 px-2 py-1">
-                      Površina: {propertyUnitSuggestion.povrsina_m2} m²
-                    </span>
-                  )}
-                  {propertyUnitSuggestion?.status && (
-                    <span className="rounded-full bg-blue-50 px-2 py-1">
-                      Status: {formatUnitStatus(propertyUnitSuggestion.status)}
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {matchedUnit &&
-                    (!selectedUnit || selectedUnit.id !== matchedUnit.id) && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleUseMatchedUnit}
-                        disabled={loading}
-                      >
-                        Poveži s pronađenim
-                      </Button>
-                    )}
-                  {!matchedUnit &&
-                    propertyUnitSuggestion &&
-                    (propertyUnitSuggestion.oznaka ||
-                      propertyUnitSuggestion.naziv) && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCreateUnitFromAI}
-                        disabled={
-                          quickCreateLoading.unit ||
-                          !matchedPropertyId ||
-                          loading
-                        }
-                      >
-                        {quickCreateLoading.unit
-                          ? "Spremam..."
-                          : matchedPropertyId
-                            ? "Kreiraj podprostor"
-                            : "Odaberite nekretninu"}
-                      </Button>
-                    )}
-                  {selectedUnit && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleClearUnitSelection}
-                      disabled={loading}
-                    >
-                      Ukloni odabir
-                    </Button>
-                  )}
-                </div>
-                {!matchedPropertyId && propertyUnitSuggestion && (
-                  <p className="text-xs text-amber-600">
-                    Za automatsku poveznicu najprije odaberite nekretninu.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {aiSuggestionIsContractDoc && (
-              <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2">
-                <p className="text-xs font-semibold text-blue-700 uppercase">
-                  Zakupnik
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {aiSuggestions.zakupnik?.naziv_firme ||
-                    aiSuggestions.zakupnik?.ime_prezime ||
-                    "Nije prepoznato"}
-                </p>
-                <p className="text-xs text-muted-foreground/80">
-                  OIB: {aiSuggestions.zakupnik?.oib || "N/A"}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {matchedTenant ? (
-                    <Badge
-                      variant="outline"
-                      className="text-green-700 border-green-300"
-                    >
-                      Pronađen:{" "}
-                      {matchedTenant.naziv_firme || matchedTenant.ime_prezime}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">Nije pronađen postojeći</Badge>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={
-                      quickCreateLoading.tenant ||
-                      !aiSuggestions.zakupnik ||
-                      loading
-                    }
-                    onClick={() => {
-                      if (matchedTenant) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          zakupnik_id: matchedTenant.id,
-                        }));
-                        toast.success("Zakupnik je povezan");
-                      } else {
-                        handleCreateTenantFromAI();
-                      }
-                    }}
-                  >
-                    {quickCreateLoading.tenant
-                      ? "Spremam..."
-                      : matchedTenant
-                        ? "Poveži s pronađenim"
-                        : "Kreiraj zakupnika"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {aiSuggestionIsContractDoc && (
-              <div className="bg-white border border-blue-100 rounded-md p-3 space-y-2 md:col-span-2">
-                <p className="text-xs font-semibold text-blue-700 uppercase">
-                  Ugovor
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Oznaka:{" "}
-                  {aiSuggestions.ugovor?.interna_oznaka || "Nije prepoznato"}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {matchedContract ? (
-                    <Badge
-                      variant="outline"
-                      className="text-green-700 border-green-300"
-                    >
-                      Pronađen: {matchedContract.interna_oznaka}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">Nije pronađen postojeći</Badge>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={
-                      quickCreateLoading.contract ||
-                      !aiSuggestions.ugovor ||
-                      loading
-                    }
-                    onClick={() => {
-                      if (matchedContract) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          ugovor_id: matchedContract.id,
-                        }));
-                        toast.success("Ugovor je povezan");
-                      } else {
-                        handleCreateContractFromAI();
-                      }
-                    }}
-                  >
-                    {quickCreateLoading.contract
-                      ? "Spremam..."
-                      : matchedContract
-                        ? "Poveži s pronađenim"
-                        : "Kreiraj ugovor"}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-4 border-t pt-4">
-        <h4 className="font-medium">Poveži s entitetom (opcionalno)</h4>
-        <LinkedEntitySelect
-          label="Nekretnina"
-          placeholder="Nema veze s nekretninom"
-          entities={nekretnine}
-          value={formData.nekretnina_id}
-          onChange={(value) =>
-            setFormData((prev) => ({
-              ...prev,
-              nekretnina_id: value,
-              property_unit_id:
-                value &&
-                prev.property_unit_id &&
-                propertyUnitsById?.[prev.property_unit_id]?.nekretnina_id ===
-                  value
-                  ? prev.property_unit_id
-                  : "",
-              ugovor_id: value ? prev.ugovor_id : "",
-            }))
-          }
-          renderLabel={(nekretnina) =>
-            `${nekretnina.naziv} - ${nekretnina.adresa}`
-          }
-          testId="dokument-nekretnina-select"
-        />
-        <LinkedEntitySelect
-          label="Podprostor / jedinica"
-          placeholder={
-            formData.nekretnina_id
-              ? "Nema veze s podprostorom"
-              : "Odaberite nekretninu za popis jedinica"
-          }
-          entities={unitsForSelectedProperty}
-          value={formData.property_unit_id}
-          onChange={(value) =>
-            setFormData((prev) => ({
-              ...prev,
-              property_unit_id: value,
-            }))
-          }
-          renderLabel={(unit) =>
-            `${getUnitDisplayName(unit)} • ${formatUnitStatus(unit.status)} • ${resolveUnitTenantName(unit, tenantsById)}`
-          }
-          testId="dokument-unit-select"
-          disabled={!formData.nekretnina_id}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setShowManualUnitForm((prev) => {
-                const next = !prev;
-                if (!next) {
-                  resetManualUnitForm();
-                }
-                return next;
-              })
-            }
-            disabled={loading}
-          >
-            {showManualUnitForm
-              ? "Zatvori ručno dodavanje"
-              : "Dodaj novi podprostor"}
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Ručno dodajte podprostor ako ga AI nije pronašao ili ga još nema u
-            sustavu.
-          </p>
-        </div>
-        {showManualUnitForm && (
-          <div className="space-y-4 rounded-lg border border-border/60 bg-white p-4 shadow-sm">
-            {!(formData.nekretnina_id || matchedPropertyId) && (
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
-                Odaberite nekretninu prije spremanja novog podprostora.
-              </div>
-            )}
-            <div className="grid gap-3 md:grid-cols-2">
-              <div>
-                <Label>Oznaka *</Label>
-                <Input
-                  value={manualUnitForm.oznaka}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange("oznaka", event.target.value)
-                  }
-                  placeholder="npr. A-101"
-                />
-              </div>
-              <div>
-                <Label>Naziv</Label>
-                <Input
-                  value={manualUnitForm.naziv}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange("naziv", event.target.value)
-                  }
-                  placeholder="npr. Ured A-101"
-                />
-              </div>
-              <div>
-                <Label>Kat / zona</Label>
-                <Input
-                  value={manualUnitForm.kat}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange("kat", event.target.value)
-                  }
-                  placeholder="npr. Kat 2"
-                />
-              </div>
-              <div>
-                <Label>Površina (m²)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={manualUnitForm.povrsina_m2}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange(
-                      "povrsina_m2",
-                      event.target.value,
-                    )
-                  }
-                  placeholder="npr. 125"
-                />
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select
-                  value={manualUnitForm.status}
-                  onValueChange={(value) =>
-                    handleManualUnitFieldChange("status", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Odaberite status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {manualUnitStatusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Osnovna zakupnina (€)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={manualUnitForm.osnovna_zakupnina}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange(
-                      "osnovna_zakupnina",
-                      event.target.value,
-                    )
-                  }
-                  placeholder="npr. 1500"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Label>Napomena</Label>
-                <Textarea
-                  value={manualUnitForm.napomena}
-                  onChange={(event) =>
-                    handleManualUnitFieldChange("napomena", event.target.value)
-                  }
-                  rows={3}
-                  placeholder="Dodatne informacije ili posebnosti prostora"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={handleManualUnitCreate}
-                disabled={quickCreateLoading.unit || loading}
-              >
-                {quickCreateLoading.unit ? "Spremam..." : "Spremi podprostor"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  resetManualUnitForm();
-                  setShowManualUnitForm(false);
-                }}
-                disabled={quickCreateLoading.unit || loading}
-              >
-                Odustani
-              </Button>
-            </div>
-          </div>
-        )}
-        <LinkedEntitySelect
-          label="Zakupnik"
-          placeholder="Nema veze sa zakupnikom"
-          entities={activeTenantOptions}
-          value={formData.zakupnik_id}
-          onChange={(value) =>
-            setFormData((prev) => ({
-              ...prev,
-              zakupnik_id: value,
-              ugovor_id: value ? prev.ugovor_id : "",
-            }))
-          }
-          renderLabel={(zakupnik) =>
-            `${zakupnik.naziv_firme || zakupnik.ime_prezime} - ${zakupnik.oib}`
-          }
-          testId="dokument-zakupnik-select"
-          disabled={PROPERTY_DOCUMENT_TYPES.has(formData.tip)}
-        />
-        <LinkedEntitySelect
-          label="Ugovor"
-          placeholder="Nema veze s ugovorom"
-          entities={contractsForProperty}
-          value={formData.ugovor_id}
-          onChange={(value) => setFormData({ ...formData, ugovor_id: value })}
-          renderLabel={(ugovor) => ugovor.interna_oznaka}
-          testId="dokument-ugovor-select"
-          disabled={PROPERTY_DOCUMENT_TYPES.has(formData.tip)}
-        />
-      </div>
-
-      <div className="flex space-x-2 pt-4">
-        <Button
-          type="submit"
-          data-testid="potvrdi-dokument-form"
-          disabled={loading}
-        >
-          {loading ? "Spremam..." : "Dodaj dokument"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          data-testid="odustani-dokument-form"
-          disabled={loading}
-        >
-          Odustani
-        </Button>
-      </div>
-    </form>
-  );
-};
-
 // Main App Component
 function App() {
   return (
@@ -12645,7 +10398,20 @@ function App() {
             <Route path="/zakupnici" element={<Zakupnici />} />
             <Route path="/ugovori" element={<Ugovori />} />
             <Route path="/odrzavanje" element={<MaintenanceWorkspace />} />
-            <Route path="/dokumenti" element={<Dokumenti />} />
+            <Route
+              path="/dokumenti"
+              element={
+                <Suspense
+                  fallback={
+                    <div className="p-6 text-sm text-muted-foreground">
+                      Učitavanje dokumenata…
+                    </div>
+                  }
+                >
+                  <DocumentsPageLazy />
+                </Suspense>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </div>

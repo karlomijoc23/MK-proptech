@@ -999,6 +999,20 @@ def _coerce_optional_int(value: Any) -> Optional[int]:
     return None
 
 
+def _coerce_bool(value: Any, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        normalised = value.strip().lower()
+        if normalised in {"1", "true", "yes", "da", "y"}:
+            return True
+        if normalised in {"0", "false", "no", "ne", "n", ""}:
+            return False
+    return default
+
+
 def _normalise_kontakt_osobe(
     raw_value: Any, fallback_contact: Dict[str, Optional[str]]
 ) -> List[Dict[str, Any]]:
@@ -1072,6 +1086,31 @@ def _build_zakupnik_model(raw_doc: Dict[str, Any]) -> Zakupnik:
     data["radno_vrijeme"] = _coerce_optional_string(data.get("radno_vrijeme"))
     data["biljeske"] = _coerce_optional_string(data.get("biljeske"))
     data["hitnost_odziva_sati"] = _coerce_optional_int(data.get("hitnost_odziva_sati"))
+    data["adresa_ulica"] = _coerce_optional_string(data.get("adresa_ulica"))
+    data["adresa_kucni_broj"] = _coerce_optional_string(data.get("adresa_kucni_broj"))
+    data["adresa_postanski_broj"] = _coerce_optional_string(
+        data.get("adresa_postanski_broj")
+    )
+    data["adresa_grad"] = _coerce_optional_string(data.get("adresa_grad"))
+    data["adresa_drzava"] = _coerce_optional_string(data.get("adresa_drzava"))
+    data["pdv_obveznik"] = _coerce_bool(data.get("pdv_obveznik"), False)
+    data["pdv_id"] = _coerce_optional_string(data.get("pdv_id"))
+    data["maticni_broj"] = _coerce_optional_string(data.get("maticni_broj"))
+    data["registracijski_broj"] = _coerce_optional_string(
+        data.get("registracijski_broj")
+    )
+    data["eracun_dostava_kanal"] = _coerce_optional_string(
+        data.get("eracun_dostava_kanal")
+    )
+    data["eracun_identifikator"] = _coerce_optional_string(
+        data.get("eracun_identifikator")
+    )
+    data["eracun_email"] = _coerce_optional_string(data.get("eracun_email"))
+    data["eracun_posrednik"] = _coerce_optional_string(data.get("eracun_posrednik"))
+    data["fiskalizacija_napomena"] = _coerce_optional_string(
+        data.get("fiskalizacija_napomena")
+    )
+    data["odgovorna_osoba"] = _coerce_optional_string(data.get("odgovorna_osoba"))
     data["kontakt_osobe"] = _normalise_kontakt_osobe(
         data.get("kontakt_osobe"),
         {
@@ -1617,10 +1656,25 @@ class Zakupnik(BaseModel):
     ime_prezime: Optional[str] = None
     oib: str  # OIB ili VAT ID
     sjediste: str
+    adresa_ulica: Optional[str] = None
+    adresa_kucni_broj: Optional[str] = None
+    adresa_postanski_broj: Optional[str] = None
+    adresa_grad: Optional[str] = None
+    adresa_drzava: Optional[str] = None
     kontakt_ime: str
     kontakt_email: str
     kontakt_telefon: str
     iban: Optional[str] = None
+    pdv_obveznik: bool = False
+    pdv_id: Optional[str] = None
+    maticni_broj: Optional[str] = None
+    registracijski_broj: Optional[str] = None
+    eracun_dostava_kanal: Optional[str] = None
+    eracun_identifikator: Optional[str] = None
+    eracun_email: Optional[str] = None
+    eracun_posrednik: Optional[str] = None
+    fiskalizacija_napomena: Optional[str] = None
+    odgovorna_osoba: Optional[str] = None
     kreiran: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: ZakupnikStatus = ZakupnikStatus.AKTIVAN
     tip: ZakupnikTip = ZakupnikTip.ZAKUPNIK
@@ -1637,10 +1691,25 @@ class ZakupnikCreate(BaseModel):
     ime_prezime: Optional[str] = None
     oib: str
     sjediste: str
+    adresa_ulica: Optional[str] = None
+    adresa_kucni_broj: Optional[str] = None
+    adresa_postanski_broj: Optional[str] = None
+    adresa_grad: Optional[str] = None
+    adresa_drzava: Optional[str] = None
     kontakt_ime: str
     kontakt_email: str
     kontakt_telefon: str
     iban: Optional[str] = None
+    pdv_obveznik: bool = False
+    pdv_id: Optional[str] = None
+    maticni_broj: Optional[str] = None
+    registracijski_broj: Optional[str] = None
+    eracun_dostava_kanal: Optional[str] = None
+    eracun_identifikator: Optional[str] = None
+    eracun_email: Optional[str] = None
+    eracun_posrednik: Optional[str] = None
+    fiskalizacija_napomena: Optional[str] = None
+    odgovorna_osoba: Optional[str] = None
     status: ZakupnikStatus = ZakupnikStatus.AKTIVAN
     tip: ZakupnikTip = ZakupnikTip.ZAKUPNIK
     oznake: List[str] = Field(default_factory=list)
@@ -3717,9 +3786,6 @@ async def get_dashboard():
     aktivni_ugovori = await db.ugovori.count_documents(
         {"status": StatusUgovora.AKTIVNO}
     )
-    ugovori_na_isteku = await db.ugovori.count_documents(
-        {"status": StatusUgovora.NA_ISTEKU}
-    )
     aktivni_podsjetnici = await db.podsjetnici.count_documents({"poslan": False})
 
     # Preuzmi entitete za detaljniju analitiku
@@ -3730,6 +3796,15 @@ async def get_dashboard():
 
     nekretnine = [Nekretnina(**parse_from_mongo(doc)) for doc in nekretnine_docs]
     ugovori = _build_ugovori_list(ugovori_docs)
+    today = datetime.now(timezone.utc).date()
+    window = today + timedelta(days=90)
+    ugovori_na_isteku = sum(
+        1
+        for ugovor in ugovori
+        if ugovor.status == StatusUgovora.AKTIVNO
+        and ugovor.datum_zavrsetka
+        and today < ugovor.datum_zavrsetka <= window
+    )
     racuni = [Racun(**parse_from_mongo(doc)) for doc in racuni_docs]
     property_units = [
         PropertyUnit(**parse_from_mongo(doc)) for doc in property_units_docs
