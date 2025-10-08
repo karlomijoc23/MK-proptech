@@ -12,3 +12,9 @@ if (typeof global.TextEncoder === "undefined") {
 if (typeof global.TextDecoder === "undefined") {
   global.TextDecoder = TextDecoder;
 }
+
+afterEach(() => {
+  jest.clearAllMocks();
+  jest.resetAllMocks();
+  jest.restoreAllMocks();
+});

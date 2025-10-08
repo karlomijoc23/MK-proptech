@@ -102,6 +102,7 @@ const remindersResponse = [
 
 beforeEach(() => {
   resetAxiosMock();
+  entityStoreValue.changeTenant.mockClear();
   axiosMock.get.mockImplementation((url) => {
     if (url.endsWith("/dashboard")) {
       return Promise.resolve({ data: dashboardResponse });
@@ -111,6 +112,14 @@ beforeEach(() => {
     }
     if (url.endsWith("/podsjetnici")) {
       return Promise.resolve({ data: remindersResponse });
+    }
+    if (url.endsWith("/tenants")) {
+      return Promise.resolve({
+        data: [
+          { id: "tenant-default", naziv: "Primarni profil", role: "owner" },
+          { id: "tenant-2", naziv: "Drugi profil", role: "member" },
+        ],
+      });
     }
     return Promise.resolve({ data: [] });
   });
@@ -137,6 +146,8 @@ const entityStoreValue = {
   error: null,
   refresh: jest.fn(),
   refreshMaintenanceTasks: jest.fn(),
+  tenantId: "tenant-default",
+  changeTenant: jest.fn(),
 };
 
 function renderDashboard() {

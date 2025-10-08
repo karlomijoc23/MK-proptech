@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import calendar
+import contextvars
 import copy
 import inspect
 import json
@@ -27,7 +28,7 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -43,6 +44,536 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+
+DOCUMENT_REQUIREMENTS_PATH = os.environ.get("DOCUMENT_REQUIREMENTS_PATH")
+if DOCUMENT_REQUIREMENTS_PATH:
+    DOCUMENT_REQUIREMENTS_FILE = Path(DOCUMENT_REQUIREMENTS_PATH)
+else:
+    DOCUMENT_REQUIREMENTS_FILE = (
+        ROOT_DIR.parent / "frontend" / "src" / "shared" / "documentRequirements.json"
+    )
+
+
+def _load_document_requirements() -> Dict[str, Any]:
+    try:
+        with DOCUMENT_REQUIREMENTS_FILE.open("r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        logging.getLogger(__name__).warning(
+            "Document requirements file not found at %s", DOCUMENT_REQUIREMENTS_FILE
+        )
+    except Exception as exc:
+        logging.getLogger(__name__).error(
+            "Failed to load document requirements: %s", exc
+        )
+    return {}
+
+
+DOCUMENT_REQUIREMENT_DEFAULTS: Dict[str, Any] = {
+    "requireProperty": False,
+    "requireTenant": False,
+    "requireContract": False,
+    "allowTenant": True,
+    "allowContract": True,
+    "allowPropertyUnit": True,
+    "metaFields": [],
+    "infoHint": "",
+}
+
+
+DOCUMENT_META_FIELD_DEFAULTS: Dict[str, Any] = {
+    "type": "text",
+    "required": False,
+    "placeholder": "",
+}
+
+
+DOCUMENT_REQUIREMENTS: Dict[str, Any] = _load_document_requirements()
+
+
+def get_document_requirements(doc_type: Optional[str]) -> Dict[str, Any]:
+    key = (doc_type or "").strip().lower()
+    config = DOCUMENT_REQUIREMENTS.get(key) or {}
+    meta_fields = config.get("metaFields")
+    normalised_fields: List[Dict[str, Any]] = []
+    if isinstance(meta_fields, list):
+        for index, field in enumerate(meta_fields):
+            if not isinstance(field, dict):
+                continue
+            label = field.get("label", "")
+            generated_id = "".join(label.lower().split()) or f"meta_{index}"
+            normalised_fields.append(
+                {
+                    **DOCUMENT_META_FIELD_DEFAULTS,
+                    **field,
+                    "id": field.get("id") or field.get("name") or generated_id,
+                }
+            )
+    merged = {**DOCUMENT_REQUIREMENT_DEFAULTS, **config}
+    merged["metaFields"] = normalised_fields
+    return merged
+
+
+def _normalise_document_metadata(
+    raw_metadata: Any, requirements: Dict[str, Any]
+) -> Dict[str, Any]:
+    if raw_metadata in (None, "", {}):
+        raw_metadata = {}
+    elif isinstance(raw_metadata, str):
+        raw_text = raw_metadata.strip()
+        if not raw_text:
+            raw_metadata = {}
+        else:
+            try:
+                raw_metadata = json.loads(raw_text)
+            except json.JSONDecodeError as exc:
+                raise HTTPException(
+                    status_code=400, detail="Metadata mora biti JSON objekt"
+                ) from exc
+
+    if not isinstance(raw_metadata, dict):
+        raise HTTPException(status_code=400, detail="Metadata mora biti JSON objekt")
+
+    cleaned: Dict[str, Any] = {}
+    required_missing: List[str] = []
+    allowed_keys: Set[str] = set()
+
+    for field in requirements.get("metaFields", []):
+        field_id = field.get("id")
+        if not field_id:
+            continue
+        allowed_keys.add(field_id)
+        raw_value = raw_metadata.get(field_id)
+        label = field.get("label") or field_id
+        field_type = (field.get("type") or "text").lower()
+
+        if raw_value is None or (isinstance(raw_value, str) and not raw_value.strip()):
+            if field.get("required"):
+                required_missing.append(label)
+            continue
+
+        if field_type == "number":
+            numeric_value = _coerce_optional_float(raw_value)
+            if numeric_value is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Vrijednost u polju '{label}' mora biti numerička.",
+                )
+            cleaned[field_id] = numeric_value
+            continue
+
+        if field_type == "date":
+            if isinstance(raw_value, datetime):
+                cleaned[field_id] = raw_value.date().isoformat()
+                continue
+            if isinstance(raw_value, date):
+                cleaned[field_id] = raw_value.isoformat()
+                continue
+            value_text = str(raw_value).strip()
+            if not value_text:
+                if field.get("required"):
+                    required_missing.append(label)
+                continue
+            try:
+                cleaned[field_id] = date.fromisoformat(value_text).isoformat()
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Vrijednost u polju '{label}' mora biti datum u formatu "
+                        "YYYY-MM-DD."
+                    ),
+                ) from exc
+            continue
+
+        text_value = _coerce_optional_string(raw_value)
+        if text_value:
+            cleaned[field_id] = text_value
+
+    if required_missing:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Popunite obavezna metadata polja: "
+                + ", ".join(sorted(required_missing))
+            ),
+        )
+
+    for key, value in raw_metadata.items():
+        if key in cleaned or key in allowed_keys:
+            continue
+        cleaned[key] = value
+
+    return cleaned
+
+
+DEFAULT_TENANT_ID = os.environ.get("DEFAULT_TENANT_ID", "tenant-default")
+DEFAULT_TENANT_NAME = os.environ.get("DEFAULT_TENANT_NAME", "Glavna portfelj")
+
+
+class TenantType(str, Enum):
+    PERSONAL = "personal"
+    COMPANY = "company"
+
+
+class TenantStatus(str, Enum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"
+
+
+class TenantMembershipRole(str, Enum):
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+    VIEWER = "viewer"
+
+
+class TenantMembershipStatus(str, Enum):
+    ACTIVE = "active"
+    INVITED = "invited"
+    SUSPENDED = "suspended"
+
+
+TENANT_ROLE_SCOPE_MAP: Dict[TenantMembershipRole, List[str]] = {
+    TenantMembershipRole.OWNER: ["*"],
+    TenantMembershipRole.ADMIN: [
+        "properties:*",
+        "leases:*",
+        "documents:*",
+        "financials:*",
+        "maintenance:*",
+        "tenants:read",
+        "tenants:update",
+        "reports:*",
+        "kpi:read",
+    ],
+    TenantMembershipRole.MEMBER: [
+        "properties:read",
+        "leases:read",
+        "documents:read",
+        "documents:create",
+        "maintenance:read",
+        "maintenance:create",
+        "financials:read",
+        "reports:read",
+        "kpi:read",
+    ],
+    TenantMembershipRole.VIEWER: [
+        "properties:read",
+        "leases:read",
+        "documents:read",
+        "financials:read",
+        "maintenance:read",
+        "reports:read",
+        "kpi:read",
+    ],
+}
+
+
+def _tenant_filter_clause(tenant_id: str, allow_global: bool = True) -> Dict[str, Any]:
+    if allow_global:
+        return {"$or": [{"tenant_id": tenant_id}, {"tenant_id": {"$exists": False}}]}
+    return {"tenant_id": tenant_id}
+
+
+def _with_tenant_scope(
+    query: Optional[Dict[str, Any]],
+    tenant_id: str,
+    *,
+    allow_global: bool = True,
+) -> Dict[str, Any]:
+    tenant_clause = _tenant_filter_clause(tenant_id, allow_global)
+    if not query:
+        return tenant_clause
+    if "$and" in query:
+        return {"$and": [tenant_clause, *query["$and"]]}
+    return {"$and": [tenant_clause, query]}
+
+
+CURRENT_TENANT_ID: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
+    "current_tenant_id", default=None
+)
+
+TENANT_SCOPED_COLLECTIONS: Set[str] = {
+    "nekretnine",
+    "property_units",
+    "zakupnici",
+    "ugovori",
+    "dokumenti",
+    "podsjetnici",
+    "racuni",
+    "maintenance_tasks",
+    "activity_logs",
+}
+
+
+async def _backfill_tenant_id(collection, document_id: str, tenant_id: str) -> None:
+    if tenant_id != DEFAULT_TENANT_ID:
+        return
+    try:
+        await collection.update_one(
+            {"id": document_id, "tenant_id": {"$exists": False}},
+            {"$set": {"tenant_id": tenant_id}},
+        )
+    except AttributeError:
+        return
+
+
+class TenantAwareCollection:
+    def __init__(self, collection: Any, name: str):
+        self._collection = collection
+        self._name = name
+
+    def _is_scoped(self) -> bool:
+        return self._name in TENANT_SCOPED_COLLECTIONS
+
+    def _get_tenant(self) -> Optional[str]:
+        return CURRENT_TENANT_ID.get()
+
+    @staticmethod
+    def _allow_global(tenant_id: str) -> bool:
+        return tenant_id == DEFAULT_TENANT_ID
+
+    def _apply_scope(
+        self, query: Optional[Dict[str, Any]], tenant_id: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        if not tenant_id or not self._is_scoped():
+            return query
+        return _with_tenant_scope(
+            query, tenant_id, allow_global=self._allow_global(tenant_id)
+        )
+
+    def _ensure_tenant_on_document(
+        self, document: Dict[str, Any], tenant_id: Optional[str]
+    ) -> Dict[str, Any]:
+        if (
+            not tenant_id
+            or not self._is_scoped()
+            or not isinstance(document, dict)
+            or document.get("tenant_id")
+        ):
+            return document
+        doc_copy = copy.deepcopy(document)
+        doc_copy["tenant_id"] = tenant_id
+        return doc_copy
+
+    def _normalise_update(
+        self, update: Optional[Dict[str, Any]], tenant_id: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        if not tenant_id or not self._is_scoped() or not isinstance(update, dict):
+            return update
+        update_copy = copy.deepcopy(update)
+        for operator in ("$set", "$setOnInsert", "$unset"):
+            payload = update_copy.get(operator)
+            if isinstance(payload, dict):
+                payload.pop("tenant_id", None)
+        if "tenant_id" in update_copy:
+            update_copy.pop("tenant_id", None)
+        return update_copy
+
+    def __getattr__(self, item: str) -> Any:
+        return getattr(self._collection, item)
+
+    def find(self, query: Optional[Dict[str, Any]] = None, *args, **kwargs):
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        return self._collection.find(scoped_query, *args, **kwargs)
+
+    async def find_one(
+        self, query: Optional[Dict[str, Any]] = None, *args, **kwargs
+    ) -> Optional[Dict[str, Any]]:
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        return await self._collection.find_one(scoped_query, *args, **kwargs)
+
+    async def insert_one(self, document: Dict[str, Any], *args, **kwargs):
+        tenant_id = self._get_tenant()
+        payload = self._ensure_tenant_on_document(document, tenant_id)
+        return await self._collection.insert_one(payload, *args, **kwargs)
+
+    async def insert_many(self, documents: List[Dict[str, Any]], *args, **kwargs):
+        tenant_id = self._get_tenant()
+        payloads = [
+            self._ensure_tenant_on_document(doc, tenant_id) for doc in documents
+        ]
+        return await self._collection.insert_many(payloads, *args, **kwargs)
+
+    async def update_one(
+        self,
+        query: Dict[str, Any],
+        update: Dict[str, Any],
+        *args,
+        **kwargs,
+    ):
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        update_payload = self._normalise_update(update, tenant_id)
+        return await self._collection.update_one(
+            scoped_query, update_payload, *args, **kwargs
+        )
+
+    async def update_many(
+        self,
+        query: Dict[str, Any],
+        update: Dict[str, Any],
+        *args,
+        **kwargs,
+    ):
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        update_payload = self._normalise_update(update, tenant_id)
+        return await self._collection.update_many(
+            scoped_query, update_payload, *args, **kwargs
+        )
+
+    async def delete_one(self, query: Dict[str, Any], *args, **kwargs) -> Any:
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        return await self._collection.delete_one(scoped_query, *args, **kwargs)
+
+    async def delete_many(self, query: Dict[str, Any], *args, **kwargs) -> Any:
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        return await self._collection.delete_many(scoped_query, *args, **kwargs)
+
+    async def count_documents(
+        self, query: Optional[Dict[str, Any]] = None, *args, **kwargs
+    ) -> int:
+        tenant_id = self._get_tenant()
+        scoped_query = self._apply_scope(query, tenant_id)
+        return await self._collection.count_documents(scoped_query, *args, **kwargs)
+
+    def aggregate(self, pipeline: List[Dict[str, Any]], *args, **kwargs):
+        tenant_id = self._get_tenant()
+        if self._is_scoped() and tenant_id:
+            match_stage = {
+                "$match": _tenant_filter_clause(
+                    tenant_id, self._allow_global(tenant_id)
+                )
+            }
+            pipeline = [match_stage, *pipeline]
+        return self._collection.aggregate(pipeline, *args, **kwargs)
+
+
+class TenantAwareDatabase:
+    def __init__(self, database: Any):
+        self._database = database
+        self._cache: Dict[str, TenantAwareCollection] = {}
+
+    def __getattr__(self, item: str) -> Any:
+        attr = getattr(self._database, item)
+        if hasattr(attr, "find") and item not in self._cache:
+            self._cache[item] = TenantAwareCollection(attr, item)
+        if item in self._cache:
+            return self._cache[item]
+        return attr
+
+    def __getitem__(self, item: str) -> TenantAwareCollection:
+        if item not in self._cache:
+            attr = self._database[item]
+            self._cache[item] = TenantAwareCollection(attr, item)
+        return self._cache[item]
+
+
+async def _ensure_default_tenant() -> None:
+    try:
+        existing = await db.tenants.find_one({"id": DEFAULT_TENANT_ID})
+    except AttributeError:
+        return
+    if existing:
+        return
+    default_tenant = Tenant(id=DEFAULT_TENANT_ID, naziv=DEFAULT_TENANT_NAME)
+    await db.tenants.insert_one(prepare_for_mongo(default_tenant.model_dump()))
+
+
+async def _ensure_default_memberships() -> None:
+    try:
+        users = await db.users.find().to_list(1000)
+    except AttributeError:
+        return
+
+    for raw_user in users:
+        try:
+            user = User(**parse_from_mongo(raw_user))
+        except ValidationError:
+            continue
+        membership_role = _resolve_membership_role(user.role)
+        await _ensure_membership(user.id, DEFAULT_TENANT_ID, membership_role)
+
+
+async def _ensure_membership(
+    user_id: str, tenant_id: str, role: TenantMembershipRole
+) -> None:
+    if not user_id:
+        return
+    role_enum = _resolve_membership_role(role)
+    existing = await db.tenant_memberships.find_one(
+        {"tenant_id": tenant_id, "user_id": user_id}
+    )
+    if existing:
+        return
+    membership = TenantMembership(
+        tenant_id=tenant_id,
+        user_id=user_id,
+        role=role_enum,
+        status=TenantMembershipStatus.ACTIVE,
+    )
+    await db.tenant_memberships.insert_one(prepare_for_mongo(membership.model_dump()))
+
+
+async def _require_tenant(request: Request) -> str:
+    CURRENT_TENANT_ID.set(None)
+    tenant_id = request.headers.get("x-tenant-id") or request.headers.get("X-Tenant-Id")
+    if not tenant_id:
+        raise HTTPException(
+            status_code=400, detail="Odaberite tenant slanjem X-Tenant-Id zaglavlja"
+        )
+
+    tenant_doc = await db.tenants.find_one({"id": tenant_id})
+    if not tenant_doc:
+        raise HTTPException(status_code=404, detail="Tenant nije pronađen")
+
+    principal = getattr(request.state, "current_user", None)
+    tenant_scopes: List[str] = ["*"]
+
+    if principal and not principal.get("token_based"):
+        membership_doc = await db.tenant_memberships.find_one(
+            {
+                "tenant_id": tenant_id,
+                "user_id": principal.get("id"),
+                "status": TenantMembershipStatus.ACTIVE,
+            }
+        )
+        if not membership_doc:
+            raise HTTPException(
+                status_code=403, detail="Nemate pristup odabranom profilu"
+            )
+        raw_role = membership_doc.get("role") or TenantMembershipRole.MEMBER
+        try:
+            role_enum = (
+                raw_role
+                if isinstance(raw_role, TenantMembershipRole)
+                else TenantMembershipRole(raw_role)
+            )
+        except (TypeError, ValueError):
+            role_enum = TenantMembershipRole.MEMBER
+        tenant_scopes = TENANT_ROLE_SCOPE_MAP.get(role_enum, [])
+        request.state.tenant_membership = membership_doc
+        request.state.tenant_role = role_enum
+
+    request.state.tenant_id = tenant_id
+    request.state.tenant = tenant_doc
+    request.state.tenant_scopes = tenant_scopes
+    CURRENT_TENANT_ID.set(tenant_id)
+    return tenant_id
+
+
+async def _get_active_tenant_id(request: Request) -> str:
+    tenant_id = getattr(request.state, "tenant_id", None)
+    if tenant_id:
+        return tenant_id
+    return await _require_tenant(request)
 
 
 def _get_openai_api_key() -> Optional[str]:
@@ -199,6 +730,27 @@ ROLE_SCOPE_MAP: Dict[str, List[str]] = {
     "tenant": ["self:read", "self:maintenance", "self:documents"],
 }
 
+ROLE_TENANT_MEMBERSHIP_MAP: Dict[str, TenantMembershipRole] = {
+    "admin": TenantMembershipRole.OWNER,
+    "system": TenantMembershipRole.OWNER,
+    "owner_exec": TenantMembershipRole.OWNER,
+    "property_manager": TenantMembershipRole.ADMIN,
+    "leasing_agent": TenantMembershipRole.ADMIN,
+    "maintenance_coordinator": TenantMembershipRole.MEMBER,
+    "accountant": TenantMembershipRole.ADMIN,
+    "vendor": TenantMembershipRole.VIEWER,
+    "tenant": TenantMembershipRole.VIEWER,
+}
+
+
+def _resolve_membership_role(user_role: Optional[str]) -> TenantMembershipRole:
+    if isinstance(user_role, TenantMembershipRole):
+        return user_role
+    if not user_role:
+        return TenantMembershipRole.MEMBER
+    normalised = user_role.strip().lower()
+    return ROLE_TENANT_MEMBERSHIP_MAP.get(normalised, TenantMembershipRole.MEMBER)
+
 
 def _resolve_role_scopes(
     role: str, explicit_scopes: Optional[List[str]] = None
@@ -237,7 +789,12 @@ def require_scopes(*scopes: str):
         principal = getattr(request.state, "current_user", None)
         if not principal:
             raise HTTPException(status_code=401, detail="Neautorizirano")
-        granted = principal.get("scopes", [])
+        granted = list(principal.get("scopes", []))
+        tenant_scopes = getattr(request.state, "tenant_scopes", [])
+        if tenant_scopes:
+            for scope in tenant_scopes:
+                if scope not in granted:
+                    granted.append(scope)
         missing = [scope for scope in scopes if not _scope_matches(granted, scope)]
         if missing:
             raise HTTPException(
@@ -382,6 +939,17 @@ def _document_matches(
             if not any(_document_matches(document, sub_query) for sub_query in value):
                 return False
             continue
+        if key == "$and":
+            if not all(_document_matches(document, sub_query) for sub_query in value):
+                return False
+            continue
+        if isinstance(value, dict) and "$exists" in value:
+            has_key = key in document
+            if value["$exists"] and not has_key:
+                return False
+            if not value["$exists"] and has_key:
+                return False
+            continue
         doc_value = document.get(key)
         if not _value_matches(doc_value, value, {}):
             return False
@@ -472,6 +1040,8 @@ class InMemoryCollection:
 
 class InMemoryDatabase:
     def __init__(self):
+        self.tenants = InMemoryCollection()
+        self.tenant_memberships = InMemoryCollection()
         self.nekretnine = InMemoryCollection()
         self.property_units = InMemoryCollection()
         self.zakupnici = InMemoryCollection()
@@ -489,11 +1059,11 @@ USE_IN_MEMORY_DB = os.environ.get("USE_IN_MEMORY_DB", "false").lower() == "true"
 client = None
 
 if USE_IN_MEMORY_DB:
-    db = InMemoryDatabase()
+    db = TenantAwareDatabase(InMemoryDatabase())
 else:
     mongo_url = os.environ["MONGO_URL"]
     client = AsyncIOMotorClient(mongo_url)
-    db = client[os.environ["DB_NAME"]]
+    db = TenantAwareDatabase(client[os.environ["DB_NAME"]])
 
 
 async def log_activity(
@@ -582,6 +1152,7 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
             "name": api_token_entry.get("name", token_value),
             "role": role,
             "scopes": scopes,
+            "token_based": True,
         }
         request.state.current_user = principal
         return principal
@@ -622,6 +1193,7 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
         "name": user.full_name or user.email,
         "role": user.role,
         "scopes": scopes,
+        "token_based": False,
     }
     request.state.current_user = principal
     return principal
@@ -639,6 +1211,27 @@ async def get_current_user_optional(request: Request) -> Optional[Dict[str, Any]
 
 # Create the main app without a prefix
 app = FastAPI()
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("X-Frame-Options", "DENY")
+    headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=()",
+    )
+    headers.setdefault(
+        "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+    )
+    headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self' data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self'",
+    )
+    return response
 
 
 # Activity logging middleware
@@ -1417,7 +2010,9 @@ async def _create_property_unit_from_ai(
     else:
         metadata = {"source": "ai_parse_pdf_contract"}
 
+    tenant_id = CURRENT_TENANT_ID.get() or DEFAULT_TENANT_ID
     unit = PropertyUnit(
+        tenant_id=tenant_id,
         nekretnina_id=nekretnina_id,
         oznaka=oznaka,
         naziv=unit_payload.get("naziv"),
@@ -1510,32 +2105,115 @@ async def build_ai_parse_response(parsed_data: Dict[str, Any]) -> Dict[str, Any]
     }
 
 
-async def _get_property_or_404(nekretnina_id: str) -> "Nekretnina":
-    dokument = await db.nekretnine.find_one({"id": nekretnina_id})
+async def _get_property_or_404(
+    nekretnina_id: str, *, tenant_id: Optional[str] = None
+) -> "Nekretnina":
+    query: Dict[str, Any] = {"id": nekretnina_id}
+    if tenant_id:
+        allow_global = tenant_id == DEFAULT_TENANT_ID
+        query = _with_tenant_scope(query, tenant_id, allow_global=allow_global)
+    dokument = await db.nekretnine.find_one(query)
     if not dokument:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
-    return Nekretnina(**parse_from_mongo(dokument))
+    model = Nekretnina(**parse_from_mongo(dokument))
+    if tenant_id and not getattr(model, "tenant_id", None):
+        await _backfill_tenant_id(db.nekretnine, model.id, tenant_id)
+        model.tenant_id = tenant_id
+    return model
 
 
-async def _get_property_unit_or_404(property_unit_id: str) -> "PropertyUnit":
-    dokument = await db.property_units.find_one({"id": property_unit_id})
+async def _get_property_unit_or_404(
+    property_unit_id: str, *, tenant_id: Optional[str] = None
+) -> "PropertyUnit":
+    query: Dict[str, Any] = {"id": property_unit_id}
+    if tenant_id:
+        allow_global = tenant_id == DEFAULT_TENANT_ID
+        query = _with_tenant_scope(query, tenant_id, allow_global=allow_global)
+    dokument = await db.property_units.find_one(query)
     if not dokument:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
-    return PropertyUnit(**parse_from_mongo(dokument))
+    model = PropertyUnit(**parse_from_mongo(dokument))
+    if tenant_id and not getattr(model, "tenant_id", None):
+        await _backfill_tenant_id(db.property_units, model.id, tenant_id)
+        model.tenant_id = tenant_id
+    return model
 
 
-async def _get_task_or_404(task_id: str) -> MaintenanceTask:
-    dokument = await db.maintenance_tasks.find_one({"id": task_id})
+async def _get_task_or_404(
+    task_id: str, *, tenant_id: Optional[str] = None
+) -> MaintenanceTask:
+    query: Dict[str, Any] = {"id": task_id}
+    if tenant_id:
+        allow_global = tenant_id == DEFAULT_TENANT_ID
+        query = _with_tenant_scope(query, tenant_id, allow_global=allow_global)
+    dokument = await db.maintenance_tasks.find_one(query)
     if not dokument:
         raise HTTPException(status_code=404, detail="Radni nalog nije pronađen")
-    return MaintenanceTask(**parse_from_mongo(dokument))
+    model = MaintenanceTask(**parse_from_mongo(dokument))
+    if tenant_id and not getattr(model, "tenant_id", None):
+        await _backfill_tenant_id(db.maintenance_tasks, model.id, tenant_id)
+        model.tenant_id = tenant_id
+    return model
 
 
 # Models
 
 
+class Tenant(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    naziv: str
+    tip: TenantType = TenantType.COMPANY
+    status: TenantStatus = TenantStatus.ACTIVE
+    oib: Optional[str] = None
+    iban: Optional[str] = None
+    fiskalni_podaci: Optional[Dict[str, Any]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TenantCreate(BaseModel):
+    naziv: str
+    tip: TenantType = TenantType.COMPANY
+    oib: Optional[str] = None
+    iban: Optional[str] = None
+    fiskalni_podaci: Optional[Dict[str, Any]] = None
+
+
+class TenantMembership(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    user_id: str
+    role: TenantMembershipRole = TenantMembershipRole.MEMBER
+    status: TenantMembershipStatus = TenantMembershipStatus.ACTIVE
+    invited_at: Optional[datetime] = None
+    accepted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TenantMembershipUpdate(BaseModel):
+    role: Optional[TenantMembershipRole] = None
+    status: Optional[TenantMembershipStatus] = None
+
+
+class TenantSummary(BaseModel):
+    id: str
+    naziv: str
+    tip: TenantType
+    status: TenantStatus
+    role: Optional[TenantMembershipRole] = None
+
+
+class TenantUpdate(BaseModel):
+    naziv: Optional[str] = None
+    tip: Optional[TenantType] = None
+    status: Optional[TenantStatus] = None
+    oib: Optional[str] = None
+    iban: Optional[str] = None
+    fiskalni_podaci: Optional[Dict[str, Any]] = None
+
+
 class Nekretnina(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     naziv: str
     adresa: str
     katastarska_opcina: str
@@ -1569,6 +2247,7 @@ class Nekretnina(BaseModel):
 
 
 class NekretninarCreate(BaseModel):
+    tenant_id: Optional[str] = None
     naziv: str
     adresa: str
     katastarska_opcina: str
@@ -1595,6 +2274,7 @@ class NekretninarCreate(BaseModel):
 
 class PropertyUnit(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     nekretnina_id: str
     oznaka: str
     naziv: Optional[str] = None
@@ -1614,6 +2294,7 @@ class PropertyUnit(BaseModel):
 
 
 class PropertyUnitCreate(BaseModel):
+    tenant_id: Optional[str] = None
     oznaka: str
     naziv: Optional[str] = None
     opis: Optional[str] = None
@@ -1630,6 +2311,7 @@ class PropertyUnitCreate(BaseModel):
 
 
 class PropertyUnitUpdate(BaseModel):
+    tenant_id: Optional[str] = None
     oznaka: Optional[str] = None
     naziv: Optional[str] = None
     opis: Optional[str] = None
@@ -1652,6 +2334,7 @@ class PropertyUnitBulkUpdate(BaseModel):
 
 class Zakupnik(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     naziv_firme: Optional[str] = None
     ime_prezime: Optional[str] = None
     oib: str  # OIB ili VAT ID
@@ -1687,6 +2370,7 @@ class Zakupnik(BaseModel):
 
 
 class ZakupnikCreate(BaseModel):
+    tenant_id: Optional[str] = None
     naziv_firme: Optional[str] = None
     ime_prezime: Optional[str] = None
     oib: str
@@ -1722,6 +2406,7 @@ class ZakupnikCreate(BaseModel):
 
 class Ugovor(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     interna_oznaka: str
     status: StatusUgovora = StatusUgovora.AKTIVNO
     nekretnina_id: str
@@ -1755,6 +2440,7 @@ class Ugovor(BaseModel):
 
 
 class UgovorCreate(BaseModel):
+    tenant_id: Optional[str] = None
     interna_oznaka: str
     nekretnina_id: str
     zakupnik_id: str
@@ -1890,6 +2576,7 @@ def _build_contract_clone_fallback(
 class Dokument(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     naziv: str
     tip: TipDokumenta
     opis: Optional[str] = None
@@ -1899,6 +2586,7 @@ class Dokument(BaseModel):
     zakupnik_id: Optional[str] = None
     ugovor_id: Optional[str] = None
     property_unit_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     putanja_datoteke: str
     velicina_datoteke: int
@@ -1906,6 +2594,7 @@ class Dokument(BaseModel):
 
 
 class DokumentCreate(BaseModel):
+    tenant_id: Optional[str] = None
     naziv: str
     tip: TipDokumenta
     opis: Optional[str] = None
@@ -1913,10 +2602,12 @@ class DokumentCreate(BaseModel):
     zakupnik_id: Optional[str] = None
     ugovor_id: Optional[str] = None
     property_unit_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class Podsjetnik(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     tip: str  # istek_ugovora, obnova_garancije, indeksacija
     ugovor_id: str
     datum_podsjetnika: date
@@ -1936,6 +2627,7 @@ class ConsumptionItem(BaseModel):
 
 class Racun(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     nekretnina_id: str
     ugovor_id: Optional[str] = None
     property_unit_id: Optional[str] = None
@@ -1958,6 +2650,7 @@ class Racun(BaseModel):
 
 
 class RacunCreate(BaseModel):
+    tenant_id: Optional[str] = None
     nekretnina_id: str
     ugovor_id: Optional[str] = None
     property_unit_id: Optional[str] = None
@@ -1979,6 +2672,7 @@ class RacunCreate(BaseModel):
 
 
 class RacunUpdate(BaseModel):
+    tenant_id: Optional[str] = None
     nekretnina_id: Optional[str] = None
     ugovor_id: Optional[str] = None
     property_unit_id: Optional[str] = None
@@ -2010,6 +2704,7 @@ class MaintenanceActivity(BaseModel):
 
 class MaintenanceTask(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
     naziv: str
     opis: Optional[str] = None
     status: MaintenanceStatus = MaintenanceStatus.NOVI
@@ -2035,6 +2730,7 @@ class MaintenanceTaskCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     naziv: str
+    tenant_id: Optional[str] = None
     opis: Optional[str] = None
     status: MaintenanceStatus = MaintenanceStatus.NOVI
     prioritet: MaintenancePriority = MaintenancePriority.SREDNJE
@@ -2055,6 +2751,7 @@ class MaintenanceTaskUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     naziv: Optional[str] = None
+    tenant_id: Optional[str] = None
     opis: Optional[str] = None
     status: Optional[MaintenanceStatus] = None
     prioritet: Optional[MaintenancePriority] = None
@@ -2188,8 +2885,24 @@ async def register_user(
         password_hash=hash_password(payload.password),
     )
     await db.users.insert_one(prepare_for_mongo(user.model_dump()))
+    await _ensure_default_tenant()
+    membership_role = _resolve_membership_role(role)
+    await _ensure_membership(user.id, DEFAULT_TENANT_ID, membership_role)
     request.state.audit_context = {"entity_type": "user", "entity_id": user.id}
     return _user_to_public(user)
+
+
+@api_router.get("/health", tags=["system"])
+async def health_check() -> Dict[str, Any]:
+    status = {"status": "ok"}
+    try:
+        await db.users.count_documents({})
+        status["database"] = "ok"
+    except Exception as exc:  # pragma: no cover - defensive logging
+        logging.getLogger(__name__).error("Health check database error: %s", exc)
+        status["status"] = "degraded"
+        status["database"] = "error"
+    return status
 
 
 @api_router.post("/auth/login", response_model=TokenResponse)
@@ -2246,6 +2959,189 @@ async def list_users():
 
 
 @api_router.get(
+    "/tenants",
+    response_model=List[TenantSummary],
+    dependencies=[Depends(require_scopes("tenants:read"))],
+)
+async def list_tenants(request: Request):
+    await _ensure_default_tenant()
+    principal = getattr(request.state, "current_user", {})
+    if principal.get("token_based"):
+        tenants = await db.tenants.find().to_list(200)
+        return [
+            TenantSummary(
+                id=tenant["id"],
+                naziv=tenant.get("naziv", ""),
+                tip=TenantType(tenant.get("tip", TenantType.COMPANY)),
+                status=TenantStatus(tenant.get("status", TenantStatus.ACTIVE)),
+                role=None,
+            )
+            for tenant in tenants
+        ]
+
+    user_id = principal.get("id")
+    memberships = await db.tenant_memberships.find(
+        {"user_id": user_id, "status": TenantMembershipStatus.ACTIVE}
+    ).to_list(200)
+    tenant_ids = {membership.get("tenant_id") for membership in memberships}
+
+    if DEFAULT_TENANT_ID not in tenant_ids:
+        await _ensure_membership(
+            user_id, DEFAULT_TENANT_ID, TenantMembershipRole.MEMBER
+        )
+        tenant_ids.add(DEFAULT_TENANT_ID)
+        memberships.append(
+            {
+                "tenant_id": DEFAULT_TENANT_ID,
+                "role": TenantMembershipRole.MEMBER,
+            }
+        )
+
+    tenants = await db.tenants.find({"id": {"$in": list(tenant_ids)}}).to_list(200)
+    tenants_by_id = {tenant["id"]: tenant for tenant in tenants}
+    summaries: List[TenantSummary] = []
+    for membership in memberships:
+        tenant_doc = tenants_by_id.get(membership.get("tenant_id"))
+        if not tenant_doc:
+            continue
+        raw_role = membership.get("role") or TenantMembershipRole.MEMBER
+        try:
+            role_enum = (
+                raw_role
+                if isinstance(raw_role, TenantMembershipRole)
+                else TenantMembershipRole(raw_role)
+            )
+        except (TypeError, ValueError):
+            role_enum = TenantMembershipRole.MEMBER
+        summaries.append(
+            TenantSummary(
+                id=tenant_doc["id"],
+                naziv=tenant_doc.get("naziv", ""),
+                tip=TenantType(tenant_doc.get("tip", TenantType.COMPANY)),
+                status=TenantStatus(tenant_doc.get("status", TenantStatus.ACTIVE)),
+                role=role_enum,
+            )
+        )
+
+    summaries.sort(key=lambda item: item.naziv.lower())
+    return summaries
+
+
+@api_router.post(
+    "/tenants",
+    response_model=TenantSummary,
+    status_code=201,
+    dependencies=[Depends(require_scopes("tenants:update"))],
+)
+async def create_tenant(payload: TenantCreate, request: Request):
+    await _ensure_default_tenant()
+    principal = getattr(request.state, "current_user", {})
+    tenant = Tenant(**payload.model_dump())
+    await db.tenants.insert_one(prepare_for_mongo(tenant.model_dump()))
+    if not principal.get("token_based"):
+        await _ensure_membership(
+            principal.get("id"), tenant.id, TenantMembershipRole.OWNER
+        )
+    return TenantSummary(
+        id=tenant.id,
+        naziv=tenant.naziv,
+        tip=tenant.tip,
+        status=tenant.status,
+        role=TenantMembershipRole.OWNER,
+    )
+
+
+@api_router.get(
+    "/tenants/{tenant_id}",
+    response_model=Tenant,
+    dependencies=[Depends(require_scopes("tenants:read"))],
+)
+async def get_tenant_detail(
+    tenant_id: str,
+    request: Request,
+    active_tenant_id: str = Depends(_require_tenant),
+):
+    if active_tenant_id != tenant_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aktivni profil ne odgovara traženom identificatoru",
+        )
+    tenant_doc = await db.tenants.find_one({"id": tenant_id})
+    if not tenant_doc:
+        raise HTTPException(status_code=404, detail="Tenant nije pronađen")
+    return Tenant(**parse_from_mongo(tenant_doc))
+
+
+@api_router.put(
+    "/tenants/{tenant_id}",
+    response_model=Tenant,
+    dependencies=[Depends(require_scopes("tenants:update"))],
+)
+async def update_tenant_detail(
+    tenant_id: str,
+    payload: TenantUpdate,
+    request: Request,
+    active_tenant_id: str = Depends(_require_tenant),
+):
+    if active_tenant_id != tenant_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Aktivni profil ne odgovara traženom identificatoru",
+        )
+
+    role = getattr(request.state, "tenant_role", None)
+    if role not in {TenantMembershipRole.OWNER, TenantMembershipRole.ADMIN}:
+        raise HTTPException(
+            status_code=403,
+            detail="Nedostaju ovlasti za uređivanje profila",
+        )
+
+    existing = await db.tenants.find_one({"id": tenant_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Tenant nije pronađen")
+
+    update_payload = payload.model_dump(exclude_unset=True)
+    if update_payload:
+        update_payload.pop("id", None)
+        update_payload.pop("tenant_id", None)
+        update_payload["updated_at"] = datetime.now(timezone.utc)
+        await db.tenants.update_one(
+            {"id": tenant_id},
+            {"$set": prepare_for_mongo(update_payload)},
+        )
+
+    tenant_doc = await db.tenants.find_one({"id": tenant_id})
+    if not tenant_doc:
+        raise HTTPException(status_code=500, detail="Učitavanje profila nije uspjelo")
+    request.state.audit_context = {
+        "entity_type": "tenant_profile",
+        "entity_id": tenant_id,
+        "changes": update_payload or None,
+    }
+    return Tenant(**parse_from_mongo(tenant_doc))
+
+
+@api_router.get(
+    "/tenants/current",
+    response_model=TenantSummary,
+    dependencies=[Depends(require_scopes("tenants:read"))],
+)
+async def get_current_tenant(request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    tenant_doc = await db.tenants.find_one({"id": tenant_id})
+    if not tenant_doc:
+        raise HTTPException(status_code=404, detail="Tenant nije pronađen")
+    role = getattr(request.state, "tenant_role", None)
+    return TenantSummary(
+        id=tenant_doc["id"],
+        naziv=tenant_doc.get("naziv", ""),
+        tip=TenantType(tenant_doc.get("tip", TenantType.COMPANY)),
+        status=TenantStatus(tenant_doc.get("status", TenantStatus.ACTIVE)),
+        role=role,
+    )
+
+
+@api_router.get(
     "/users/assignees",
     response_model=List[UserPublic],
     dependencies=[Depends(require_scopes("users:assign"))],
@@ -2279,9 +3175,14 @@ async def root():
     status_code=201,
     dependencies=[Depends(require_scopes("properties:create"))],
 )
-async def create_nekretnina(nekretnina: NekretninarCreate, request: Request):
-    nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
-    nekretnina_obj = Nekretnina(**nekretnina_dict)
+async def create_nekretnina(
+    nekretnina: NekretninarCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    payload = nekretnina.model_dump(mode="python")
+    payload["tenant_id"] = tenant_id
+    nekretnina_obj = Nekretnina(**payload)
     await db.nekretnine.insert_one(prepare_for_mongo(nekretnina_obj.model_dump()))
     request.state.audit_context = {
         "entity_type": "property",
@@ -2295,9 +3196,17 @@ async def create_nekretnina(nekretnina: NekretninarCreate, request: Request):
     response_model=List[Nekretnina],
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def get_nekretnine():
-    nekretnine = await db.nekretnine.find().to_list(1000)
-    return [Nekretnina(**parse_from_mongo(n)) for n in nekretnine]
+async def get_nekretnine(request: Request, tenant_id: str = Depends(_require_tenant)):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(None, tenant_id, allow_global=allow_global)
+    nekretnine = await db.nekretnine.find(query).to_list(1000)
+    rezultat: List[Nekretnina] = []
+    for raw in nekretnine:
+        if allow_global and not raw.get("tenant_id"):
+            await _backfill_tenant_id(db.nekretnine, raw.get("id"), tenant_id)
+            raw["tenant_id"] = tenant_id
+        rezultat.append(Nekretnina(**parse_from_mongo(raw)))
+    return rezultat
 
 
 @api_router.get(
@@ -2305,10 +3214,21 @@ async def get_nekretnine():
     response_model=Nekretnina,
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def get_nekretnina(nekretnina_id: str):
-    nekretnina = await db.nekretnine.find_one({"id": nekretnina_id})
+async def get_nekretnina(
+    nekretnina_id: str,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": nekretnina_id}, tenant_id, allow_global=allow_global
+    )
+    nekretnina = await db.nekretnine.find_one(query)
     if not nekretnina:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
+    if allow_global and not nekretnina.get("tenant_id"):
+        await _backfill_tenant_id(db.nekretnine, nekretnina_id, tenant_id)
+        nekretnina["tenant_id"] = tenant_id
     return Nekretnina(**parse_from_mongo(nekretnina))
 
 
@@ -2318,16 +3238,25 @@ async def get_nekretnina(nekretnina_id: str):
     dependencies=[Depends(require_scopes("properties:update"))],
 )
 async def update_nekretnina(
-    nekretnina_id: str, nekretnina: NekretninarCreate, request: Request
+    nekretnina_id: str,
+    nekretnina: NekretninarCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
-    nekretnina_dict = prepare_for_mongo(nekretnina.model_dump())
-    result = await db.nekretnine.update_one(
-        {"id": nekretnina_id}, {"$set": nekretnina_dict}
+    payload = nekretnina.model_dump(mode="python")
+    payload.pop("tenant_id", None)
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": nekretnina_id}, tenant_id, allow_global=allow_global
     )
+    result = await db.nekretnine.update_one(query, {"$set": prepare_for_mongo(payload)})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
 
-    updated_nekretnina = await db.nekretnine.find_one({"id": nekretnina_id})
+    updated_query = _with_tenant_scope(
+        {"id": nekretnina_id}, tenant_id, allow_global=allow_global
+    )
+    updated_nekretnina = await db.nekretnine.find_one(updated_query)
     request.state.audit_context = {
         "entity_type": "property",
         "entity_id": nekretnina_id,
@@ -2339,17 +3268,30 @@ async def update_nekretnina(
     "/nekretnine/{nekretnina_id}",
     dependencies=[Depends(require_scopes("properties:delete"))],
 )
-async def delete_nekretnina(nekretnina_id: str, request: Request):
-    result = await db.nekretnine.delete_one({"id": nekretnina_id})
+async def delete_nekretnina(
+    nekretnina_id: str,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": nekretnina_id}, tenant_id, allow_global=allow_global
+    )
+    result = await db.nekretnine.delete_one(query)
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
 
     # Remove all units linked to the property as part of the cascade delete
-    povezane_jedinice = await db.property_units.find(
-        {"nekretnina_id": nekretnina_id}
-    ).to_list(1000)
+    unit_query = _with_tenant_scope(
+        {"nekretnina_id": nekretnina_id}, tenant_id, allow_global=allow_global
+    )
+    povezane_jedinice = await db.property_units.find(unit_query).to_list(1000)
     for jedinica in povezane_jedinice:
-        await db.property_units.delete_one({"id": jedinica.get("id")})
+        await db.property_units.delete_one(
+            _with_tenant_scope(
+                {"id": jedinica.get("id")}, tenant_id, allow_global=allow_global
+            )
+        )
     request.state.audit_context = {
         "entity_type": "property",
         "entity_id": nekretnina_id,
@@ -2363,12 +3305,22 @@ async def delete_nekretnina(nekretnina_id: str, request: Request):
     response_model=List[PropertyUnit],
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def list_property_units(nekretnina_id: str):
-    await _get_property_or_404(nekretnina_id)
-    jedinice = await db.property_units.find({"nekretnina_id": nekretnina_id}).to_list(
-        1000
+async def list_property_units(
+    nekretnina_id: str,
+    tenant_id: str = Depends(_require_tenant),
+):
+    await _get_property_or_404(nekretnina_id, tenant_id=tenant_id)
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"nekretnina_id": nekretnina_id}, tenant_id, allow_global=allow_global
     )
-    rezultat = [PropertyUnit(**parse_from_mongo(j)) for j in jedinice]
+    jedinice = await db.property_units.find(query).to_list(1000)
+    rezultat: List[PropertyUnit] = []
+    for raw in jedinice:
+        if allow_global and not raw.get("tenant_id"):
+            await _backfill_tenant_id(db.property_units, raw.get("id"), tenant_id)
+            raw["tenant_id"] = tenant_id
+        rezultat.append(PropertyUnit(**parse_from_mongo(raw)))
     rezultat.sort(key=lambda item: ((item.kat or ""), item.oznaka))
     return rezultat
 
@@ -2380,14 +3332,23 @@ async def list_property_units(nekretnina_id: str):
     dependencies=[Depends(require_scopes("properties:update"))],
 )
 async def create_property_unit(
-    nekretnina_id: str, jedinica: PropertyUnitCreate, request: Request
+    nekretnina_id: str,
+    jedinica: PropertyUnitCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
-    await _get_property_or_404(nekretnina_id)
+    await _get_property_or_404(nekretnina_id, tenant_id=tenant_id)
 
-    jedinica_payload = jedinica.model_dump(mode="json")
+    jedinica_payload = jedinica.model_dump(mode="python")
+    jedinica_payload.pop("tenant_id", None)
     ugovor_id_value = jedinica_payload.get("ugovor_id")
     if ugovor_id_value:
-        ugovor_doc = await db.ugovori.find_one({"id": ugovor_id_value})
+        ugovor_query = _with_tenant_scope(
+            {"id": ugovor_id_value},
+            tenant_id,
+            allow_global=tenant_id == DEFAULT_TENANT_ID,
+        )
+        ugovor_doc = await db.ugovori.find_one(ugovor_query)
         if not ugovor_doc:
             raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
         try:
@@ -2408,7 +3369,9 @@ async def create_property_unit(
     elif jedinica_payload.get("zakupnik_id") and not jedinica_payload.get("status"):
         jedinica_payload["status"] = PropertyUnitStatus.IZNAJMLJENO.value
 
-    jedinica_obj = PropertyUnit(nekretnina_id=nekretnina_id, **jedinica_payload)
+    jedinica_obj = PropertyUnit(
+        tenant_id=tenant_id, nekretnina_id=nekretnina_id, **jedinica_payload
+    )
     jedinica_obj.azuriran = datetime.now(timezone.utc)
 
     await db.property_units.insert_one(prepare_for_mongo(jedinica_obj.model_dump()))
@@ -2426,7 +3389,10 @@ async def create_property_unit(
     dependencies=[Depends(require_scopes("properties:read"))],
 )
 async def list_all_units(
-    nekretnina_id: Optional[str] = None, status: Optional[PropertyUnitStatus] = None
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+    nekretnina_id: Optional[str] = None,
+    status: Optional[PropertyUnitStatus] = None,
 ):
     query: Dict[str, Any] = {}
     if nekretnina_id:
@@ -2436,9 +3402,18 @@ async def list_all_units(
             status.value if isinstance(status, PropertyUnitStatus) else status
         )
 
-    cursor = db.property_units.find(query if query else None)
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    scoped_query = _with_tenant_scope(
+        query if query else None, tenant_id, allow_global=allow_global
+    )
+    cursor = db.property_units.find(scoped_query)
     jedinice = await cursor.to_list(1000)
-    rezultat = [PropertyUnit(**parse_from_mongo(j)) for j in jedinice]
+    rezultat: List[PropertyUnit] = []
+    for raw in jedinice:
+        if allow_global and not raw.get("tenant_id"):
+            await _backfill_tenant_id(db.property_units, raw.get("id"), tenant_id)
+            raw["tenant_id"] = tenant_id
+        rezultat.append(PropertyUnit(**parse_from_mongo(raw)))
     rezultat.sort(key=lambda item: ((item.kat or ""), item.oznaka))
     return rezultat
 
@@ -2448,8 +3423,11 @@ async def list_all_units(
     response_model=PropertyUnit,
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def get_property_unit(property_unit_id: str):
-    return await _get_property_unit_or_404(property_unit_id)
+async def get_property_unit(
+    property_unit_id: str,
+    tenant_id: str = Depends(_require_tenant),
+):
+    return await _get_property_unit_or_404(property_unit_id, tenant_id=tenant_id)
 
 
 @api_router.put(
@@ -2458,13 +3436,21 @@ async def get_property_unit(property_unit_id: str):
     dependencies=[Depends(require_scopes("properties:update"))],
 )
 async def update_property_unit(
-    property_unit_id: str, jedinica: PropertyUnitUpdate, request: Request
+    property_unit_id: str,
+    jedinica: PropertyUnitUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
-    existing = await db.property_units.find_one({"id": property_unit_id})
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    existing_query = _with_tenant_scope(
+        {"id": property_unit_id}, tenant_id, allow_global=allow_global
+    )
+    existing = await db.property_units.find_one(existing_query)
     if not existing:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
 
-    update_payload = jedinica.model_dump(exclude_unset=True, mode="json")
+    update_payload = jedinica.model_dump(exclude_unset=True, mode="python")
+    update_payload.pop("tenant_id", None)
 
     if not update_payload:
         return PropertyUnit(**parse_from_mongo(existing))
@@ -2474,7 +3460,10 @@ async def update_property_unit(
     if "ugovor_id" in update_payload:
         ugovor_id_value = update_payload.get("ugovor_id")
         if ugovor_id_value:
-            ugovor_doc = await db.ugovori.find_one({"id": ugovor_id_value})
+            ugovor_query = _with_tenant_scope(
+                {"id": ugovor_id_value}, tenant_id, allow_global=allow_global
+            )
+            ugovor_doc = await db.ugovori.find_one(ugovor_query)
             if not ugovor_doc:
                 raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
             try:
@@ -2520,10 +3509,10 @@ async def update_property_unit(
     update_payload["azuriran"] = datetime.now(timezone.utc)
 
     await db.property_units.update_one(
-        {"id": property_unit_id}, {"$set": prepare_for_mongo(update_payload)}
+        existing_query, {"$set": prepare_for_mongo(update_payload)}
     )
 
-    updated = await db.property_units.find_one({"id": property_unit_id})
+    updated = await db.property_units.find_one(existing_query)
     if not updated:
         raise HTTPException(
             status_code=500, detail="Ažuriranje podprostora nije uspjelo"
@@ -2536,8 +3525,16 @@ async def update_property_unit(
     "/units/{property_unit_id}",
     dependencies=[Depends(require_scopes("properties:delete"))],
 )
-async def delete_property_unit(property_unit_id: str, request: Request):
-    existing = await db.property_units.find_one({"id": property_unit_id})
+async def delete_property_unit(
+    property_unit_id: str,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": property_unit_id}, tenant_id, allow_global=allow_global
+    )
+    existing = await db.property_units.find_one(query)
     if not existing:
         raise HTTPException(status_code=404, detail="Podprostor nije pronađen")
 
@@ -2547,7 +3544,7 @@ async def delete_property_unit(property_unit_id: str, request: Request):
             detail="Podprostor je povezan s ugovorom i ne može se obrisati",
         )
 
-    await db.property_units.delete_one({"id": property_unit_id})
+    await db.property_units.delete_one(query)
     request.state.audit_context = {"entity_type": "unit", "entity_id": property_unit_id}
     return {"poruka": "Podprostor je uspješno obrisan"}
 
@@ -2556,7 +3553,11 @@ async def delete_property_unit(property_unit_id: str, request: Request):
     "/units/bulk-update",
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def bulk_update_property_units(payload: PropertyUnitBulkUpdate, request: Request):
+async def bulk_update_property_units(
+    payload: PropertyUnitBulkUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
     if not payload.unit_ids:
         raise HTTPException(
             status_code=400, detail="Odaberite barem jedan podprostor za ažuriranje"
@@ -2567,7 +3568,9 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate, request: R
 
     for unit_id in payload.unit_ids:
         try:
-            updated = await update_property_unit(unit_id, payload.updates)
+            updated = await update_property_unit(
+                unit_id, payload.updates, request, tenant_id=tenant_id
+            )
             updated_units.append(updated)
         except HTTPException as exc:
             errors[unit_id] = exc.detail
@@ -2593,8 +3596,12 @@ async def bulk_update_property_units(payload: PropertyUnitBulkUpdate, request: R
     status_code=201,
     dependencies=[Depends(require_scopes("tenants:create"))],
 )
-async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
-    zakupnik_dict = zakupnik.model_dump()
+async def create_zakupnik(
+    zakupnik: ZakupnikCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    zakupnik_dict = zakupnik.model_dump(mode="python")
     if zakupnik_dict.get("kontakt_osobe"):
         primary = zakupnik_dict["kontakt_osobe"][0]
         zakupnik_dict["kontakt_ime"] = (
@@ -2607,6 +3614,7 @@ async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
             zakupnik_dict.get("kontakt_telefon") or primary.get("telefon") or ""
         )
 
+    zakupnik_dict["tenant_id"] = tenant_id
     zakupnik_dict = prepare_for_mongo(zakupnik_dict)
     zakupnik_obj = Zakupnik(**zakupnik_dict)
     await db.zakupnici.insert_one(prepare_for_mongo(zakupnik_obj.model_dump()))
@@ -2623,6 +3631,8 @@ async def create_zakupnik(zakupnik: ZakupnikCreate, request: Request):
     dependencies=[Depends(require_scopes("tenants:read"))],
 )
 async def get_zakupnici(
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
     search: Optional[str] = None,
     status: Optional[ZakupnikStatus] = None,
     tip: Optional[ZakupnikTip] = None,
@@ -2654,18 +3664,23 @@ async def get_zakupnici(
 
     if filters:
         if len(filters) == 1:
-            query = filters[0]
+            query: Optional[Dict[str, Any]] = filters[0]
         else:
             query = {"$and": filters}
     else:
         query = None
 
-    zakupnici_cursor = db.zakupnici.find(query) if query else db.zakupnici.find()
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    scoped_query = _with_tenant_scope(query, tenant_id, allow_global=allow_global)
+    zakupnici_cursor = db.zakupnici.find(scoped_query)
     raw_zakupnici = await zakupnici_cursor.to_list(1000)
 
     rezultat: List[Zakupnik] = []
     skipped = 0
     for raw in raw_zakupnici:
+        if allow_global and not raw.get("tenant_id"):
+            await _backfill_tenant_id(db.zakupnici, raw.get("id"), tenant_id)
+            raw["tenant_id"] = tenant_id
         try:
             rezultat.append(_build_zakupnik_model(raw))
         except ValidationError:
@@ -2683,10 +3698,20 @@ async def get_zakupnici(
     response_model=Zakupnik,
     dependencies=[Depends(require_scopes("tenants:read"))],
 )
-async def get_zakupnik(zakupnik_id: str):
-    zakupnik = await db.zakupnici.find_one({"id": zakupnik_id})
+async def get_zakupnik(
+    zakupnik_id: str,
+    tenant_id: str = Depends(_require_tenant),
+):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": zakupnik_id}, tenant_id, allow_global=allow_global
+    )
+    zakupnik = await db.zakupnici.find_one(query)
     if not zakupnik:
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
+    if allow_global and not zakupnik.get("tenant_id"):
+        await _backfill_tenant_id(db.zakupnici, zakupnik_id, tenant_id)
+        zakupnik["tenant_id"] = tenant_id
     try:
         return _build_zakupnik_model(zakupnik)
     except ValidationError as exc:
@@ -2699,12 +3724,21 @@ async def get_zakupnik(zakupnik_id: str):
     response_model=Zakupnik,
     dependencies=[Depends(require_scopes("tenants:update"))],
 )
-async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: Request):
-    existing = await db.zakupnici.find_one({"id": zakupnik_id})
+async def update_zakupnik(
+    zakupnik_id: str,
+    zakupnik: ZakupnikCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    allow_global = tenant_id == DEFAULT_TENANT_ID
+    query = _with_tenant_scope(
+        {"id": zakupnik_id}, tenant_id, allow_global=allow_global
+    )
+    existing = await db.zakupnici.find_one(query)
     if not existing:
         raise HTTPException(status_code=404, detail="Zakupnik nije pronađen")
 
-    update_dict = zakupnik.model_dump()
+    update_dict = zakupnik.model_dump(mode="python")
     if update_dict.get("kontakt_osobe"):
         primary = update_dict["kontakt_osobe"][0]
         update_dict["kontakt_ime"] = (
@@ -2717,10 +3751,11 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: R
             update_dict.get("kontakt_telefon") or primary.get("telefon") or ""
         )
 
+    update_dict.pop("tenant_id", None)
     update_payload = prepare_for_mongo(update_dict)
-    await db.zakupnici.update_one({"id": zakupnik_id}, {"$set": update_payload})
+    await db.zakupnici.update_one(query, {"$set": update_payload})
 
-    updated = await db.zakupnici.find_one({"id": zakupnik_id})
+    updated = await db.zakupnici.find_one(query)
     if not updated:
         raise HTTPException(status_code=500, detail="Ažuriranje zakupnika nije uspjelo")
     try:
@@ -2743,13 +3778,19 @@ async def update_zakupnik(zakupnik_id: str, zakupnik: ZakupnikCreate, request: R
     status_code=201,
     dependencies=[Depends(require_scopes("leases:create"))],
 )
-async def create_ugovor(ugovor: UgovorCreate, request: Request):
+async def create_ugovor(
+    ugovor: UgovorCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
     if not ugovor.property_unit_id:
         raise HTTPException(
             status_code=400, detail="Ugovor mora biti povezan s podprostorom"
         )
 
-    jedinica = await _get_property_unit_or_404(ugovor.property_unit_id)
+    jedinica = await _get_property_unit_or_404(
+        ugovor.property_unit_id, tenant_id=tenant_id
+    )
     if jedinica.nekretnina_id != ugovor.nekretnina_id:
         raise HTTPException(
             status_code=400, detail="Podprostor ne pripada odabranoj nekretnini"
@@ -2773,7 +3814,9 @@ async def create_ugovor(ugovor: UgovorCreate, request: Request):
                 detail="Podprostor je već povezan s aktivnim ugovorom",
             )
 
-    ugovor_dict = prepare_for_mongo(ugovor.model_dump())
+    ugovor_payload = ugovor.model_dump(mode="python")
+    ugovor_payload["tenant_id"] = tenant_id
+    ugovor_dict = prepare_for_mongo(ugovor_payload)
     ugovor_obj = Ugovor(**ugovor_dict)
 
     # Kreiraj automatske podsjetnike
@@ -2815,7 +3858,7 @@ async def create_ugovor(ugovor: UgovorCreate, request: Request):
     response_model=List[Ugovor],
     dependencies=[Depends(require_scopes("leases:read"))],
 )
-async def get_ugovori():
+async def get_ugovori(tenant_id: str = Depends(_require_tenant)):
     ugovori = await db.ugovori.find().to_list(1000)
     rezultat: List[Ugovor] = []
     skipped = 0
@@ -2834,7 +3877,7 @@ async def get_ugovori():
     response_model=Ugovor,
     dependencies=[Depends(require_scopes("leases:read"))],
 )
-async def get_ugovor(ugovor_id: str):
+async def get_ugovor(ugovor_id: str, tenant_id: str = Depends(_require_tenant)):
     ugovor = await db.ugovori.find_one({"id": ugovor_id})
     if not ugovor:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
@@ -2850,7 +3893,12 @@ async def get_ugovor(ugovor_id: str):
     response_model=Ugovor,
     dependencies=[Depends(require_scopes("leases:update"))],
 )
-async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Request):
+async def update_ugovor(
+    ugovor_id: str,
+    ugovor_update: UgovorUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
     existing_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not existing_doc:
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
@@ -2873,7 +3921,7 @@ async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Re
 
     new_unit: Optional[PropertyUnit] = None
     if new_unit_id:
-        new_unit = await _get_property_unit_or_404(new_unit_id)
+        new_unit = await _get_property_unit_or_404(new_unit_id, tenant_id=tenant_id)
         if new_unit.nekretnina_id != ugovor_update.nekretnina_id:
             raise HTTPException(
                 status_code=400, detail="Podprostor ne pripada odabranoj nekretnini"
@@ -2899,7 +3947,8 @@ async def update_ugovor(ugovor_id: str, ugovor_update: UgovorUpdate, request: Re
                     detail="Podprostor je već povezan s aktivnim ugovorom",
                 )
 
-    update_payload = ugovor_update.model_dump()
+    update_payload = ugovor_update.model_dump(mode="python")
+    update_payload["tenant_id"] = tenant_id
     update_payload["status"] = existing.status
     update_payload["kreiran"] = existing.kreiran
 
@@ -2976,7 +4025,10 @@ class StatusUpdate(BaseModel):
     dependencies=[Depends(require_scopes("leases:update"))],
 )
 async def update_status_ugovora(
-    ugovor_id: str, status_data: StatusUpdate, request: Request
+    ugovor_id: str,
+    status_data: StatusUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
     ugovor_doc = await db.ugovori.find_one({"id": ugovor_id})
     if not ugovor_doc:
@@ -2990,7 +4042,7 @@ async def update_status_ugovora(
 
     property_unit_id = ugovor_doc.get("property_unit_id")
     if property_unit_id:
-        await _get_property_unit_or_404(property_unit_id)
+        await _get_property_unit_or_404(property_unit_id, tenant_id=tenant_id)
         nova_polja: Dict[str, Any] = {"azuriran": datetime.now(timezone.utc)}
 
         if status_data.novi_status in {StatusUgovora.AKTIVNO, StatusUgovora.NA_ISTEKU}:
@@ -3027,6 +4079,7 @@ async def update_status_ugovora(
 async def create_dokument(request: Request):
     content_type = request.headers.get("content-type", "")
     upload_file: Optional[UploadFile] = None
+    tenant_id = await _get_active_tenant_id(request)
 
     try:
         if "application/json" in content_type:
@@ -3044,6 +4097,20 @@ async def create_dokument(request: Request):
                 "ugovor_id": form.get("ugovor_id"),
                 "property_unit_id": form.get("property_unit_id"),
             }
+
+            metadata_raw = form.get("metadata")
+            if metadata_raw is not None:
+                metadata_text = metadata_raw.strip()
+                if metadata_text and metadata_text.lower() != "null":
+                    try:
+                        field_values["metadata"] = json.loads(metadata_text)
+                    except json.JSONDecodeError as exc:
+                        raise HTTPException(
+                            status_code=400,
+                            detail="Metadata mora biti ispravan JSON",
+                        ) from exc
+                else:
+                    field_values["metadata"] = None
 
             for key in (
                 "nekretnina_id",
@@ -3088,9 +4155,50 @@ async def create_dokument(request: Request):
         file_size = len(file_bytes)
 
     dokument_payload = dokument_input.model_dump()
+    dokument_payload["tenant_id"] = tenant_id
+
+    doc_type = dokument_payload.get("tip")
+    if isinstance(doc_type, TipDokumenta):
+        doc_type_value = doc_type.value
+        dokument_payload["tip"] = doc_type_value
+    else:
+        doc_type_value = doc_type
+
+    requirements = get_document_requirements(doc_type_value)
+
+    metadata_cleaned = _normalise_document_metadata(
+        dokument_payload.get("metadata"), requirements
+    )
+    dokument_payload["metadata"] = metadata_cleaned or None
+
+    if dokument_payload.get("zakupnik_id") and not requirements.get(
+        "allowTenant", True
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Tip dokumenta ne dopušta povezivanje sa zakupnikom.",
+        )
+
+    if dokument_payload.get("ugovor_id") and not requirements.get(
+        "allowContract", True
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Tip dokumenta ne dopušta povezivanje s ugovorom.",
+        )
+
+    if dokument_payload.get("property_unit_id") and not requirements.get(
+        "allowPropertyUnit", True
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Tip dokumenta ne dopušta povezivanje s podprostorom.",
+        )
 
     if dokument_payload.get("property_unit_id"):
-        jedinica = await _get_property_unit_or_404(dokument_payload["property_unit_id"])
+        jedinica = await _get_property_unit_or_404(
+            dokument_payload["property_unit_id"], tenant_id=tenant_id
+        )
         if (
             dokument_payload.get("nekretnina_id")
             and dokument_payload["nekretnina_id"] != jedinica.nekretnina_id
@@ -3103,6 +4211,43 @@ async def create_dokument(request: Request):
             dokument_payload["zakupnik_id"] = jedinica.zakupnik_id
         if not dokument_payload.get("ugovor_id") and jedinica.ugovor_id:
             dokument_payload["ugovor_id"] = jedinica.ugovor_id
+
+    if requirements.get("requireProperty") and not dokument_payload.get(
+        "nekretnina_id"
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Za ovaj tip dokumenta morate odabrati nekretninu.",
+        )
+
+    if (
+        requirements.get("requireTenant")
+        and requirements.get("allowTenant", True)
+        and not dokument_payload.get("zakupnik_id")
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Za ovaj tip dokumenta morate povezati zakupnika.",
+        )
+
+    if (
+        requirements.get("requireContract")
+        and requirements.get("allowContract", True)
+        and not dokument_payload.get("ugovor_id")
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Za ovaj tip dokumenta morate povezati ugovor.",
+        )
+
+    if not requirements.get("allowTenant", True):
+        dokument_payload["zakupnik_id"] = None
+
+    if not requirements.get("allowContract", True):
+        dokument_payload["ugovor_id"] = None
+
+    if not requirements.get("allowPropertyUnit", True):
+        dokument_payload["property_unit_id"] = None
 
     dokument_dict = prepare_for_mongo(dokument_payload)
     dokument_obj = Dokument(
@@ -3121,8 +4266,10 @@ async def create_dokument(request: Request):
     response_model=List[Dokument],
     dependencies=[Depends(require_scopes("documents:read"))],
 )
-async def get_dokumenti():
-    dokumenti = await db.dokumenti.find().to_list(1000)
+async def get_dokumenti(request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    query = _tenant_filter_clause(tenant_id)
+    dokumenti = await db.dokumenti.find(query).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
 
@@ -3131,14 +4278,17 @@ async def get_dokumenti():
     response_model=List[Dokument],
     dependencies=[Depends(require_scopes("documents:read"))],
 )
-async def get_dokumenti_nekretnine(nekretnina_id: str):
-    await _get_property_or_404(nekretnina_id)
-    jedinice = await db.property_units.find({"nekretnina_id": nekretnina_id}).to_list(
-        1000
-    )
+async def get_dokumenti_nekretnine(nekretnina_id: str, request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    await _get_property_or_404(nekretnina_id, tenant_id=tenant_id)
+    jedinice = await db.property_units.find(
+        _with_tenant_scope({"nekretnina_id": nekretnina_id}, tenant_id)
+    ).to_list(1000)
     jedinica_ids = {j.get("id") for j in jedinice if j.get("id")}
 
-    dokumenti_raw = await db.dokumenti.find().to_list(1000)
+    dokumenti_raw = await db.dokumenti.find(_tenant_filter_clause(tenant_id)).to_list(
+        1000
+    )
     rezultat: List[Dokument] = []
     for dokument in dokumenti_raw:
         parsed = Dokument(**parse_from_mongo(dokument))
@@ -3155,8 +4305,10 @@ async def get_dokumenti_nekretnine(nekretnina_id: str):
     response_model=List[Dokument],
     dependencies=[Depends(require_scopes("documents:read"))],
 )
-async def get_dokumenti_zakupnika(zakupnik_id: str):
-    dokumenti = await db.dokumenti.find({"zakupnik_id": zakupnik_id}).to_list(1000)
+async def get_dokumenti_zakupnika(zakupnik_id: str, request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    query = _with_tenant_scope({"zakupnik_id": zakupnik_id}, tenant_id)
+    dokumenti = await db.dokumenti.find(query).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
 
@@ -3165,8 +4317,10 @@ async def get_dokumenti_zakupnika(zakupnik_id: str):
     response_model=List[Dokument],
     dependencies=[Depends(require_scopes("documents:read"))],
 )
-async def get_dokumenti_ugovora(ugovor_id: str):
-    dokumenti = await db.dokumenti.find({"ugovor_id": ugovor_id}).to_list(1000)
+async def get_dokumenti_ugovora(ugovor_id: str, request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    query = _with_tenant_scope({"ugovor_id": ugovor_id}, tenant_id)
+    dokumenti = await db.dokumenti.find(query).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
 
@@ -3175,11 +4329,11 @@ async def get_dokumenti_ugovora(ugovor_id: str):
     response_model=List[Dokument],
     dependencies=[Depends(require_scopes("documents:read"))],
 )
-async def get_dokumenti_property_unit(property_unit_id: str):
-    await _get_property_unit_or_404(property_unit_id)
-    dokumenti = await db.dokumenti.find({"property_unit_id": property_unit_id}).to_list(
-        1000
-    )
+async def get_dokumenti_property_unit(property_unit_id: str, request: Request):
+    tenant_id = await _get_active_tenant_id(request)
+    await _get_property_unit_or_404(property_unit_id, tenant_id=tenant_id)
+    query = _with_tenant_scope({"property_unit_id": property_unit_id}, tenant_id)
+    dokumenti = await db.dokumenti.find(query).to_list(1000)
     return [Dokument(**parse_from_mongo(d)) for d in dokumenti]
 
 
@@ -3202,11 +4356,18 @@ def _enrich_racun_payload(data: Dict[str, Any]) -> Dict[str, Any]:
     status_code=201,
     dependencies=[Depends(require_scopes("financials:create"))],
 )
-async def create_racun(racun: RacunCreate, request: Request):
-    racun_payload = racun.model_dump()
+async def create_racun(
+    racun: RacunCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    racun_payload = racun.model_dump(mode="python")
+    racun_payload.pop("tenant_id", None)
 
     if racun_payload.get("property_unit_id"):
-        jedinica = await _get_property_unit_or_404(racun_payload["property_unit_id"])
+        jedinica = await _get_property_unit_or_404(
+            racun_payload["property_unit_id"], tenant_id=tenant_id
+        )
         if (
             racun_payload.get("nekretnina_id")
             and racun_payload["nekretnina_id"] != jedinica.nekretnina_id
@@ -3218,6 +4379,10 @@ async def create_racun(racun: RacunCreate, request: Request):
         if not racun_payload.get("ugovor_id") and jedinica.ugovor_id:
             racun_payload["ugovor_id"] = jedinica.ugovor_id
 
+    if racun_payload.get("nekretnina_id"):
+        await _get_property_or_404(racun_payload["nekretnina_id"], tenant_id=tenant_id)
+
+    racun_payload["tenant_id"] = tenant_id
     racun_dict = _enrich_racun_payload(racun_payload)
     racun_obj = Racun(**racun_dict)
     await db.racuni.insert_one(prepare_for_mongo(racun_obj.model_dump()))
@@ -3240,6 +4405,7 @@ async def create_racun(racun: RacunCreate, request: Request):
     dependencies=[Depends(require_scopes("financials:read"))],
 )
 async def list_racuni(
+    tenant_id: str = Depends(_require_tenant),
     nekretnina_id: Optional[str] = None,
     ugovor_id: Optional[str] = None,
     property_unit_id: Optional[str] = None,
@@ -3247,19 +4413,23 @@ async def list_racuni(
     tip_rezije: Optional[UtilityType] = None,
     overdue: Optional[bool] = False,
 ):
-    racuni_raw = await db.racuni.find().to_list(2000)
+    query: Dict[str, Any] = {}
+    if nekretnina_id:
+        query["nekretnina_id"] = nekretnina_id
+    if ugovor_id:
+        query["ugovor_id"] = ugovor_id
+    if property_unit_id:
+        query["property_unit_id"] = property_unit_id
+    if status:
+        query["status"] = status.value if isinstance(status, BillStatus) else status
+    if tip_rezije:
+        query["tip_rezije"] = (
+            tip_rezije.value if isinstance(tip_rezije, UtilityType) else tip_rezije
+        )
+
+    racuni_raw = await db.racuni.find(query or None).to_list(2000)
     racuni = [Racun(**parse_from_mongo(r)) for r in racuni_raw]
 
-    if nekretnina_id:
-        racuni = [r for r in racuni if r.nekretnina_id == nekretnina_id]
-    if ugovor_id:
-        racuni = [r for r in racuni if r.ugovor_id == ugovor_id]
-    if property_unit_id:
-        racuni = [r for r in racuni if r.property_unit_id == property_unit_id]
-    if status:
-        racuni = [r for r in racuni if r.status == status]
-    if tip_rezije:
-        racuni = [r for r in racuni if r.tip_rezije == tip_rezije]
     if overdue:
         today = datetime.now(timezone.utc).date()
         racuni = [
@@ -3278,7 +4448,10 @@ async def list_racuni(
     response_model=Racun,
     dependencies=[Depends(require_scopes("financials:read"))],
 )
-async def get_racun(racun_id: str):
+async def get_racun(
+    racun_id: str,
+    tenant_id: str = Depends(_require_tenant),
+):
     racun = await db.racuni.find_one({"id": racun_id})
     if not racun:
         raise HTTPException(status_code=404, detail="Račun nije pronađen")
@@ -3290,20 +4463,31 @@ async def get_racun(racun_id: str):
     response_model=Racun,
     dependencies=[Depends(require_scopes("financials:update"))],
 )
-async def update_racun(racun_id: str, racun_update: RacunUpdate, request: Request):
+async def update_racun(
+    racun_id: str,
+    racun_update: RacunUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
     existing_doc = await db.racuni.find_one({"id": racun_id})
     if not existing_doc:
         raise HTTPException(status_code=404, detail="Račun nije pronađen")
 
     postojece = Racun(**parse_from_mongo(existing_doc))
 
-    update_data = {k: v for k, v in racun_update.dict(exclude_unset=True).items()}
+    update_data = {
+        k: v
+        for k, v in racun_update.model_dump(exclude_unset=True).items()
+        if k != "tenant_id"
+    }
     if not update_data:
         return postojece
 
     if "property_unit_id" in update_data:
         if update_data["property_unit_id"]:
-            jedinica = await _get_property_unit_or_404(update_data["property_unit_id"])
+            jedinica = await _get_property_unit_or_404(
+                update_data["property_unit_id"], tenant_id=tenant_id
+            )
             if (
                 update_data.get("nekretnina_id")
                 and update_data["nekretnina_id"] != jedinica.nekretnina_id
@@ -3316,6 +4500,9 @@ async def update_racun(racun_id: str, racun_update: RacunUpdate, request: Reques
                 update_data["ugovor_id"] = jedinica.ugovor_id
         else:
             update_data["property_unit_id"] = None
+
+    if update_data.get("nekretnina_id"):
+        await _get_property_or_404(update_data["nekretnina_id"], tenant_id=tenant_id)
 
     _enrich_racun_payload(update_data)
     result = await db.racuni.update_one(
@@ -3351,7 +4538,11 @@ async def update_racun(racun_id: str, racun_update: RacunUpdate, request: Reques
     "/racuni/{racun_id}",
     dependencies=[Depends(require_scopes("financials:delete"))],
 )
-async def delete_racun(racun_id: str, request: Request):
+async def delete_racun(
+    racun_id: str,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
     existing_doc = await db.racuni.find_one({"id": racun_id})
     if not existing_doc:
         raise HTTPException(status_code=404, detail="Račun nije pronađen")
@@ -3378,7 +4569,9 @@ async def delete_racun(racun_id: str, request: Request):
     response_model=List[ActivityLog],
     dependencies=[Depends(require_scopes("reports:read"))],
 )
-async def get_activity_logs(limit: int = 100):
+async def get_activity_logs(
+    limit: int = 100, tenant_id: str = Depends(_require_tenant)
+):
     raw_logs = await db.activity_logs.find().to_list(limit)
     logs = [ActivityLog(**parse_from_mongo(log)) for log in raw_logs]
     logs.sort(key=lambda item: item.timestamp, reverse=True)
@@ -3391,7 +4584,7 @@ async def get_activity_logs(limit: int = 100):
     response_model=List[Podsjetnik],
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def get_podsjetnici():
+async def get_podsjetnici(tenant_id: str = Depends(_require_tenant)):
     podsjetnici = await db.podsjetnici.find().to_list(1000)
     return [Podsjetnik(**parse_from_mongo(p)) for p in podsjetnici]
 
@@ -3401,7 +4594,9 @@ async def get_podsjetnici():
     response_model=List[Podsjetnik],
     dependencies=[Depends(require_scopes("properties:read"))],
 )
-async def get_aktivni_podsjetnici():
+async def get_aktivni_podsjetnici(
+    tenant_id: str = Depends(_require_tenant),
+):
     danas = datetime.now(timezone.utc).date()
     podsjetnici = await db.podsjetnici.find(
         {"datum_podsjetnika": {"$lte": danas.isoformat()}, "poslan": False}
@@ -3413,7 +4608,10 @@ async def get_aktivni_podsjetnici():
     "/podsjetnici/{podsjetnik_id}/oznaci-poslan",
     dependencies=[Depends(require_scopes("properties:update"))],
 )
-async def oznaci_podsjetnik_poslan(podsjetnik_id: str):
+async def oznaci_podsjetnik_poslan(
+    podsjetnik_id: str,
+    tenant_id: str = Depends(_require_tenant),
+):
     result = await db.podsjetnici.update_one(
         {"id": podsjetnik_id}, {"$set": {"poslan": True}}
     )
@@ -3433,6 +4631,7 @@ async def list_audit_logs(
     parent_id: Optional[str] = None,
     path: Optional[str] = None,
     limit: int = 100,
+    tenant_id: str = Depends(_require_tenant),
 ):
     limit = max(1, min(limit, 500))
     query: Dict[str, Any] = {}
@@ -3468,6 +4667,7 @@ async def list_audit_logs(
     dependencies=[Depends(require_scopes("maintenance:read"))],
 )
 async def list_maintenance_tasks(
+    tenant_id: str = Depends(_require_tenant),
     status: Optional[MaintenanceStatus] = None,
     prioritet: Optional[MaintenancePriority] = None,
     nekretnina_id: Optional[str] = None,
@@ -3524,8 +4724,8 @@ async def list_maintenance_tasks(
     response_model=MaintenanceTask,
     dependencies=[Depends(require_scopes("maintenance:read"))],
 )
-async def get_maintenance_task(task_id: str):
-    return await _get_task_or_404(task_id)
+async def get_maintenance_task(task_id: str, tenant_id: str = Depends(_require_tenant)):
+    return await _get_task_or_404(task_id, tenant_id=tenant_id)
 
 
 @api_router.post(
@@ -3534,8 +4734,13 @@ async def get_maintenance_task(task_id: str):
     status_code=201,
     dependencies=[Depends(require_scopes("maintenance:create"))],
 )
-async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Request):
-    data = payload.model_dump()
+async def create_maintenance_task(
+    payload: MaintenanceTaskCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    data = payload.model_dump(mode="python")
+    data.pop("tenant_id", None)
     labels = _normalise_labels(data.pop("oznake", []))
 
     property_id = data.get("nekretnina_id")
@@ -3543,10 +4748,10 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Reque
     contract_id = data.get("ugovor_id")
 
     if property_id:
-        await _get_property_or_404(property_id)
+        await _get_property_or_404(property_id, tenant_id=tenant_id)
 
     if unit_id:
-        unit = await _get_property_unit_or_404(unit_id)
+        unit = await _get_property_unit_or_404(unit_id, tenant_id=tenant_id)
         if property_id and unit.nekretnina_id != property_id:
             raise HTTPException(
                 status_code=400, detail="Odabrani podprostor pripada drugoj nekretnini"
@@ -3593,6 +4798,7 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Reque
             data["dodijeljeno"] = assignee_label
 
     data["oznake"] = labels
+    data["tenant_id"] = tenant_id
     task = MaintenanceTask(**data)
     initial_activity = MaintenanceActivity(
         tip="kreiran",
@@ -3607,7 +4813,7 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Reque
         task.zavrseno_na = task.kreiran
     await db.maintenance_tasks.insert_one(prepare_for_mongo(task.model_dump()))
     request.state.audit_context = {"entity_type": "maintenance", "entity_id": task.id}
-    return Response(status_code=201)
+    return task
 
 
 @api_router.patch(
@@ -3616,20 +4822,29 @@ async def create_maintenance_task(payload: MaintenanceTaskCreate, request: Reque
     dependencies=[Depends(require_scopes("maintenance:update"))],
 )
 async def update_maintenance_task(
-    task_id: str, payload: MaintenanceTaskUpdate, request: Request
+    task_id: str,
+    payload: MaintenanceTaskUpdate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
-    task = await _get_task_or_404(task_id)
-    update_data = payload.model_dump(exclude_unset=True)
+    task = await _get_task_or_404(task_id, tenant_id=tenant_id)
+    update_data = {
+        k: v
+        for k, v in payload.model_dump(exclude_unset=True).items()
+        if k != "tenant_id"
+    }
     request.state.audit_context = {"entity_type": "maintenance", "entity_id": task_id}
 
     if "oznake" in update_data and update_data["oznake"] is not None:
         update_data["oznake"] = _normalise_labels(update_data["oznake"])
 
     if "nekretnina_id" in update_data and update_data["nekretnina_id"]:
-        await _get_property_or_404(update_data["nekretnina_id"])
+        await _get_property_or_404(update_data["nekretnina_id"], tenant_id=tenant_id)
 
     if "property_unit_id" in update_data and update_data["property_unit_id"]:
-        unit = await _get_property_unit_or_404(update_data["property_unit_id"])
+        unit = await _get_property_unit_or_404(
+            update_data["property_unit_id"], tenant_id=tenant_id
+        )
         target_property_id = update_data.get("nekretnina_id", task.nekretnina_id)
         if target_property_id and unit.nekretnina_id != target_property_id:
             raise HTTPException(
@@ -3739,9 +4954,12 @@ async def update_maintenance_task(
     dependencies=[Depends(require_scopes("maintenance:update"))],
 )
 async def add_maintenance_comment(
-    task_id: str, payload: MaintenanceCommentCreate, request: Request
+    task_id: str,
+    payload: MaintenanceCommentCreate,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
 ):
-    task = await _get_task_or_404(task_id)
+    task = await _get_task_or_404(task_id, tenant_id=tenant_id)
     message = (payload.poruka or "").strip()
     if not message:
         raise HTTPException(status_code=400, detail="Komentar je prazan")
@@ -3772,8 +4990,12 @@ async def add_maintenance_comment(
     "/maintenance-tasks/{task_id}",
     dependencies=[Depends(require_scopes("maintenance:delete"))],
 )
-async def delete_maintenance_task(task_id: str, request: Request):
-    task = await _get_task_or_404(task_id)
+async def delete_maintenance_task(
+    task_id: str,
+    request: Request,
+    tenant_id: str = Depends(_require_tenant),
+):
+    task = await _get_task_or_404(task_id, tenant_id=tenant_id)
     await db.maintenance_tasks.delete_one({"id": task.id})
     request.state.audit_context = {"entity_type": "maintenance", "entity_id": task_id}
     return {"poruka": "Radni nalog je obrisan"}
@@ -3781,7 +5003,7 @@ async def delete_maintenance_task(task_id: str, request: Request):
 
 # Dashboard i analitika
 @api_router.get("/dashboard", dependencies=[Depends(require_scopes("kpi:read"))])
-async def get_dashboard():
+async def get_dashboard(tenant_id: str = Depends(_require_tenant)):
     ukupno_nekretnina = await db.nekretnine.count_documents({})
     aktivni_ugovori = await db.ugovori.count_documents(
         {"status": StatusUgovora.AKTIVNO}
@@ -4150,7 +5372,7 @@ async def get_dashboard():
         Depends(require_scopes("properties:read", "tenants:read", "leases:read"))
     ],
 )
-async def pretraga(q: str):
+async def pretraga(q: str, tenant_id: str = Depends(_require_tenant)):
     # Pretraži po svim relevantnim poljima
     nekretnine = await db.nekretnine.find(
         {
@@ -4187,7 +5409,9 @@ async def pretraga(q: str):
     "/ai/generate-contract-annex",
     dependencies=[Depends(require_scopes("leases:update", "documents:create"))],
 )
-async def generate_contract_annex(payload: AneksRequest):
+async def generate_contract_annex(
+    payload: AneksRequest, tenant_id: str = Depends(_require_tenant)
+):
     openai_key = _get_openai_api_key()
 
     ugovor_doc = await db.ugovori.find_one({"id": payload.ugovor_id})
@@ -4349,7 +5573,9 @@ async def generate_contract_annex(payload: AneksRequest):
     "/ai/generate-contract",
     dependencies=[Depends(require_scopes("leases:create", "documents:create"))],
 )
-async def generate_contract(payload: ContractCloneRequest):
+async def generate_contract(
+    payload: ContractCloneRequest, tenant_id: str = Depends(_require_tenant)
+):
     if payload.novo_trajanje_mjeseci <= 0:
         raise HTTPException(
             status_code=400, detail="Trajanje ugovora mora biti veće od nule."
@@ -5220,7 +6446,11 @@ def _extract_with_openai(client: OpenAI, pdf_text: str) -> Dict[str, Any]:
     "/ai/parse-pdf-contract",
     dependencies=[Depends(require_scopes("documents:create"))],
 )
-async def parse_pdf_contract(request: Request, file: UploadFile = File(...)):
+async def parse_pdf_contract(
+    request: Request,
+    file: UploadFile = File(...),
+    tenant_id: str = Depends(_require_tenant),
+):
     """AI funkcija za čitanje i izvlačenje podataka iz PDF ugovora (OpenAI)"""
     try:
         if file.content_type != "application/pdf":
@@ -5326,6 +6556,7 @@ async def create_podsjetnici_za_ugovor(ugovor: Ugovor):
         datum_podsjetnika = datum_zavrsetka - timedelta(days=dani_prije)
 
         podsjetnik = Podsjetnik(
+            tenant_id=ugovor.tenant_id,
             tip="istek_ugovora",
             ugovor_id=ugovor.id,
             datum_podsjetnika=datum_podsjetnika,
@@ -5336,6 +6567,14 @@ async def create_podsjetnici_za_ugovor(ugovor: Ugovor):
 
 
 # Include the router in the main app
+
+
+@app.on_event("startup")
+async def _startup_initialise_tenants() -> None:
+    await _ensure_default_tenant()
+    await _ensure_default_memberships()
+
+
 app.include_router(api_router)
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")

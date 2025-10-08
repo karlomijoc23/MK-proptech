@@ -10,7 +10,7 @@ os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
-from backend.server import app, db  # noqa: E402
+from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
 
 client = TestClient(app)
 
@@ -54,7 +54,10 @@ def _bootstrap_users():
     )
     assert login_resp.status_code == 200, login_resp.text
     admin_token = login_resp.json()["access_token"]
-    ADMIN_HEADERS = {"Authorization": f"Bearer {admin_token}"}
+    ADMIN_HEADERS = {
+        "Authorization": f"Bearer {admin_token}",
+        "X-Tenant-Id": DEFAULT_TENANT_ID,
+    }
 
     pm_payload = {
         "email": "pm@example.com",
@@ -73,7 +76,10 @@ def _bootstrap_users():
     )
     assert pm_login.status_code == 200, pm_login.text
     pm_token = pm_login.json()["access_token"]
-    PM_HEADERS = {"Authorization": f"Bearer {pm_token}"}
+    PM_HEADERS = {
+        "Authorization": f"Bearer {pm_token}",
+        "X-Tenant-Id": DEFAULT_TENANT_ID,
+    }
 
 
 def _register_user(email: str, password: str, role: str, full_name: str = ""):

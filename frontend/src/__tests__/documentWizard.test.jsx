@@ -174,12 +174,12 @@ test("creates manual unit when property is selected", async () => {
   });
   fireEvent.click(metaNextButton);
 
-  const propertySelect = await screen.findByRole("button", {
-    name: /Odaberite nekretninu/i,
+  const propertySelect = await screen.findByRole("combobox", {
+    name: /Nekretnina/i,
   });
-  fireEvent.mouseDown(propertySelect);
-  const option = await screen.findByText(/Tower A/);
-  fireEvent.click(option);
+  const hiddenSelect = propertySelect.parentElement.querySelector("select");
+  fireEvent.change(hiddenSelect, { target: { value: "property-1" } });
+  fireEvent.blur(hiddenSelect);
 
   fireEvent.click(
     screen.getByRole("button", { name: /Dodaj novi podprostor/i }),

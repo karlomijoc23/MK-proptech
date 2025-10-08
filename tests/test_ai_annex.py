@@ -8,7 +8,7 @@ os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
-from backend.server import app, db  # noqa: E402
+from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
 
 client = TestClient(app)
 
@@ -50,7 +50,10 @@ def _bootstrap_users():
     )
     assert login_resp.status_code == 200, login_resp.text
     admin_token = login_resp.json()["access_token"]
-    ADMIN_HEADERS = {"Authorization": f"Bearer {admin_token}"}
+    ADMIN_HEADERS = {
+        "Authorization": f"Bearer {admin_token}",
+        "X-Tenant-Id": DEFAULT_TENANT_ID,
+    }
 
     pm_payload = {
         "email": "pm@example.com",
@@ -67,7 +70,10 @@ def _bootstrap_users():
     )
     assert pm_login.status_code == 200, pm_login.text
     pm_token = pm_login.json()["access_token"]
-    PM_HEADERS = {"Authorization": f"Bearer {pm_token}"}
+    PM_HEADERS = {
+        "Authorization": f"Bearer {pm_token}",
+        "X-Tenant-Id": DEFAULT_TENANT_ID,
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -119,6 +125,19 @@ def _create_property():
     return response.json()["id"]
 
 
+def _create_unit(nekretnina_id, oznaka="UG-A1"):
+    response = client.post(
+        f"/api/nekretnine/{nekretnina_id}/units",
+        json={
+            "oznaka": oznaka,
+            "status": "dostupno",
+        },
+        headers=PM_HEADERS,
+    )
+    assert response.status_code == 201, response.text
+    return response.json()["id"]
+
+
 def _create_tenant():
     response = client.post(
         "/api/zakupnici",
@@ -139,12 +158,14 @@ def _create_tenant():
 
 
 def _create_contract(nekretnina_id, zakupnik_id):
+    unit_id = _create_unit(nekretnina_id)
     response = client.post(
         "/api/ugovori",
         json={
             "interna_oznaka": "UG-001",
             "nekretnina_id": nekretnina_id,
             "zakupnik_id": zakupnik_id,
+            "property_unit_id": unit_id,
             "datum_potpisivanja": "2024-01-01",
             "datum_pocetka": "2024-02-01",
             "datum_zavrsetka": "2025-01-31",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import { Label } from "./ui/label";
 import {
   Select,
@@ -22,6 +22,11 @@ const LinkedEntitySelect = ({
   selectProps = {},
   testId,
 }) => {
+  const { id: providedId, ...restSelectProps } = selectProps || {};
+  const generatedId = useId();
+  const triggerId = providedId || `linked-entity-${generatedId}`;
+  const labelId = label ? `${triggerId}-label` : undefined;
+
   const handleValueChange = (selected) => {
     if (allowNone && selected === EMPTY_VALUE) {
       onChange?.("");
@@ -35,15 +40,25 @@ const LinkedEntitySelect = ({
   return (
     <div className="space-y-1.5">
       {label && (
-        <Label className="text-sm font-medium text-foreground">{label}</Label>
+        <Label
+          id={labelId}
+          htmlFor={triggerId}
+          className="text-sm font-medium text-foreground"
+        >
+          {label}
+        </Label>
       )}
       <Select
         value={resolvedValue}
         onValueChange={handleValueChange}
         disabled={disabled}
-        {...selectProps}
+        {...restSelectProps}
       >
-        <SelectTrigger data-testid={testId}>
+        <SelectTrigger
+          id={triggerId}
+          aria-labelledby={labelId}
+          data-testid={testId}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

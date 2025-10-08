@@ -37,8 +37,6 @@ corepack enable       # once, if Corepack is disabled
 corepack yarn install
 ```
 
-> The development `.env` ships with `REACT_APP_DEV_AUTH_TOKEN=token123`, matching the default backend token in `backend/.env`. This allows the SPA to authenticate automatically without a login screen. Remove or override this variable for production builds.
-
 ## Configuration
 
 Use environment files (`.env`, `.env.local`) or exported variables. Key settings:
@@ -53,9 +51,20 @@ Use environment files (`.env`, `.env.local`) or exported variables. Key settings
 | `INITIAL_ADMIN_*`                              | Bootstrap credentials for the first admin                                    |
 | `CORS_ORIGINS`                                 | Allowed origins for the SPA                                                  |
 | `REACT_APP_BACKEND_URL`                        | Frontend pointer to the API                                                  |
-| `REACT_APP_DEV_AUTH_TOKEN`                     | Optional dev-only token provisioned to the SPA when no login flow exists     |
 
 > Sample envs live at `backend/.env`, `backend/.env.production.example`, and `frontend/.env` (plus `.env.production.example`); copy to `.env.local` or your deployment secrets store as needed.
+
+### Login Page
+
+The application exposes a browser login form at:
+
+- URL: `http://localhost:3000/login`
+- Method: the form posts to `POST /api/auth/login`
+- Inputs:
+  - `email` (text input)
+  - `password` (password input)
+
+Successful authentication stores a Bearer token inside `localStorage` under the `authToken` key, which is then attached to subsequent API requests. A logout button in the header clears this value and redirects back to the login page.
 
 ## Database Migrations & Seeding
 
@@ -88,10 +97,16 @@ deps/mongodb/bin/mongod \
   --fork
 ```
 
+## Authentication
+
+- The first administrator can be created via `POST /api/auth/register` while the user collection is empty. For subsequent registrations you need a user with the `users:create` scope.
+- Start the backend and frontend, then visit `http://localhost:3000/login` to sign in. The SPA stores the issued access token in `localStorage` and automatically injects it into subsequent API calls.
+- Za odjavu koristite gumb **Odjava** u gornjoj navigaciji (po potrebi možete ručno obrisati `authToken` iz `localStorage`).
+
 ## Testing & Quality Gates
 
 - Backend: `pytest`
-- Frontend: `CI=1 corepack yarn test --watch=false`
+- Frontend: `corepack yarn test` (runs Jest with `CI=true --runInBand --detectOpenHandles`)
 - API smoke: `python backend_test.py` (`BACKEND_BASE_URL` overrides target)
 - Formatting hooks: `pre-commit run --all-files`
 
@@ -108,6 +123,18 @@ Pre-commit currently runs:
 - AI contract helpers degrade gracefully when no `OPENAI_API_KEY` is provided.
 - Runtime artifacts (logs, pid files) remain untracked; `deps/` houses the local Mongo install.
 
+### Multi-tenant behaviour
+
+- The backend requires an `X-Tenant-Id` header on all protected routes. The default tenant (`tenant-default`) is provisioned automatically, and user registrations map platform roles to tenant roles (see `ROLE_TENANT_MEMBERSHIP_MAP`).
+- `/api/tenants` returns the profiles a user can access. Switching tenants updates the context for every subsequent request and cascades through the React app via the tenant switcher that sits in the global navigation.
+- Attempting to select a tenant without membership yields `403 Nemate pristup odabranom profilu`; automated tests for these guardrails live in `tests/test_tenant_scoping.py`.
+
+### Document requirements & metadata
+
+- Document validation is driven by `frontend/src/shared/documentRequirements.json`. Each type describes whether property/tenant/contract association is mandatory and lists any metadata fields that must be captured.
+- The helper `getDocumentRequirements` (exported from `frontend/src/shared/documents.js`) merges defaults, normalises field identifiers, and is shared between the FastAPI document endpoints and the React wizard.
+- Metadata validation occurs on the backend (`create_dokument`) and rejects payloads that miss required metadata or supply malformed values. Tests covering these rules are in `tests/test_tenant_scoping.py::test_document_metadata_validation`.
+
 ## Ready-for-publish Checklist
 
 - [x] Automated migrations/seeders verified against Mongo
@@ -115,5 +142,7 @@ Pre-commit currently runs:
 - [x] Flake8 linting re-enabled with targeted configuration
 - [x] Production env templates added (`backend/.env.production.example`, `frontend/.env.production.example`)
 - [x] CI workflow (`.github/workflows/ci.yml`) running tests and formatting checks
+- [x] Tenant migration plan documented (data backfill, membership seeding, rollout checklist) - see `docs/tenant-migration-plan.md`
+- [ ] QA pass covering AI-assisted document flows and multi-tenant access scenarios - follow `docs/qa-playbook.md`
 
 Once the remaining checklist items are complete, the project is ready for deployment packaging.

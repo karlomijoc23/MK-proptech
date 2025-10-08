@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
   Suspense,
+  useId,
 } from "react";
 import {
   BrowserRouter,
@@ -13,6 +14,7 @@ import {
   Link,
   useNavigate,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import jsPDF from "jspdf";
 import { Button } from "./components/ui/button";
@@ -32,6 +34,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
 import { Textarea } from "./components/ui/textarea";
 import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -68,16 +78,22 @@ import {
   Search,
   Bell,
   Download,
-  Sparkles,
   ArrowRight,
   Printer,
   Archive,
   ArchiveRestore,
   Wrench,
+  Settings,
+  Loader2,
+  ChevronDown,
+  Check,
+  LogOut,
 } from "lucide-react";
 import logoMain from "./assets/riforma-logo.png";
 import "./App.css";
 import { api, BACKEND_URL, buildDocumentUrl } from "./shared/api";
+import { AuthProvider, useAuth } from "./shared/auth";
+import { canManageTenants } from "./shared/tenantAccess";
 import {
   parseNumericValue,
   formatCurrency,
@@ -115,6 +131,8 @@ import {
 } from "./shared/units";
 import DocumentViewer from "./features/documents/components/DocumentViewer";
 import { UnitStatusMap } from "./features/properties";
+import TenantProfiles from "./features/tenants/TenantProfiles";
+import LoginPage from "./features/auth/LoginPage";
 import LinkedEntitySelect from "./components/LinkedEntitySelect";
 
 const DocumentsPageLazy = React.lazy(
@@ -395,9 +413,185 @@ const dedupeRemindersById = (items = []) => {
   return Array.from(map.values());
 };
 
+export const TenantSwitcher = ({ onLogout }) => {
+  const { tenantId, changeTenant } = useEntityStore();
+  const [tenants, setTenants] = useState([]);
+  const [loadingTenants, setLoadingTenants] = useState(false);
+  const [tenantsError, setTenantsError] = useState(null);
+  const labelId = useId();
+  const navigate = useNavigate();
+
+  const loadTenants = useCallback(async () => {
+    setLoadingTenants(true);
+    try {
+      const response = await api.getTenants();
+      setTenants(response.data || []);
+      setTenantsError(null);
+    } catch (err) {
+      console.error("Greška pri dohvaćanju tenant profila", err);
+      setTenantsError(err);
+    } finally {
+      setLoadingTenants(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTenants();
+  }, [loadTenants]);
+
+  const sortedTenants = useMemo(() => {
+    return tenants
+      .slice()
+      .sort((a, b) => (a.naziv || "").localeCompare(b.naziv || ""));
+  }, [tenants]);
+
+  const selectedTenant = useMemo(
+    () => sortedTenants.find((tenant) => tenant.id === tenantId),
+    [sortedTenants, tenantId],
+  );
+
+  const handleSelectTenant = useCallback(
+    async (id) => {
+      if (!id || id === tenantId) {
+        return;
+      }
+      const resolved = changeTenant(id);
+      if (resolved) {
+        await loadTenants();
+      }
+    },
+    [changeTenant, loadTenants, tenantId],
+  );
+
+  const handleNavigateProfiles = useCallback(() => {
+    if (!canManageTenants(selectedTenant?.role)) {
+      toast("Nedostaju ovlasti", {
+        description:
+          "Samo vlasnici ili administratori mogu upravljati profilima.",
+      });
+      return;
+    }
+    navigate("/profili");
+  }, [navigate, selectedTenant?.role]);
+
+  const handleLogout = useCallback(() => {
+    onLogout?.();
+  }, [onLogout]);
+
+  const buttonLabel =
+    selectedTenant?.naziv ||
+    (loadingTenants
+      ? "Učitavanje profila..."
+      : tenantsError
+        ? "Profil nije dostupan"
+        : tenants.length
+          ? "Odaberite profil"
+          : "Nema profila");
+
+  return (
+    <div className="flex flex-col gap-1 sm:w-auto">
+      <Label
+        id={labelId}
+        className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:sr-only"
+      >
+        Aktivni profil
+      </Label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex w-full min-w-[200px] items-center justify-between gap-2 rounded-lg border border-border/70 bg-white/90 text-left text-sm font-medium shadow-sm sm:w-[240px]"
+            aria-labelledby={labelId}
+          >
+            <span className="flex flex-col">
+              <span className="font-semibold text-foreground">
+                {buttonLabel}
+              </span>
+              {selectedTenant?.role && (
+                <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  Uloga: {selectedTenant.role}
+                </span>
+              )}
+            </span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-72">
+          <DropdownMenuLabel>Moji profili</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {loadingTenants && (
+            <DropdownMenuItem disabled>Učitavanje...</DropdownMenuItem>
+          )}
+          {tenantsError && !loadingTenants && (
+            <DropdownMenuItem disabled className="text-destructive">
+              Nije moguće učitati profile
+            </DropdownMenuItem>
+          )}
+          {!loadingTenants && !tenantsError && sortedTenants.length === 0 && (
+            <DropdownMenuItem disabled>Još nema profila</DropdownMenuItem>
+          )}
+          {sortedTenants.map((tenant) => {
+            const isActive = tenant.id === tenantId;
+            return (
+              <DropdownMenuItem
+                key={tenant.id}
+                onSelect={(event) => {
+                  event.preventDefault();
+                  handleSelectTenant(tenant.id);
+                }}
+                className="flex flex-col items-start gap-1 py-2"
+              >
+                <div className="flex w-full items-center justify-between gap-2">
+                  <span className="font-medium text-foreground">
+                    {tenant.naziv || "Bez naziva"}
+                  </span>
+                  {isActive && <Check className="h-4 w-4 text-primary" />}
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  {tenant.role ? `Uloga: ${tenant.role}` : "Bez uloge"}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Status: {tenant.status}
+                </span>
+              </DropdownMenuItem>
+            );
+          })}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={(event) => {
+              event.preventDefault();
+              handleNavigateProfiles();
+            }}
+          >
+            <Settings className="mr-2 h-4 w-4" /> Upravljanje profilima
+          </DropdownMenuItem>
+          {onLogout && (
+            <DropdownMenuItem
+              onSelect={(event) => {
+                event.preventDefault();
+                handleLogout();
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Odjava
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
 // Navigation Component
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = useCallback(() => {
+    logout();
+    navigate("/login", { replace: true });
+  }, [logout, navigate]);
 
   const navItems = [
     { path: "/", icon: Home, label: "Dashboard" },
@@ -409,41 +603,69 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-border/80 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6 md:py-3">
-        <Link to="/" className="flex items-center gap-3">
-          <img
-            src={logoMain}
-            alt="Riforma"
-            className="w-32 h-auto sm:w-44 lg:w-52"
-          />
-        </Link>
+    <nav className="sticky top-0 z-40 border-b border-border/60 bg-white/95 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex flex-col gap-3 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="flex items-center gap-3">
+                <img
+                  src={logoMain}
+                  alt="Riforma"
+                  className="h-10 w-auto sm:h-12"
+                />
+              </Link>
+              <div className="hidden md:flex items-center gap-1 rounded-full border border-border/60 bg-white/80 px-2 py-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
 
-        <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:gap-6">
-          <div className="flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span>AI Copilot Ready</span>
+            <div className="hidden md:flex items-center gap-3">
+              <TenantSwitcher onLogout={handleLogout} />
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 rounded-full border border-border/80 bg-white/80 p-1 shadow-sm">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-accent/20 text-primary shadow-sm"
-                      : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+          <div className="flex flex-col gap-2 md:hidden">
+            <div className="flex flex-wrap items-center gap-2 overflow-x-auto rounded-xl border border-border/60 bg-white/80 p-1.5">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <TenantSwitcher onLogout={handleLogout} />
+            </div>
           </div>
         </div>
       </div>
@@ -10385,38 +10607,73 @@ const UgovorForm = ({
   );
 };
 
-// Main App Component
-function App() {
+const AppContent = () => {
+  const { loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-muted/10">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">
+          Provjeravam korisničku sesiju…
+        </span>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <EntityStoreProvider>
       <div className="App">
-        <BrowserRouter>
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/nekretnine" element={<Nekretnine />} />
-            <Route path="/zakupnici" element={<Zakupnici />} />
-            <Route path="/ugovori" element={<Ugovori />} />
-            <Route path="/odrzavanje" element={<MaintenanceWorkspace />} />
-            <Route
-              path="/dokumenti"
-              element={
-                <Suspense
-                  fallback={
-                    <div className="p-6 text-sm text-muted-foreground">
-                      Učitavanje dokumenata…
-                    </div>
-                  }
-                >
-                  <DocumentsPageLazy />
-                </Suspense>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/nekretnine" element={<Nekretnine />} />
+          <Route path="/zakupnici" element={<Zakupnici />} />
+          <Route path="/ugovori" element={<Ugovori />} />
+          <Route path="/odrzavanje" element={<MaintenanceWorkspace />} />
+          <Route
+            path="/dokumenti"
+            element={
+              <Suspense
+                fallback={
+                  <div className="p-6 text-sm text-muted-foreground">
+                    Učitavanje dokumenata…
+                  </div>
+                }
+              >
+                <DocumentsPageLazy />
+              </Suspense>
+            }
+          />
+          <Route path="/profili" element={<TenantProfiles />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
       <Toaster />
     </EntityStoreProvider>
+  );
+};
+
+// Main App Component
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

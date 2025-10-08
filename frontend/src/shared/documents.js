@@ -1,3 +1,5 @@
+import rawRequirements from "./documentRequirements.json";
+
 export const DOCUMENT_TYPE_LABELS = {
   ugovor: "Ugovor",
   racun: "Račun",
@@ -14,25 +16,6 @@ export const DOCUMENT_TYPE_LABELS = {
   certifikat: "Certifikat",
   ostalo: "Ostalo",
 };
-
-export const PROPERTY_DOCUMENT_TYPES = new Set([
-  "procjena_vrijednosti",
-  "lokacijska_informacija",
-  "zemljisnoknjizni_izvadak",
-  "uporabna_dozvola",
-  "gradevinska_dozvola",
-  "energetski_certifikat",
-  "izvadak_iz_registra",
-  "certifikat",
-  "osiguranje",
-]);
-
-export const CONTRACT_DOCUMENT_TYPES = new Set([
-  "ugovor",
-  "aneks",
-  "racun",
-  "bon_2",
-]);
 
 export const DOCUMENT_TYPE_ALIASES = {
   ugovor_o_zakupu: "ugovor",
@@ -56,6 +39,25 @@ export const DOCUMENT_TYPE_ALIASES = {
   certificate: "certifikat",
 };
 
+const DEFAULT_REQUIREMENTS = Object.freeze({
+  requireProperty: false,
+  requireTenant: false,
+  requireContract: false,
+  allowTenant: true,
+  allowContract: true,
+  allowPropertyUnit: true,
+  metaFields: [],
+  infoHint: "",
+});
+
+const DEFAULT_META_FIELD = Object.freeze({
+  type: "text",
+  required: false,
+  placeholder: "",
+});
+
+export const DOCUMENT_REQUIREMENTS = Object.freeze({ ...rawRequirements });
+
 export const normaliseDocumentTypeKey = (value) => {
   if (!value) {
     return "";
@@ -67,6 +69,45 @@ export const normaliseDocumentTypeKey = (value) => {
     .replace(/[^a-z0-9]+/g, "_");
 };
 
+export const getDocumentRequirements = (value) => {
+  const key = normaliseDocumentTypeKey(value);
+  const raw = DOCUMENT_REQUIREMENTS[key] || {};
+  const metaFields = Array.isArray(raw.metaFields)
+    ? raw.metaFields.map((field) => ({
+        ...DEFAULT_META_FIELD,
+        ...field,
+        id:
+          field.id || field.name || normaliseDocumentTypeKey(field.label || ""),
+      }))
+    : [];
+  return {
+    ...DEFAULT_REQUIREMENTS,
+    ...raw,
+    metaFields,
+  };
+};
+
+const PROPERTY_ONLY_TYPES = new Set(
+  Object.keys(DOCUMENT_REQUIREMENTS).filter((type) => {
+    const config = getDocumentRequirements(type);
+    return (
+      config.requireProperty && !config.allowTenant && !config.allowContract
+    );
+  }),
+);
+
+export const PROPERTY_DOCUMENT_TYPES = PROPERTY_ONLY_TYPES;
+
+const CONTRACT_FOCUSED_TYPES = new Set(
+  ["ugovor", "aneks", "racun", "bon_2"].concat(
+    Object.keys(DOCUMENT_REQUIREMENTS).filter(
+      (type) => getDocumentRequirements(type).requireContract,
+    ),
+  ),
+);
+
+export const CONTRACT_DOCUMENT_TYPES = new Set(CONTRACT_FOCUSED_TYPES);
+
 export const resolveDocumentType = (value) => {
   const key = normaliseDocumentTypeKey(value);
   if (!key) {
@@ -75,12 +116,7 @@ export const resolveDocumentType = (value) => {
   if (DOCUMENT_TYPE_ALIASES[key]) {
     return DOCUMENT_TYPE_ALIASES[key];
   }
-  if (
-    PROPERTY_DOCUMENT_TYPES.has(key) ||
-    CONTRACT_DOCUMENT_TYPES.has(key) ||
-    key === "certifikat" ||
-    key === "ostalo"
-  ) {
+  if (DOCUMENT_TYPE_LABELS[key] || DOCUMENT_REQUIREMENTS[key]) {
     return key;
   }
   return "ostalo";

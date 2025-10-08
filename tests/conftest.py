@@ -10,7 +10,7 @@ os.environ.setdefault("OPENAI_API_KEY", "test")
 os.environ.setdefault("AUTO_RUN_MIGRATIONS", "false")
 os.environ.setdefault("SEED_ADMIN_ON_STARTUP", "false")
 
-from backend.server import app, db  # noqa: E402
+from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
 
 RESET_COLLECTIONS = (
     "nekretnine",
@@ -22,6 +22,8 @@ RESET_COLLECTIONS = (
     "racuni",
     "activity_logs",
     "maintenance_tasks",
+    "tenants",
+    "tenant_memberships",
     "users",
 )
 
@@ -72,9 +74,14 @@ def _bootstrap_users(client: TestClient) -> Dict[str, Dict[str, str]]:
     assert pm_login.status_code == 200, pm_login.text
     pm_token = pm_login.json()["access_token"]
 
+    tenant_header = {"X-Tenant-Id": DEFAULT_TENANT_ID}
+
     return {
-        "admin_headers": admin_headers,
-        "pm_headers": {"Authorization": f"Bearer {pm_token}"},
+        "admin_headers": {**admin_headers, **tenant_header},
+        "pm_headers": {
+            "Authorization": f"Bearer {pm_token}",
+            "X-Tenant-Id": DEFAULT_TENANT_ID,
+        },
         "pm_user": pm_user,
     }
 

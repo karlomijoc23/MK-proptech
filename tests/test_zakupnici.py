@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 
-from backend.server import app, db  # noqa: E402
+from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
 
 client = TestClient(app)
 
@@ -42,7 +42,10 @@ def _bootstrap_auth():
     )
     assert login_resp.status_code == 200, login_resp.text
     token = login_resp.json()["access_token"]
-    AUTH_HEADERS = {"Authorization": f"Bearer {token}"}
+    AUTH_HEADERS = {
+        "Authorization": f"Bearer {token}",
+        "X-Tenant-Id": DEFAULT_TENANT_ID,
+    }
 
 
 @pytest.fixture(autouse=True)

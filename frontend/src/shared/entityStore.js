@@ -5,12 +5,18 @@ import React, {
   useCallback,
   useContext,
 } from "react";
-import { api } from "./api";
+import {
+  api,
+  getActiveTenantId,
+  setActiveTenantId,
+  subscribeToTenantChanges,
+} from "./api";
 import { sortUnitsByPosition } from "./units";
 
 export const EntityStoreContext = React.createContext(null);
 
 export const EntityStoreProvider = ({ children }) => {
+  const [tenantId, setTenantId] = useState(() => getActiveTenantId());
   const [state, setState] = useState({
     nekretnine: [],
     zakupnici: [],
@@ -21,6 +27,13 @@ export const EntityStoreProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToTenantChanges((nextTenantId) => {
+      setTenantId(nextTenantId);
+    });
+    return unsubscribe;
+  }, []);
 
   const loadEntities = useCallback(async () => {
     setLoading(true);
@@ -50,7 +63,7 @@ export const EntityStoreProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   const refreshMaintenanceTasks = useCallback(async () => {
     try {
@@ -59,7 +72,18 @@ export const EntityStoreProvider = ({ children }) => {
     } catch (err) {
       console.error("Greška pri učitavanju radnih naloga:", err);
     }
-  }, []);
+  }, [tenantId]);
+
+  useEffect(() => {
+    setState({
+      nekretnine: [],
+      zakupnici: [],
+      ugovori: [],
+      dokumenti: [],
+      propertyUnits: [],
+      maintenanceTasks: [],
+    });
+  }, [tenantId]);
 
   const syncDocument = useCallback((document) => {
     if (!document || !document.id) {
@@ -135,6 +159,12 @@ export const EntityStoreProvider = ({ children }) => {
     return map;
   }, [state.propertyUnits]);
 
+  const changeTenant = useCallback((nextTenantId) => {
+    const resolved = setActiveTenantId(nextTenantId);
+    setTenantId(resolved);
+    return resolved;
+  }, []);
+
   const value = useMemo(
     () => ({
       ...state,
@@ -146,6 +176,8 @@ export const EntityStoreProvider = ({ children }) => {
       refreshMaintenanceTasks,
       syncDocument,
       syncMaintenanceTask,
+      tenantId,
+      changeTenant,
     }),
     [
       state,
@@ -157,6 +189,8 @@ export const EntityStoreProvider = ({ children }) => {
       refreshMaintenanceTasks,
       syncDocument,
       syncMaintenanceTask,
+      tenantId,
+      changeTenant,
     ],
   );
 

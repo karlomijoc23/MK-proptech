@@ -36,14 +36,19 @@ const UploadStep = () => {
     ugovori,
     formatConfidenceBadgeClass,
     formatConfidenceLabel,
+    activeRequirements,
+    allowsTenant,
+    allowsContract,
+    allowsPropertyUnit,
   } = useDocumentWizard();
 
   const hasAiSuggestions = Boolean(aiSuggestions);
 
   const propertySelected = Boolean(formData.nekretnina_id);
-  const tenantSelected = Boolean(formData.zakupnik_id);
-  const contractSelected = Boolean(formData.ugovor_id);
-  const propertyUnitSelected = Boolean(formData.property_unit_id);
+  const tenantSelected = allowsTenant && Boolean(formData.zakupnik_id);
+  const contractSelected = allowsContract && Boolean(formData.ugovor_id);
+  const propertyUnitSelected =
+    allowsPropertyUnit && Boolean(formData.property_unit_id);
 
   const selectedProperty = propertySelected
     ? nekretnine.find((item) => item.id === formData.nekretnina_id)
@@ -59,16 +64,17 @@ const UploadStep = () => {
     ? getUnitDisplayName(matchedPropertyUnit)
     : null;
 
-  const propertyUnitLinked = Boolean(
-    formData.nekretnina_id || matchedProperty?.id,
-  );
+  const propertyUnitLinked =
+    allowsPropertyUnit &&
+    Boolean(formData.nekretnina_id || matchedProperty?.id);
 
-  const hasAiContract = Boolean(aiSuggestions?.ugovor);
+  const hasAiContract = allowsContract && Boolean(aiSuggestions?.ugovor);
   const canAutoCreateContract = Boolean(
-    hasAiContract &&
+    allowsContract &&
+      hasAiContract &&
       formData.nekretnina_id &&
       formData.zakupnik_id &&
-      formData.property_unit_id,
+      (allowsPropertyUnit ? formData.property_unit_id : true),
   );
 
   return (
@@ -249,173 +255,184 @@ const UploadStep = () => {
                 }
               }}
             />
-
-            <SuggestionCard
-              title="Zakupnik"
-              primary={
-                aiSuggestions.zakupnik?.naziv_firme ||
-                aiSuggestions.zakupnik?.ime_prezime ||
-                "Nije prepoznato"
-              }
-              secondary={
-                aiSuggestions.zakupnik?.oib
-                  ? `OIB: ${aiSuggestions.zakupnik.oib}`
-                  : null
-              }
-              matched={
-                matchedTenant?.naziv_firme || matchedTenant?.ime_prezime || null
-              }
-              actionLabel={
-                tenantSelected
-                  ? "Zakupnik povezan"
-                  : matchedTenant
-                    ? "Poveži s pronađenim"
-                    : "Kreiraj zakupnika"
-              }
-              loading={quickCreateLoading.tenant}
-              disabled={tenantSelected}
-              helperText={
-                tenantSelected
-                  ? selectedTenant
-                    ? `Povezano: ${
-                        selectedTenant.naziv_firme || selectedTenant.ime_prezime
-                      }. Uređivanje je moguće u koraku "Povezivanje".`
-                    : "Zakupnik je već povezan s dokumentom."
-                  : null
-              }
-              onAction={() => {
-                if (tenantSelected) {
-                  return;
+            {allowsTenant && (
+              <SuggestionCard
+                title="Zakupnik"
+                primary={
+                  aiSuggestions.zakupnik?.naziv_firme ||
+                  aiSuggestions.zakupnik?.ime_prezime ||
+                  "Nije prepoznato"
                 }
-                if (matchedTenant) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    zakupnik_id: matchedTenant.id,
-                  }));
-                } else {
-                  handleCreateTenantFromAI();
+                secondary={
+                  aiSuggestions.zakupnik?.oib
+                    ? `OIB: ${aiSuggestions.zakupnik.oib}`
+                    : null
                 }
-              }}
+                matched={
+                  matchedTenant?.naziv_firme ||
+                  matchedTenant?.ime_prezime ||
+                  null
+                }
+                actionLabel={
+                  tenantSelected
+                    ? "Zakupnik povezan"
+                    : matchedTenant
+                      ? "Poveži s pronađenim"
+                      : "Kreiraj zakupnika"
+                }
+                loading={quickCreateLoading.tenant}
+                disabled={tenantSelected}
+                helperText={
+                  tenantSelected
+                    ? selectedTenant
+                      ? `Povezano: ${
+                          selectedTenant.naziv_firme ||
+                          selectedTenant.ime_prezime
+                        }. Uređivanje je moguće u koraku "Povezivanje".`
+                      : "Zakupnik je već povezan s dokumentom."
+                    : null
+                }
+                onAction={() => {
+                  if (tenantSelected) {
+                    return;
+                  }
+                  if (matchedTenant) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      zakupnik_id: matchedTenant.id,
+                    }));
+                  } else {
+                    handleCreateTenantFromAI();
+                  }
+                }}
+              />
+            )}
             />
-
-            <SuggestionCard
-              title="Podprostor"
-              primary={
-                propertyUnitSuggestion?.oznaka ||
-                propertyUnitSuggestion?.naziv ||
-                "Nije prepoznato"
-              }
-              secondary={
-                propertyUnitSuggestion?.kat
-                  ? `Kat / zona: ${propertyUnitSuggestion.kat}`
-                  : null
-              }
-              matched={selectedUnitLabel}
-              actionLabel={
-                propertyUnitSelected
-                  ? "Podprostor povezan"
-                  : propertyUnitSuggestion
-                    ? "Primijeni prijedlog"
-                    : "Dodaj ručno"
-              }
-              loading={quickCreateLoading.unit}
-              disabled={propertyUnitSelected}
-              helperText={(() => {
-                if (propertyUnitSelected) {
-                  return selectedUnitLabel
-                    ? `Povezano: ${selectedUnitLabel}. Uređivanje je moguće u koraku "Povezivanje".`
-                    : "Podprostor je povezan s dokumentom.";
+            {allowsPropertyUnit && (
+              <SuggestionCard
+                title="Podprostor"
+                primary={
+                  propertyUnitSuggestion?.oznaka ||
+                  propertyUnitSuggestion?.naziv ||
+                  "Nije prepoznato"
                 }
-                if (!propertyUnitLinked) {
-                  return "Prvo povežite ili kreirajte nekretninu.";
+                secondary={
+                  propertyUnitSuggestion?.kat
+                    ? `Kat / zona: ${propertyUnitSuggestion.kat}`
+                    : null
                 }
-                if (!propertyUnitSuggestion) {
-                  return "AI nije prepoznao podprostor – možete ga unijeti ručno.";
+                matched={selectedUnitLabel}
+                actionLabel={
+                  propertyUnitSelected
+                    ? "Podprostor povezan"
+                    : propertyUnitSuggestion
+                      ? "Primijeni prijedlog"
+                      : "Dodaj ručno"
                 }
-                return null;
-              })()}
-              onAction={() => {
-                if (propertyUnitSelected) {
-                  return;
+                loading={quickCreateLoading.unit}
+                disabled={propertyUnitSelected}
+                helperText={(() => {
+                  if (propertyUnitSelected) {
+                    return selectedUnitLabel
+                      ? `Povezano: ${selectedUnitLabel}. Uređivanje je moguće u koraku "Povezivanje".`
+                      : "Podprostor je povezan s dokumentom.";
+                  }
+                  if (!propertyUnitLinked) {
+                    return "Prvo povežite ili kreirajte nekretninu.";
+                  }
+                  if (!propertyUnitSuggestion) {
+                    return "AI nije prepoznao podprostor – možete ga unijeti ručno.";
+                  }
+                  return null;
+                })()}
+                onAction={() => {
+                  if (propertyUnitSelected) {
+                    return;
+                  }
+                  if (!propertyUnitLinked) {
+                    openManualUnitForm({ reset: true });
+                    return;
+                  }
+                  if (propertyUnitSuggestion) {
+                    handleApplyUnitSuggestion();
+                  } else {
+                    openManualUnitForm({ reset: true });
+                  }
+                }}
+                secondaryActionLabel={
+                  !propertyUnitSelected && propertyUnitSuggestion
+                    ? "Unesi ručno"
+                    : null
                 }
-                if (!propertyUnitLinked) {
-                  openManualUnitForm({ reset: true });
-                  return;
+                onSecondaryAction={() => {
+                  openManualUnitForm({
+                    prefill: propertyUnitSuggestion,
+                    reset: true,
+                  });
+                }}
+                secondaryDisabled={propertyUnitSelected || !propertyUnitLinked}
+              />
+            )}
+            {allowsContract && (
+              <SuggestionCard
+                title="Ugovor"
+                primary={
+                  aiSuggestions.ugovor?.interna_oznaka || "Nije prepoznato"
                 }
-                if (propertyUnitSuggestion) {
-                  handleApplyUnitSuggestion();
-                } else {
-                  openManualUnitForm({ reset: true });
+                secondary={
+                  aiSuggestions.ugovor?.datum_pocetka &&
+                  aiSuggestions.ugovor?.datum_zavrsetka
+                    ? `${aiSuggestions.ugovor.datum_pocetka} – ${aiSuggestions.ugovor.datum_zavrsetka}`
+                    : null
                 }
-              }}
-              secondaryActionLabel={
-                !propertyUnitSelected && propertyUnitSuggestion
-                  ? "Unesi ručno"
-                  : null
-              }
-              onSecondaryAction={() => {
-                openManualUnitForm({
-                  prefill: propertyUnitSuggestion,
-                  reset: true,
-                });
-              }}
-              secondaryDisabled={propertyUnitSelected || !propertyUnitLinked}
-            />
-
-            <SuggestionCard
-              title="Ugovor"
-              primary={
-                aiSuggestions.ugovor?.interna_oznaka || "Nije prepoznato"
-              }
-              secondary={
-                aiSuggestions.ugovor?.datum_pocetka &&
-                aiSuggestions.ugovor?.datum_zavrsetka
-                  ? `${aiSuggestions.ugovor.datum_pocetka} – ${aiSuggestions.ugovor.datum_zavrsetka}`
-                  : null
-              }
-              matched={matchedContract?.interna_oznaka}
-              actionLabel={
-                contractSelected
-                  ? "Ugovor povezan"
-                  : matchedContract
-                    ? "Poveži s pronađenim"
-                    : "Kreiraj ugovor"
-              }
-              loading={quickCreateLoading.contract}
-              disabled={
-                contractSelected || (!matchedContract && !canAutoCreateContract)
-              }
-              helperText={(() => {
-                if (contractSelected) {
-                  return selectedContract
-                    ? `Povezano: ${selectedContract.interna_oznaka}.`
-                    : "Ugovor je već povezan s dokumentom.";
+                matched={matchedContract?.interna_oznaka}
+                actionLabel={
+                  contractSelected
+                    ? "Ugovor povezan"
+                    : matchedContract
+                      ? "Poveži s pronađenim"
+                      : "Kreiraj ugovor"
                 }
-                if (!formData.nekretnina_id || !formData.zakupnik_id) {
-                  return "Prvo povežite nekretninu i zakupnika.";
+                loading={quickCreateLoading.contract}
+                disabled={
+                  contractSelected ||
+                  (!matchedContract && !canAutoCreateContract)
                 }
-                if (!formData.property_unit_id) {
-                  return "Povežite podprostor prije kreiranja ugovora.";
-                }
-                if (!matchedContract && !hasAiContract) {
-                  return "AI nije prepoznao detalje ugovora.";
-                }
-                return null;
-              })()}
-              onAction={() => {
-                if (contractSelected) {
-                  return;
-                }
-                if (matchedContract) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    ugovor_id: matchedContract.id,
-                  }));
-                } else {
-                  handleCreateContractFromAI();
-                }
-              }}
-            />
+                helperText={(() => {
+                  if (contractSelected) {
+                    return selectedContract
+                      ? `Povezano: ${selectedContract.interna_oznaka}.`
+                      : "Ugovor je već povezan s dokumentom.";
+                  }
+                  if (!formData.nekretnina_id) {
+                    return "Prvo povežite nekretninu.";
+                  }
+                  if (activeRequirements.allowTenant && !formData.zakupnik_id) {
+                    return "Povežite zakupnika kako biste kreirali ugovor.";
+                  }
+                  if (allowsPropertyUnit && !formData.property_unit_id) {
+                    return "Povežite podprostor prije kreiranja ugovora.";
+                  }
+                  if (!matchedContract && !hasAiContract) {
+                    return "AI nije prepoznao detalje ugovora.";
+                  }
+                  return null;
+                })()}
+                onAction={() => {
+                  if (contractSelected) {
+                    return;
+                  }
+                  if (matchedContract) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      ugovor_id: matchedContract.id,
+                    }));
+                  } else {
+                    handleCreateContractFromAI();
+                  }
+                }}
+              />
+            )}
           </div>
 
           {matchedPropertyUnit && (

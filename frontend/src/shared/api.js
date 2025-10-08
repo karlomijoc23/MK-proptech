@@ -21,25 +21,79 @@ const API_ROOT = `${BACKEND_URL}/api`;
 
 export const apiClient = axios.create();
 
+const TENANT_STORAGE_KEY = "proptech:currentTenantId";
+const DEFAULT_TENANT_ID =
+  process.env.REACT_APP_DEFAULT_TENANT_ID?.trim() || "tenant-default";
+
+let activeTenantId = DEFAULT_TENANT_ID;
+const tenantListeners = new Set();
+
+const readTenantFromStorage = () => {
+  if (typeof window === "undefined") {
+    return DEFAULT_TENANT_ID;
+  }
+  const stored = localStorage.getItem(TENANT_STORAGE_KEY);
+  if (!stored || stored === "undefined" || stored === "null") {
+    return DEFAULT_TENANT_ID;
+  }
+  return stored;
+};
+
+export const getActiveTenantId = () => {
+  if (!activeTenantId) {
+    activeTenantId = readTenantFromStorage();
+  }
+  return activeTenantId || DEFAULT_TENANT_ID;
+};
+
+export const setActiveTenantId = (tenantId, { persist = true } = {}) => {
+  const nextTenant = tenantId?.trim() || DEFAULT_TENANT_ID;
+  activeTenantId = nextTenant;
+  if (typeof window !== "undefined" && persist) {
+    localStorage.setItem(TENANT_STORAGE_KEY, nextTenant);
+  }
+  tenantListeners.forEach((listener) => {
+    try {
+      listener(nextTenant);
+    } catch (error) {
+      console.error("Tenant listener failed", error);
+    }
+  });
+  return nextTenant;
+};
+
+export const subscribeToTenantChanges = (listener) => {
+  if (typeof listener !== "function") {
+    return () => {};
+  }
+  tenantListeners.add(listener);
+  return () => tenantListeners.delete(listener);
+};
+
+// Initialise tenant id from storage eagerly in browser environments
+if (typeof window !== "undefined") {
+  activeTenantId = readTenantFromStorage();
+}
+
 apiClient.interceptors.request.use((config) => {
-  let storedToken = null;
+  let token = null;
   if (typeof window !== "undefined") {
-    storedToken = localStorage.getItem("authToken");
-    if (storedToken && ["null", "undefined", ""].includes(storedToken)) {
-      storedToken = null;
+    token = window.localStorage.getItem("authToken");
+    if (token && ["null", "undefined", ""].includes(token)) {
+      token = null;
     }
   }
 
-  const token = storedToken || process.env.REACT_APP_DEV_AUTH_TOKEN || null;
-
-  if (!storedToken && typeof window !== "undefined" && token) {
-    localStorage.setItem("authToken", token);
-  }
   if (token) {
     config.headers = config.headers || {};
     if (!config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+  }
+  const tenantId = getActiveTenantId();
+  if (tenantId) {
+    config.headers = config.headers || {};
+    config.headers["X-Tenant-Id"] = tenantId;
   }
   return config;
 });
@@ -55,6 +109,17 @@ apiClient.interceptors.response.use(
 );
 
 export const api = {
+  login: (payload) => apiClient.post(`${API_ROOT}/auth/login`, payload),
+  getCurrentUser: () => apiClient.get(`${API_ROOT}/auth/me`),
+  registerUser: (payload) =>
+    apiClient.post(`${API_ROOT}/auth/register`, payload),
+  getUsers: () => apiClient.get(`${API_ROOT}/users`),
+  getTenants: () => apiClient.get(`${API_ROOT}/tenants`),
+  createTenant: (data) => apiClient.post(`${API_ROOT}/tenants`, data),
+  getCurrentTenant: () => apiClient.get(`${API_ROOT}/tenants/current`),
+  getTenant: (id) => apiClient.get(`${API_ROOT}/tenants/${id}`),
+  updateTenant: (id, data) => apiClient.put(`${API_ROOT}/tenants/${id}`, data),
+
   getNekretnine: () => apiClient.get(`${API_ROOT}/nekretnine`),
   createNekretnina: (data) => apiClient.post(`${API_ROOT}/nekretnine`, data),
   updateNekretnina: (id, data) =>
@@ -101,6 +166,13 @@ export const api = {
     }
     if (data.property_unit_id) {
       formData.append("property_unit_id", data.property_unit_id);
+    }
+    if (data.metadata) {
+      try {
+        formData.append("metadata", JSON.stringify(data.metadata));
+      } catch (error) {
+        console.error("Neuspješno serijaliziranje metadata polja", error);
+      }
     }
     if (data.file) {
       formData.append("file", data.file);
