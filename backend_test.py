@@ -19,25 +19,69 @@ class CroatianRealEstateAPITester:
             "zakupnici": [],
             "ugovori": [],
             "dokumenti": [],
+            "property_units": [],
         }
+        self.session = requests.Session()
+        tenant_id = os.environ.get("BACKEND_TENANT_ID") or os.environ.get(
+            "DEFAULT_TENANT_ID"
+        )
+        self.headers = {"Content-Type": "application/json"}
+        if tenant_id:
+            self.headers["X-Tenant-Id"] = tenant_id
+
+        api_token = os.environ.get("BACKEND_API_TOKEN")
+        if api_token:
+            self.headers["Authorization"] = f"Bearer {api_token.strip()}"
+        else:
+            auth_email = os.environ.get("BACKEND_AUTH_EMAIL")
+            auth_password = os.environ.get("BACKEND_AUTH_PASSWORD")
+            if auth_email and auth_password:
+                self._authenticate(auth_email, auth_password)
+
+    def _authenticate(self, email: str, password: str) -> None:
+        """Obtain Bearer token using login credentials."""
+        login_payload = {"email": email, "password": password}
+        try:
+            response = self.session.post(
+                f"{self.api_url}/auth/login", json=login_payload, headers=self.headers
+            )
+        except Exception as exc:
+            print(f"❌ Failed to authenticate: {exc}")
+            return
+
+        if response.status_code != 200:
+            print(
+                "❌ Failed to authenticate - "
+                f"status {response.status_code}: {response.text}"
+            )
+            return
+
+        payload = response.json()
+        token = payload.get("access_token")
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
+        tenant_id = os.environ.get("BACKEND_TENANT_ID") or payload.get("user", {}).get(
+            "tenant_id"
+        )
+        if tenant_id and "X-Tenant-Id" not in self.headers:
+            self.headers["X-Tenant-Id"] = tenant_id
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
         url = f"{self.api_url}/{endpoint}"
-        headers = {"Content-Type": "application/json"}
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
 
         try:
             if method == "GET":
-                response = requests.get(url, headers=headers, params=params)
+                response = self.session.get(url, headers=self.headers, params=params)
             elif method == "POST":
-                response = requests.post(url, json=data, headers=headers)
+                response = self.session.post(url, json=data, headers=self.headers)
             elif method == "PUT":
-                response = requests.put(url, json=data, headers=headers)
+                response = self.session.put(url, json=data, headers=self.headers)
             elif method == "DELETE":
-                response = requests.delete(url, headers=headers)
+                response = self.session.delete(url, headers=self.headers)
 
             success = response.status_code == expected_status
             if success:
@@ -163,6 +207,37 @@ class CroatianRealEstateAPITester:
 
         return success
 
+    def test_create_property_unit(self):
+        """Test creating a property unit for the previously created property"""
+        if not self.created_entities["nekretnine"]:
+            print("   ⚠️  Skipping property unit creation - need nekretnina first")
+            return True
+
+        nekretnina_id = self.created_entities["nekretnine"][0]
+        jedinica_data = {
+            "oznaka": "A1",
+            "naziv": "Stan A1",
+            "kat": "1",
+            "povrsina_m2": 80.0,
+            "status": "dostupno",
+            "osnovna_zakupnina": 800.0,
+            "napomena": "Testna jedinica",
+        }
+
+        success, response = self.run_test(
+            "Create Property Unit (Jedinica)",
+            "POST",
+            f"nekretnine/{nekretnina_id}/units",
+            201,
+            jedinica_data,
+        )
+
+        if success and "id" in response:
+            self.created_entities["property_units"].append(response["id"])
+            print(f"   Created property unit ID: {response['id']}")
+
+        return success
+
     def test_create_zakupnik(self):
         """Test creating a Croatian tenant"""
         zakupnik_data = {
@@ -214,9 +289,10 @@ class CroatianRealEstateAPITester:
         if (
             not self.created_entities["nekretnine"]
             or not self.created_entities["zakupnici"]
+            or not self.created_entities["property_units"]
         ):
             print(
-                "   ⚠️  Skipping contract creation - need nekretnina and zakupnik first"
+                "   ⚠️  Skipping contract creation - need nekretnina, zakupnik, and jedinica first"
             )
             return True
 
@@ -224,6 +300,7 @@ class CroatianRealEstateAPITester:
             "interna_oznaka": "UG-2024-001",
             "nekretnina_id": self.created_entities["nekretnine"][0],
             "zakupnik_id": self.created_entities["zakupnici"][0],
+            "property_unit_id": self.created_entities["property_units"][0],
             "datum_potpisivanja": "2024-01-15",
             "datum_pocetka": "2024-02-01",
             "datum_zavrsetka": "2025-01-31",
@@ -436,6 +513,7 @@ def main():
         tester.test_dashboard,
         tester.test_create_nekretnina,
         tester.test_get_nekretnine,
+        tester.test_create_property_unit,
         tester.test_create_zakupnik,
         tester.test_get_zakupnici,
         tester.test_create_ugovor,

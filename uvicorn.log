@@ -793,3 +793,2498 @@ INFO:     Finished server process [68217]
 INFO:     Started server process [68673]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     127.0.0.1:53182 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53188 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53190 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53190 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53190 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53188 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53190 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53188 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53190 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53188 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53182 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53183 - "OPTIONS /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53185 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53191 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [68673]
+INFO:     Started server process [69768]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53384 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53385 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53384 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53385 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53393 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53403 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53403 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53403 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53403 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53403 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53397 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53395 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53400 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53393 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53402 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53413 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53415 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53412 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53413 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53415 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53412 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53415 - "OPTIONS /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53413 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53412 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53412 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53566 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53563 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53570 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53563 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53566 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53570 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53563 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53566 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53569 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53559 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53566 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53564 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54002 - "GET /api/ HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54003 - "GET /api/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54004 - "POST /api/nekretnine HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54005 - "GET /api/nekretnine HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54006 - "POST /api/zakupnici HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54007 - "GET /api/zakupnici HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54008 - "GET /api/ugovori HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54009 - "GET /api/dokumenti HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54010 - "GET /api/podsjetnici HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54011 - "GET /api/podsjetnici/aktivni HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54012 - "GET /api/pretraga?q=Zagreb HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:54032 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54035 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54035 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54035 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54035 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54033 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54032 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54035 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54042 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54043 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54040 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "GET /api/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54050 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54050 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "POST /api/ugovori HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54050 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54050 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "GET /api/pretraga?q=Zagreb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "PUT /api/nekretnine/b29e3c76-a404-4dc7-bb6d-299496d21b79 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54050 - "DELETE /api/nekretnine/b29e3c76-a404-4dc7-bb6d-299496d21b79 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "GET /api/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54053 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "POST /api/nekretnine/52c03786-6e39-4ba9-9f89-03adbda096a3/units HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54053 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54053 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54053 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54053 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "GET /api/pretraga?q=Zagreb HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "PUT /api/nekretnine/52c03786-6e39-4ba9-9f89-03adbda096a3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54053 - "DELETE /api/nekretnine/52c03786-6e39-4ba9-9f89-03adbda096a3 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54099 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54101 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54097 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54101 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54097 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54099 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54096 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54101 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54099 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54097 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54096 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54101 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54093 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54096 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54099 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54143 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54148 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54144 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54147 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54148 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54144 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54143 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54147 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54140 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54148 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54144 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54143 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54147 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54140 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54138 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54148 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54144 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54143 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54148 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54182 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54178 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54176 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54184 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54174 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54181 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54211 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54209 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54209 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54211 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54203 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54209 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54211 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54203 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54206 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54209 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54239 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54236 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54239 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54236 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54232 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54239 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54236 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54232 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54229 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54238 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54239 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54234 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54248 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54248 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54255 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54257 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54248 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54257 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54255 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54253 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54248 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54257 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54255 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54253 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54248 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54250 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54257 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54255 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54258 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54257 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54277 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54277 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54276 - "OPTIONS /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54277 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54279 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54277 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "PUT /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54293 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54298 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54294 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54293 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54294 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54298 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54294 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54293 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54281 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54284 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54297 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "POST /api/tenants HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54300 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "OPTIONS /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54302 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54300 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54307 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54306 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54308 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54310 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54302 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54321 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54325 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54326 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54325 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54321 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54326 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54321 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54325 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:54325 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54321 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54316 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54326 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54325 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54333 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54335 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54338 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54337 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54330 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54337 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54330 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54333 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54335 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54338 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54337 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54333 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54338 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54332 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54335 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54337 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54330 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54333 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54359 - "OPTIONS /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+2025-10-08 10:25:51,779 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 400 Bad Request"
+2025-10-08 10:26:04,212 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54359 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54540 - "OPTIONS /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+2025-10-08 10:52:15,037 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 400 Bad Request"
+2025-10-08 10:52:27,287 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54540 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54626 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54629 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54631 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54633 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54634 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54629 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54626 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54624 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54631 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54633 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54634 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54661 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:54661 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54668 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54664 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54666 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54670 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54671 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54675 - "GET /uploads/1580ead9-d0bc-4b7b-95fc-91d30a53059f_Energetski_Certifikat_Cernic%CC%8Cka_22%20.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54677 - "GET /uploads/1580ead9-d0bc-4b7b-95fc-91d30a53059f_Energetski_Certifikat_Cernic%CC%8Cka_22%20.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54683 - "GET /uploads/1580ead9-d0bc-4b7b-95fc-91d30a53059f_Energetski_Certifikat_Cernic%CC%8Cka_22%20.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54704 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54702 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54705 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54699 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54704 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54699 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54702 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54704 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54705 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54696 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54699 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54697 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54699 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54709 - "GET /uploads/1580ead9-d0bc-4b7b-95fc-91d30a53059f_Energetski_Certifikat_Cernic%CC%8Cka_22%20.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54709 - "GET /uploads/1580ead9-d0bc-4b7b-95fc-91d30a53059f_Energetski_Certifikat_Cernic%CC%8Cka_22%20.pdf HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54748 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54748 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "OPTIONS /api/nekretnine/46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "PUT /api/nekretnine/46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54774 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54772 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54776 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54779 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54780 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54782 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54786 - "PUT /api/nekretnine/46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54786 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54786 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54790 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54796 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54792 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54791 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54795 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54809 - "PUT /api/nekretnine/46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54809 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54809 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54816 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54813 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54819 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54814 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54828 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54833 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54832 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54826 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54830 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54828 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54842 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54840 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54835 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54845 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54840 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54845 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54835 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54842 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54862 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54864 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54867 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54866 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54859 - "GET /api/tenants HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69768]
+INFO:     Started server process [75833]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [75833]
+INFO:     Started server process [75845]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54907 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54907 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54909 - "OPTIONS /api/audit/logs?limit=25&entity_type=property&entity_id=46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54909 - "GET /api/audit/logs?limit=25&entity_type=property&entity_id=46991c16-5b9e-44a5-b575-d55353918f56 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54992 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54995 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54997 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54999 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55001 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55002 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54997 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54995 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54997 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54995 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54992 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54992 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55156 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55157 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55156 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55157 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55164 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55166 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55174 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55164 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55198 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55195 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55193 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55197 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55197 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55198 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55193 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55195 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55197 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55193 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55198 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55195 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55191 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55197 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55198 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55197 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55253 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55245 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55252 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55250 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55253 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55252 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55245 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55250 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55253 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55252 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55253 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55307 - "GET /api/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55308 - "GET /api/podsjetnici/aktivni HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55309 - "GET /api/podsjetnici HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55311 - "GET /api/dashboard HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55307 - "GET /api/podsjetnici/aktivni HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55314 - "GET /api/podsjetnici HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:55314 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55311 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55307 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55314 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55308 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55309 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55311 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55308 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55314 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55309 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55311 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55308 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55314 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55309 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55311 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55307 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55308 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55307 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55315 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55320 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55325 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55327 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55329 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55329 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55327 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55325 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55320 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55329 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55327 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55320 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55325 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55328 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55329 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55327 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55327 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55337 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55337 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55339 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55337 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55343 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55346 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55339 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55342 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55346 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55337 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55343 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55339 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55346 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55351 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55351 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55353 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55351 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55360 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55358 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55361 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55353 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55360 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55358 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55351 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55361 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55353 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55360 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55353 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55368 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55373 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55376 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55371 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55376 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55373 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55368 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55371 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55376 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55373 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55366 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55385 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55382 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55386 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55385 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55386 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55382 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55385 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55385 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55385 - "OPTIONS /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "OPTIONS /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55390 - "OPTIONS /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55380 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55389 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "OPTIONS /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "PUT /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55402 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55404 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55406 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55407 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55402 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55406 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55404 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55407 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55393 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55404 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55402 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55406 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55406 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/tenants/e2dc56e8-ecde-4a08-82b1-9407440c15a7 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55406 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55402 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55404 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55402 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55395 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55417 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55417 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55417 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55425 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55423 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55427 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55420 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55422 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55417 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55423 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55425 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55427 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55420 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55422 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55425 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55423 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55417 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55422 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55432 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55432 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55434 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55432 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55436 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55439 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55442 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55441 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55434 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55436 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55442 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55432 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55439 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55441 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55434 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55436 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55442 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55442 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55843 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55845 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55846 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55843 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55845 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55846 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55843 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55846 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55845 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55843 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55846 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55845 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55837 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55838 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55843 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55840 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55852 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55852 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55852 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55861 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55856 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55863 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55859 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55864 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55852 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55861 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55856 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55863 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55864 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55859 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55852 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55861 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55856 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55856 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56260 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56260 - "POST /api/maintenance-tasks HTTP/1.1" 201 Created
+INFO:     127.0.0.1:56260 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56262 - "OPTIONS /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56262 - "PATCH /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56262 - "GET /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56409 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56411 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56411 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56409 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56411 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56409 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56405 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56411 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56402 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56409 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56407 - "OPTIONS /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56403 - "GET /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [75845]
+INFO:     Started server process [80618]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80618]
+INFO:     Started server process [80630]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56440 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56442 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56447 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56444 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56450 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56449 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56442 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56447 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56450 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56444 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56449 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56440 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56442 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56447 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56442 - "GET /api/tenants HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80630]
+INFO:     Started server process [80702]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56481 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56483 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56483 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56490 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56488 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56491 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56485 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56481 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56483 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56490 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56488 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56491 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56485 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56481 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56483 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56490 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56488 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56490 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56510 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56516 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56513 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56511 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56515 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56516 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56513 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56510 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56511 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56515 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56516 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56513 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56502 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56531 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56538 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56539 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56534 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56535 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56531 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56538 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56539 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56534 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56535 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56531 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56538 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56529 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56565 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56567 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56563 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56570 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56565 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56563 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56567 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56570 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56560 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56565 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56565 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56576 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56581 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56582 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56584 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56579 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56581 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56579 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56582 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56576 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56584 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56579 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56581 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56574 - "GET /api/maintenance-tasks/da52d8cf-a87f-4541-894e-dbbce085bc29 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80702]
+INFO:     Started server process [81864]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56597 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56597 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56597 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56603 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56600 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56607 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56597 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56603 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56600 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56607 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56597 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57001 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57002 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57001 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57002 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57001 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57002 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57001 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56993 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57002 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56994 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56996 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57003 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57033 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57031 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57036 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57029 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57035 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57033 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57035 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57036 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57029 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57031 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57033 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57035 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57025 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57040 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57040 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57040 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57043 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57047 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57050 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57049 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57045 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57040 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57043 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57050 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57047 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57049 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57045 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57040 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57043 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57050 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57043 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57054 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57054 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57054 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57057 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57059 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57061 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57063 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57064 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57057 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57059 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57057 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57059 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57054 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57054 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57516 - "GET /portal.html HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58907 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58907 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60624 - "GET /api/health HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60627 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60643 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60632 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60634 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60644 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60639 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60641 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60648 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60648 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60655 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60657 - "OPTIONS /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60654 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60655 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60654 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60655 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60654 - "OPTIONS /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60657 - "GET /api/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60655 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60655 - "GET /api/tenants/tenant-default HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60667 - "OPTIONS /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+2025-10-15 08:20:58,565 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 400 Bad Request"
+2025-10-15 08:21:19,151 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60667 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60672 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60672 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60680 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60672 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60677 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60679 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60682 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60691 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60691 - "POST /api/nekretnine HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60691 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60696 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60700 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60693 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60699 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60701 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60709 - "OPTIONS /api/nekretnine/a1ae2fb0-c854-4296-808f-de4c633f821a/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60709 - "POST /api/nekretnine/a1ae2fb0-c854-4296-808f-de4c633f821a/units HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60709 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60711 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60716 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60714 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60719 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60718 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60721 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60721 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60721 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60723 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60728 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60730 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60726 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60731 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60739 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60739 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60742 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60746 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60748 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60744 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60749 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60751 - "GET /uploads/069e98f3-f98c-4698-96c6-41a05a4d696c_ADRIA%20LJEV%20MHK.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60753 - "GET /uploads/069e98f3-f98c-4698-96c6-41a05a4d696c_ADRIA%20LJEV%20MHK.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60755 - "GET /uploads/069e98f3-f98c-4698-96c6-41a05a4d696c_ADRIA%20LJEV%20MHK.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60764 - "GET /uploads/069e98f3-f98c-4698-96c6-41a05a4d696c_ADRIA%20LJEV%20MHK.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60766 - "GET /uploads/069e98f3-f98c-4698-96c6-41a05a4d696c_ADRIA%20LJEV%20MHK.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60768 - "OPTIONS /api/audit/logs?limit=20&entity_type=lease&entity_id=fb3a52f0-2f9e-4417-98e1-1ee5c39c16d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60768 - "GET /api/audit/logs?limit=20&entity_type=lease&entity_id=fb3a52f0-2f9e-4417-98e1-1ee5c39c16d9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60775 - "OPTIONS /api/audit/logs?limit=20&entity_type=tenant&entity_id=692596fb-7a82-416c-94e9-90f6d8c66ce9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60775 - "GET /api/audit/logs?limit=20&entity_type=tenant&entity_id=692596fb-7a82-416c-94e9-90f6d8c66ce9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60782 - "OPTIONS /api/zakupnici/692596fb-7a82-416c-94e9-90f6d8c66ce9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60782 - "PUT /api/zakupnici/692596fb-7a82-416c-94e9-90f6d8c66ce9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60782 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60787 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60791 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60784 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60792 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60789 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60801 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60801 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60812 - "OPTIONS /api/nekretnine/a1ae2fb0-c854-4296-808f-de4c633f821a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60812 - "PUT /api/nekretnine/a1ae2fb0-c854-4296-808f-de4c633f821a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60812 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60812 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60819 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60817 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60814 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60822 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60820 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60827 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60828 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60827 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60830 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60826 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60826 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60840 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60840 - "POST /api/maintenance-tasks HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60840 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60844 - "OPTIONS /api/maintenance-tasks/9aba8bb9-9ad5-418d-9cd0-361b0f777453 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60844 - "PATCH /api/maintenance-tasks/9aba8bb9-9ad5-418d-9cd0-361b0f777453 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60844 - "PATCH /api/maintenance-tasks/9aba8bb9-9ad5-418d-9cd0-361b0f777453 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60850 - "PATCH /api/maintenance-tasks/9aba8bb9-9ad5-418d-9cd0-361b0f777453 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60850 - "PATCH /api/maintenance-tasks/9aba8bb9-9ad5-418d-9cd0-361b0f777453 HTTP/1.1" 200 OK
+2025-10-15 08:27:18,672 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 400 Bad Request"
+2025-10-15 08:27:34,257 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/responses "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60865 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60865 - "POST /api/zakupnici HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60865 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60871 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60873 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60876 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60875 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60878 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60884 - "POST /api/nekretnine/a1ae2fb0-c854-4296-808f-de4c633f821a/units HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60891 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60886 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60884 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60889 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60894 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60893 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60897 - "POST /api/ugovori HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60897 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60904 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60902 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60906 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60901 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60907 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60909 - "POST /api/dokumenti HTTP/1.1" 201 Created
+INFO:     127.0.0.1:60909 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60913 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60914 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60918 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60916 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60919 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60922 - "GET /uploads/77119305-938b-43f2-ae62-971f31b5cc40_Ugovor_o_zakupu_skladista.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60924 - "GET /uploads/77119305-938b-43f2-ae62-971f31b5cc40_Ugovor_o_zakupu_skladista.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    |     headers.pop("X-Frame-Options", None)
+    | AttributeError: 'MutableHeaders' object has no attribute 'pop'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1288, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/server.py", line 1224, in add_security_headers
+    headers.pop("X-Frame-Options", None)
+AttributeError: 'MutableHeaders' object has no attribute 'pop'
+INFO:     127.0.0.1:60931 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60932 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60931 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60928 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60932 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60931 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60944 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60946 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60952 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60951 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60944 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60946 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60952 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60951 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60946 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60944 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60952 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60944 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60946 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60951 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60966 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60966 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60962 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60965 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60962 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60987 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60990 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60991 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60993 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60987 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60991 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60990 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60986 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60993 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60987 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60990 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60991 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60986 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60993 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60991 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60987 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60981 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60990 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61003 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61003 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61008 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61003 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61005 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61010 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61012 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61013 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61008 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61003 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61005 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61010 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61012 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61013 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61008 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61003 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61005 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61005 - "GET /api/tenants HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'persistence/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [81864]
+INFO:     Started server process [42270]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/database.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42270]
+INFO:     Started server process [42321]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/models/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42321]
+INFO:     Started server process [42376]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/repositories/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42376]
+INFO:     Started server process [42475]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'alembic/env.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42475]
+INFO:     Started server process [67011]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'alembic/versions/0001_initial_core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67011]
+INFO:     Started server process [67175]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'alembic/env.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67175]
+INFO:     Started server process [67239]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/models/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67239]
+INFO:     Started server process [67369]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/models/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67369]
+INFO:     Started server process [67448]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/repositories/tenant_repository.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67448]
+INFO:     Started server process [67571]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'persistence/repositories/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67571]
+INFO:     Started server process [67667]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:49725 - "GET /api/health HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49829 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49830 - "GET /api/auth/me HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:49830 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49839 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49840 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49839 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49840 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49839 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49840 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49839 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49837 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49839 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49832 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49829 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49830 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49840 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49840 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49847 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49847 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49857 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49857 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49857 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49859 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49866 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49862 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49867 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49864 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49857 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49867 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49866 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49864 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49862 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49859 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49857 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49867 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49864 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49864 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49869 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49869 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49872 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49873 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49872 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49869 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49875 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49872 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50198 - "GET /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50196 - "GET /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50194 - "GET /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50202 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50193 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50201 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50213 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50213 - "GET /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50216 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50217 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50213 - "GET /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50216 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50217 - "GET /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50213 - "GET /api/dashboard HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'persistence/models/core.py', 'alembic/versions/0001_initial_core.py', 'persistence/repositories/__init__.py', 'persistence/database.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67667]
+WARNING:  WatchFiles detected changes in 'persistence/models/__init__.py', 'persistence/models/core.py', 'alembic/versions/0001_initial_core.py'. Reloading...
+INFO:     Started server process [17614]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'alembic/versions/0001_initial_core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [17614]
+WARNING:  WatchFiles detected changes in 'persistence/repositories/tenant_repository.py'. Reloading...
+INFO:     Started server process [47247]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

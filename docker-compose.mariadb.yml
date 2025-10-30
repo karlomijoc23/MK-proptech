@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: mkproptech-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: example-root-password
+      MARIADB_DATABASE: mkproptech
+      MARIADB_USER: mkproptech
+      MARIADB_PASSWORD: mkproptech
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-hmariadb", "-pmkproptech"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mariadb-exporter:
+    image: prom/mysqld-exporter:v0.15.0
+    container_name: mkproptech-mariadb-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "mkproptech:mkproptech@(mariadb:3306)/"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "9104:9104"
+
+volumes:
+  mariadb-data:

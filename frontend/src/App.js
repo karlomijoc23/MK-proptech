@@ -161,6 +161,25 @@ const isContractExpiring = (ugovor, windowInDays = 90) => {
 const ARCHIVED_CONTRACT_STATUSES = new Set(["arhivirano", "raskinuto"]);
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+const formatRoleLabel = (role) => {
+  if (!role) {
+    return "";
+  }
+  const mapping = {
+    owner: "Vlasnik",
+    admin: "Administrator",
+    member: "Član",
+    viewer: "Pregled",
+    property_manager: "Property manager",
+    leasing_agent: "Leasing agent",
+    maintenance_coordinator: "Koordinator održavanja",
+    accountant: "Financije",
+    tenant: "Zakupnik",
+    vendor: "Dobavljač",
+  };
+  return mapping[role] || role;
+};
+
 const useAuditTimeline = (
   entityType,
   entityId,
@@ -457,6 +476,10 @@ export const TenantSwitcher = ({ onLogout }) => {
       }
       const resolved = changeTenant(id);
       if (resolved) {
+        if (typeof window !== "undefined" && window.location?.reload) {
+          window.location.reload();
+          return;
+        }
         await loadTenants();
       }
     },
@@ -507,11 +530,6 @@ export const TenantSwitcher = ({ onLogout }) => {
               <span className="font-semibold text-foreground">
                 {buttonLabel}
               </span>
-              {selectedTenant?.role && (
-                <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  Uloga: {selectedTenant.role}
-                </span>
-              )}
             </span>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </Button>
@@ -547,9 +565,11 @@ export const TenantSwitcher = ({ onLogout }) => {
                   </span>
                   {isActive && <Check className="h-4 w-4 text-primary" />}
                 </div>
-                <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {tenant.role ? `Uloga: ${tenant.role}` : "Bez uloge"}
-                </span>
+                {tenant.role && (
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {formatRoleLabel(tenant.role)}
+                  </span>
+                )}
                 <span className="text-[11px] text-muted-foreground">
                   Status: {tenant.status}
                 </span>

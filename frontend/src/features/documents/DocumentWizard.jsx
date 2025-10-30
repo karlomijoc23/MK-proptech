@@ -159,6 +159,40 @@ const DocumentWizard = ({
   const allowsContract = activeRequirements.allowContract;
   const allowsPropertyUnit = activeRequirements.allowPropertyUnit;
 
+  const applyDocumentTypeChange = useCallback(
+    (state, nextType) => {
+      const baseState = cloneFormState(state);
+      const requirements = getDocumentRequirements(nextType);
+      const nextMetadata = {};
+      requirements.metaFields.forEach((field) => {
+        nextMetadata[field.id] = baseState.metadata?.[field.id] ?? "";
+      });
+      const next = {
+        ...baseState,
+        tip: nextType,
+        metadata: nextMetadata,
+      };
+      if (!requirements.allowTenant) {
+        next.zakupnik_id = "";
+      }
+      if (!requirements.allowContract) {
+        next.ugovor_id = "";
+      }
+      if (!requirements.allowPropertyUnit) {
+        next.property_unit_id = "";
+      }
+      return next;
+    },
+    [getDocumentRequirements],
+  );
+
+  const handleDocumentTypeChange = useCallback(
+    (value) => {
+      setFormData((prev) => applyDocumentTypeChange(prev, value));
+    },
+    [applyDocumentTypeChange],
+  );
+
   const fileInputRef = useRef(null);
   const latestCreatedUnitRef = useRef(null);
   const manualSnapshotRef = useRef(null);
@@ -740,8 +774,7 @@ const DocumentWizard = ({
         }
 
         setFormData((prev) => {
-          const updated = cloneFormState(prev);
-          updated.tip = documentType;
+          let updated = applyDocumentTypeChange(prev, documentType);
 
           if (!prev.naziv) {
             const suggestedName = (() => {
@@ -1475,6 +1508,7 @@ const DocumentWizard = ({
     allowsPropertyUnit,
     isPropertyOnlyDocument,
     getDocumentRequirements,
+    handleDocumentTypeChange,
   };
 
   return (

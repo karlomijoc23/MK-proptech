@@ -66,8 +66,18 @@ const { toast } = require("../components/ui/sonner");
 
 import { TenantSwitcher } from "../App";
 
+let originalLocation;
+
 beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = jest.fn();
+  originalLocation = window.location;
+  delete window.location;
+  const mockedLocation = Object.create(originalLocation);
+  Object.defineProperty(mockedLocation, "reload", {
+    configurable: true,
+    value: jest.fn(),
+  });
+  window.location = mockedLocation;
 });
 
 beforeEach(() => {
@@ -79,12 +89,22 @@ beforeEach(() => {
   });
   useEntityStore.mockReset();
   toast.mockClear();
+  window.location.reload.mockClear();
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+afterAll(() => {
+  delete window.location;
+  window.location = originalLocation;
 });
 
 it("loads tenants and triggers change handler", async () => {
   const storeMock = {
     tenantId: "tenant-default",
-    changeTenant: jest.fn(),
+    changeTenant: jest.fn().mockReturnValue("tenant-2"),
   };
   useEntityStore.mockReturnValue(storeMock);
 
@@ -103,12 +123,13 @@ it("loads tenants and triggers change handler", async () => {
   await waitFor(() =>
     expect(storeMock.changeTenant).toHaveBeenCalledWith("tenant-2"),
   );
+  await waitFor(() => expect(window.location.reload).toHaveBeenCalled());
 });
 
 it("disables profile management for non-admin roles", async () => {
   const storeMock = {
     tenantId: "tenant-2",
-    changeTenant: jest.fn(),
+    changeTenant: jest.fn().mockReturnValue("tenant-3"),
   };
   useEntityStore.mockReturnValue(storeMock);
 

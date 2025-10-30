@@ -665,7 +665,9 @@ DEFAULT_ROLE = os.environ.get("DEFAULT_ROLE", "admin")
 AUTH_SECRET = os.environ.get("AUTH_SECRET", "change-me")
 AUTH_ALGORITHM = os.environ.get("AUTH_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", "120"))
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=True
+)
 OPEN_ENDPOINTS = {
     "/api/auth/login",
     "/api/auth/register",
@@ -1218,7 +1220,11 @@ async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     headers = response.headers
     headers.setdefault("X-Content-Type-Options", "nosniff")
-    headers.setdefault("X-Frame-Options", "DENY")
+    if request.url.path.startswith("/uploads/"):
+        headers.pop("X-Frame-Options", None)
+        headers.pop("Content-Security-Policy", None)
+    else:
+        headers.setdefault("X-Frame-Options", "DENY")
     headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     headers.setdefault(
         "Permissions-Policy",
@@ -1227,10 +1233,12 @@ async def add_security_headers(request: Request, call_next):
     headers.setdefault(
         "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
     )
-    headers.setdefault(
-        "Content-Security-Policy",
-        "default-src 'self'; img-src 'self' data:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self'",
-    )
+    if "Content-Security-Policy" not in headers:
+        headers["Content-Security-Policy"] = (
+            "default-src 'self'; img-src 'self' data:; font-src 'self' data:; "
+            "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "connect-src 'self'; frame-ancestors 'self'"
+        )
     return response
 
 

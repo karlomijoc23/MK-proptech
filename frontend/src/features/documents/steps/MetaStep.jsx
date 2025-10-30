@@ -1,13 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { Label } from "../../../components/ui/label";
 import { Input } from "../../../components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/ui/select";
 import { Textarea } from "../../../components/ui/textarea";
 import { Badge } from "../../../components/ui/badge";
 import { useDocumentWizard } from "../DocumentWizard";
@@ -20,20 +13,9 @@ const MetaStep = () => {
     aiLoading,
     aiError,
     aiApplied,
-    DOCUMENT_TYPE_LABELS,
     formatDocumentType,
     activeRequirements,
-    getDocumentRequirements,
   } = useDocumentWizard();
-
-  const documentOptions = useMemo(
-    () =>
-      Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({
-        value,
-        label,
-      })),
-    [DOCUMENT_TYPE_LABELS],
-  );
 
   const selectedDocTypeLabel = formatDocumentType(formData.tip);
 
@@ -78,48 +60,13 @@ const MetaStep = () => {
           />
         </div>
         <div>
-          <Label htmlFor="tip">Tip dokumenta *</Label>
-          <Select
-            value={formData.tip}
-            onValueChange={(value) => {
-              const nextRequirements = getDocumentRequirements(value);
-              setFormData((prev) => {
-                const nextMetadata = {};
-                nextRequirements.metaFields.forEach((field) => {
-                  nextMetadata[field.id] = prev.metadata?.[field.id] ?? "";
-                });
-                const next = {
-                  ...prev,
-                  tip: value,
-                  metadata: nextMetadata,
-                };
-                if (!nextRequirements.allowTenant) {
-                  next.zakupnik_id = "";
-                }
-                if (!nextRequirements.allowContract) {
-                  next.ugovor_id = "";
-                }
-                if (!nextRequirements.allowPropertyUnit) {
-                  next.property_unit_id = "";
-                }
-                return next;
-              });
-            }}
-          >
-            <SelectTrigger data-testid="dokument-tip-select">
-              <SelectValue placeholder="Odaberite tip" />
-            </SelectTrigger>
-            <SelectContent>
-              {documentOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="mt-1 text-xs text-muted-foreground/80">
-            Aktivni tip: <Badge variant="outline">{selectedDocTypeLabel}</Badge>
+          <Label>Tip dokumenta</Label>
+          <div className="mt-2 flex items-center gap-2">
+            <Badge variant="outline">{selectedDocTypeLabel}</Badge>
           </div>
+          <p className="mt-1 text-xs text-muted-foreground/80">
+            Tip dokumenta odabire se u koraku "Učitaj dokument".
+          </p>
         </div>
       </div>
 

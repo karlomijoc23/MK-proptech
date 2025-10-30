@@ -89,3 +89,4 @@ frontend.pid
 uvicorn.log
 frontend.log
 backend/uvicorn.log
+backend/uploads/

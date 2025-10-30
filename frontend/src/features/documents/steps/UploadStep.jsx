@@ -1,7 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Switch } from "../../../components/ui/switch";
+import { Label } from "../../../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 import { useDocumentWizard } from "../DocumentWizard";
 import { FileText, Trash2 } from "lucide-react";
 import { getUnitDisplayName } from "../../../shared/units";
@@ -40,7 +48,21 @@ const UploadStep = () => {
     allowsTenant,
     allowsContract,
     allowsPropertyUnit,
+    DOCUMENT_TYPE_LABELS,
+    formatDocumentType,
+    handleDocumentTypeChange,
   } = useDocumentWizard();
+
+  const documentOptions = useMemo(
+    () =>
+      Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    [DOCUMENT_TYPE_LABELS],
+  );
+
+  const selectedDocTypeLabel = formatDocumentType(formData.tip);
 
   const hasAiSuggestions = Boolean(aiSuggestions);
 
@@ -79,6 +101,37 @@ const UploadStep = () => {
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor="dokument-tip-select">Tip dokumenta *</Label>
+          <Select value={formData.tip} onValueChange={handleDocumentTypeChange}>
+            <SelectTrigger
+              id="dokument-tip-select"
+              data-testid="dokument-tip-select"
+            >
+              <SelectValue placeholder="Odaberite tip" />
+            </SelectTrigger>
+            <SelectContent>
+              {documentOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>Aktivni tip:</span>
+            <Badge variant="outline">{selectedDocTypeLabel}</Badge>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground/80">
+            Tip dokumenta određuje koje su dodatne informacije i poveznice
+            potrebne prije spremanja.
+          </p>
+        </div>
+      </div>
+
       <div className="rounded-lg border-2 border-dashed border-border/50 bg-primary/5 p-6 text-center">
         <h3 className="text-lg font-medium text-foreground">
           📄 Učitaj PDF dokument

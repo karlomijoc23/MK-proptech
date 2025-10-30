@@ -143,6 +143,6 @@ Pre-commit currently runs:
 - [x] Production env templates added (`backend/.env.production.example`, `frontend/.env.production.example`)
 - [x] CI workflow (`.github/workflows/ci.yml`) running tests and formatting checks
 - [x] Tenant migration plan documented (data backfill, membership seeding, rollout checklist) - see `docs/tenant-migration-plan.md`
-- [ ] QA pass covering AI-assisted document flows and multi-tenant access scenarios - follow `docs/qa-playbook.md`
+- [x] QA pass covering AI-assisted document flows and multi-tenant access scenarios - follow `docs/qa-playbook.md` and `backend_test.py`
 
 Once the remaining checklist items are complete, the project is ready for deployment packaging.

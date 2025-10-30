@@ -64,16 +64,6 @@ const emptyInviteForm = {
   password: "",
 };
 
-const USER_ROLE_OPTIONS = [
-  { value: "admin", label: "Administrator" },
-  { value: "property_manager", label: "Property manager" },
-  { value: "leasing_agent", label: "Leasing agent" },
-  { value: "maintenance_coordinator", label: "Koordinator održavanja" },
-  { value: "accountant", label: "Financije" },
-  { value: "tenant", label: "Zakupnik" },
-  { value: "vendor", label: "Dobavljač" },
-];
-
 const formatLabel = (tenant) => {
   if (!tenant) {
     return "Nepoznat profil";
@@ -205,6 +195,10 @@ const TenantProfiles = () => {
     if (resolved) {
       toast.success("Aktivni profil je promijenjen.");
       setSelectedTenantId(resolved);
+      if (typeof window !== "undefined" && window.location?.reload) {
+        window.location.reload();
+        return;
+      }
       await handleRefresh();
     }
   };
@@ -590,7 +584,7 @@ const TenantProfiles = () => {
           <CardHeader>
             <CardTitle>Dodavanje korisnika</CardTitle>
             <CardDescription>
-              Dodajte nove korisnike sustava i dodijelite im uloge aplikacije.
+              Dodajte nove korisnike sustava s unaprijed definiranim ovlastima.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-[1.1fr,1fr]">
@@ -627,31 +621,6 @@ const TenantProfiles = () => {
                   }
                   placeholder="Opcionalno"
                 />
-              </div>
-              <div className="space-y-1.5">
-                <label
-                  className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                  htmlFor="invite-role"
-                >
-                  Aplikacijska uloga
-                </label>
-                <Select
-                  value={inviteForm.role}
-                  onValueChange={(value) =>
-                    handleInviteFieldChange("role", value)
-                  }
-                >
-                  <SelectTrigger id="invite-role">
-                    <SelectValue placeholder="Odaberite ulogu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {USER_ROLE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <div className="space-y-1.5">
                 <label
