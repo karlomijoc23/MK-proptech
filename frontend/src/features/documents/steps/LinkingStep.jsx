@@ -23,6 +23,8 @@ const LinkingStep = () => {
     resetManualUnitForm,
     aiSuggestions,
     handleCreateContractFromAI,
+    handleCreatePropertyFromAI,
+    handleCreateTenantFromAI,
     quickCreateLoading,
     activeRequirements,
     allowsTenant,
@@ -81,6 +83,21 @@ const LinkingStep = () => {
             <p className="mt-2 text-xs text-emerald-600">
               Pronađena podudarnost: {matchedProperty.naziv}
             </p>
+          )}
+          {!formData.nekretnina_id && (
+            <div className="mt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleCreatePropertyFromAI()}
+                disabled={quickCreateLoading.property}
+              >
+                {quickCreateLoading.property
+                  ? "Kreiram..."
+                  : "Dodaj novu nekretninu"}
+              </Button>
+            </div>
           )}
         </div>
         {allowsPropertyUnit && (
@@ -161,6 +178,21 @@ const LinkingStep = () => {
                 Prepoznat zakupnik:{" "}
                 {matchedTenant.naziv_firme || matchedTenant.ime_prezime}
               </p>
+            )}
+            {!formData.zakupnik_id && (
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCreateTenantFromAI()}
+                  disabled={quickCreateLoading.tenant}
+                >
+                  {quickCreateLoading.tenant
+                    ? "Kreiram..."
+                    : "Dodaj novog zakupnika"}
+                </Button>
+              </div>
             )}
           </div>
         )}

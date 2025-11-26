@@ -11,7 +11,7 @@ services:
         value: 8000
       - key: USE_IN_MEMORY_DB
         value: "false"
-      - key: MONGO_URL
+      - key: DATABASE_URL
         sync: false
       - key: DB_NAME
         value: mkproptech

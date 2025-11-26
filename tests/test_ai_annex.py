@@ -2,85 +2,18 @@ import os
 from types import SimpleNamespace
 
 import pytest
-from fastapi.testclient import TestClient
 
 os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 
-from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
 
-client = TestClient(app)
-
-
-def _clear_collections():
-    for name in (
-        "nekretnine",
-        "zakupnici",
-        "ugovori",
-        "podsjetnici",
-        "users",
-        "activity_logs",
-    ):
-        collection = getattr(db, name, None)
-        if collection and hasattr(collection, "_documents"):
-            collection._documents.clear()  # type: ignore[attr-defined]
-
-
-ADMIN_HEADERS = {}
-PM_HEADERS = {}
-
-
-def _bootstrap_users():
-    global ADMIN_HEADERS, PM_HEADERS
-
-    admin_payload = {
-        "email": "admin@example.com",
-        "password": "AdminPass123!",
-        "full_name": "Admin User",
-        "role": "admin",
-        "scopes": ["users:create", "users:read"],
-    }
-    response = client.post("/api/auth/register", json=admin_payload)
-    assert response.status_code == 200, response.text
-
-    login_resp = client.post(
-        "/api/auth/login",
-        json={"email": admin_payload["email"], "password": admin_payload["password"]},
-    )
-    assert login_resp.status_code == 200, login_resp.text
-    admin_token = login_resp.json()["access_token"]
-    ADMIN_HEADERS = {
-        "Authorization": f"Bearer {admin_token}",
-        "X-Tenant-Id": DEFAULT_TENANT_ID,
-    }
-
-    pm_payload = {
-        "email": "pm@example.com",
-        "password": "PmPass123!",
-        "full_name": "Property Manager",
-        "role": "property_manager",
-    }
-    response = client.post("/api/auth/register", json=pm_payload, headers=ADMIN_HEADERS)
-    assert response.status_code == 200, response.text
-
-    pm_login = client.post(
-        "/api/auth/login",
-        json={"email": pm_payload["email"], "password": pm_payload["password"]},
-    )
-    assert pm_login.status_code == 200, pm_login.text
-    pm_token = pm_login.json()["access_token"]
-    PM_HEADERS = {
-        "Authorization": f"Bearer {pm_token}",
-        "X-Tenant-Id": DEFAULT_TENANT_ID,
-    }
+settings = get_settings()
 
 
 @pytest.fixture(autouse=True)
-def reset_db(monkeypatch):
-    _clear_collections()
-    _bootstrap_users()
-
+def mock_openai(monkeypatch):
     class StubChat:
         def __init__(self):
             self.completions = SimpleNamespace(create=self._create)
@@ -101,12 +34,11 @@ def reset_db(monkeypatch):
         def __init__(self, *args, **kwargs):
             self.chat = StubChat()
 
-    monkeypatch.setattr("backend.server.OpenAI", StubOpenAI)
+    monkeypatch.setattr("app.api.v1.endpoints.ai.OpenAI", StubOpenAI)
     yield
-    _clear_collections()
 
 
-def _create_property():
+def _create_property(client, pm_headers):
     response = client.post(
         "/api/nekretnine",
         json={
@@ -119,26 +51,27 @@ def _create_property():
             "vlasnik": "Riforma d.o.o.",
             "udio_vlasnistva": "1/1",
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
-def _create_unit(nekretnina_id, oznaka="UG-A1"):
+def _create_unit(client, pm_headers, nekretnina_id, oznaka="UG-A1"):
     response = client.post(
         f"/api/nekretnine/{nekretnina_id}/units",
         json={
             "oznaka": oznaka,
+            "naziv": f"Unit {oznaka}",
             "status": "dostupno",
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
-def _create_tenant():
+def _create_tenant(client, pm_headers):
     response = client.post(
         "/api/zakupnici",
         json={
@@ -151,14 +84,14 @@ def _create_tenant():
             "kontakt_telefon": "+385123456",
             "iban": "HR1210010051863000160",
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
-def _create_contract(nekretnina_id, zakupnik_id):
-    unit_id = _create_unit(nekretnina_id)
+def _create_contract(client, pm_headers, nekretnina_id, zakupnik_id):
+    unit_id = _create_unit(client, pm_headers, nekretnina_id)
     response = client.post(
         "/api/ugovori",
         json={
@@ -175,16 +108,16 @@ def _create_contract(nekretnina_id, zakupnik_id):
             "rok_otkaza_dani": 60,
             "osnovna_zakupnina": 2500.0,
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
-def test_generate_contract_annex_success():
-    nekretnina_id = _create_property()
-    zakupnik_id = _create_tenant()
-    ugovor_id = _create_contract(nekretnina_id, zakupnik_id)
+def test_generate_contract_annex_success(client, pm_headers):
+    nekretnina_id = _create_property(client, pm_headers)
+    zakupnik_id = _create_tenant(client, pm_headers)
+    ugovor_id = _create_contract(client, pm_headers, nekretnina_id, zakupnik_id)
 
     response = client.post(
         "/api/ai/generate-contract-annex",
@@ -194,10 +127,10 @@ def test_generate_contract_annex_success():
             "novi_datum_zavrsetka": "2025-12-31",
             "dodatne_promjene": "Indeksacija prema HICP od iduće godine.",
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["success"] is True
     assert "Aneks ugovora" in payload["title"]
@@ -207,13 +140,22 @@ def test_generate_contract_annex_success():
     assert payload["metadata"].get("source") == "openai"
 
 
-def test_generate_contract_annex_without_key(monkeypatch):
-    monkqp = monkeypatch
-    monkqp.setenv("OPENAI_API_KEY", "")
+def test_generate_contract_annex_without_key(client, pm_headers, monkeypatch):
+    # Patch settings in ai module
+    from app.core.config import Settings
 
-    nekretnina_id = _create_property()
-    zakupnik_id = _create_tenant()
-    ugovor_id = _create_contract(nekretnina_id, zakupnik_id)
+    # Create a new settings instance with empty key
+    # We need to preserve other settings if possible, or just rely on defaults
+    # Since we only care about OPENAI_API_KEY for this test...
+    # But Settings loads from env, so we should set env var first then instantiate
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    new_settings = Settings()
+    new_settings.OPENAI_API_KEY = ""
+    monkeypatch.setattr("app.api.v1.endpoints.ai.settings", new_settings)
+
+    nekretnina_id = _create_property(client, pm_headers)
+    zakupnik_id = _create_tenant(client, pm_headers)
+    ugovor_id = _create_contract(client, pm_headers, nekretnina_id, zakupnik_id)
 
     response = client.post(
         "/api/ai/generate-contract-annex",
@@ -223,10 +165,10 @@ def test_generate_contract_annex_without_key(monkeypatch):
             "novi_datum_zavrsetka": None,
             "dodatne_promjene": None,
         },
-        headers=PM_HEADERS,
+        headers=pm_headers,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["success"] is True
     assert payload["metadata"].get("source") == "fallback"

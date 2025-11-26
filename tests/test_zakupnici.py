@@ -1,62 +1,15 @@
 import os
-from typing import Dict, Iterable
-
-import pytest
-from fastapi.testclient import TestClient
 
 # Ensure the backend uses the in-memory database for tests
 os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 
-from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
 
-client = TestClient(app)
-
-
-def _clear_collections(collection_names: Iterable[str]) -> None:
-    """Helper to reset in-memory collections between tests."""
-    for name in collection_names:
-        collection = getattr(db, name, None)
-        if collection and hasattr(collection, "_documents"):
-            collection._documents.clear()  # type: ignore[attr-defined]
+settings = get_settings()
 
 
-AUTH_HEADERS: Dict[str, str] = {}
-
-
-def _bootstrap_auth():
-    global AUTH_HEADERS
-    admin_payload = {
-        "email": "admin@example.com",
-        "password": "AdminPass123!",
-        "full_name": "Admin User",
-        "role": "admin",
-        "scopes": ["users:create", "users:read"],
-    }
-    response = client.post("/api/auth/register", json=admin_payload)
-    assert response.status_code == 200, response.text
-
-    login_resp = client.post(
-        "/api/auth/login",
-        json={"email": admin_payload["email"], "password": admin_payload["password"]},
-    )
-    assert login_resp.status_code == 200, login_resp.text
-    token = login_resp.json()["access_token"]
-    AUTH_HEADERS = {
-        "Authorization": f"Bearer {token}",
-        "X-Tenant-Id": DEFAULT_TENANT_ID,
-    }
-
-
-@pytest.fixture(autouse=True)
-def cleanup_database():
-    _clear_collections(["zakupnici", "users", "activity_logs"])
-    _bootstrap_auth()
-    yield
-    _clear_collections(["zakupnici", "users", "activity_logs"])
-
-
-def _create_zakupnik(**overrides):
+def _create_zakupnik(client, admin_headers, **overrides):
     payload = {
         "naziv_firme": "Alpha d.o.o.",
         "ime_prezime": None,
@@ -68,14 +21,18 @@ def _create_zakupnik(**overrides):
         "iban": "HR1210010051863000160",
     }
     payload.update(overrides)
-    response = client.post("/api/zakupnici", json=payload, headers=AUTH_HEADERS)
+    response = client.post("/api/zakupnici", json=payload, headers=admin_headers)
     assert response.status_code == 201, response.text
     return response.json()
 
 
-def test_search_zakupnici_matches_multiple_fields():
-    _create_zakupnik(naziv_firme="Alpha d.o.o.", oib="11111111111")
+def test_search_zakupnici_matches_multiple_fields(client, admin_headers):
     _create_zakupnik(
+        client, admin_headers, naziv_firme="Alpha d.o.o.", oib="11111111111"
+    )
+    _create_zakupnik(
+        client,
+        admin_headers,
         naziv_firme="Beta LLC",
         oib="22222222222",
         kontakt_email="kontakt@beta.hr",
@@ -84,7 +41,7 @@ def test_search_zakupnici_matches_multiple_fields():
 
     # Search by partial company name (case-insensitive)
     response = client.get(
-        "/api/zakupnici", params={"search": "beta"}, headers=AUTH_HEADERS
+        "/api/zakupnici", params={"search": "beta"}, headers=admin_headers
     )
     assert response.status_code == 200
     results = response.json()
@@ -93,7 +50,7 @@ def test_search_zakupnici_matches_multiple_fields():
 
     # Search by email fragment
     response = client.get(
-        "/api/zakupnici", params={"search": "@beta.hr"}, headers=AUTH_HEADERS
+        "/api/zakupnici", params={"search": "@beta.hr"}, headers=admin_headers
     )
     assert response.status_code == 200
     results = response.json()
@@ -101,11 +58,14 @@ def test_search_zakupnici_matches_multiple_fields():
     assert results[0]["oib"] == "22222222222"
 
 
-def test_search_zakupnici_returns_all_without_query():
+def test_search_zakupnici_returns_all_without_query(client, admin_headers):
     created = [
-        _create_zakupnik(naziv_firme=f"Tenant {i}", oib=f"{i:011d}") for i in range(3)
+        _create_zakupnik(
+            client, admin_headers, naziv_firme=f"Tenant {i}", oib=f"{i:011d}"
+        )
+        for i in range(3)
     ]
-    response = client.get("/api/zakupnici", headers=AUTH_HEADERS)
+    response = client.get("/api/zakupnici", headers=admin_headers)
     assert response.status_code == 200
     results = response.json()
     obtained_ids = {item["id"] for item in results}
@@ -113,8 +73,10 @@ def test_search_zakupnici_returns_all_without_query():
     assert expected_ids.issubset(obtained_ids)
 
 
-def test_update_zakupnik_applies_changes():
-    created = _create_zakupnik(naziv_firme="Gamma d.o.o.", kontakt_ime="Maja")
+def test_update_zakupnik_applies_changes(client, admin_headers):
+    created = _create_zakupnik(
+        client, admin_headers, naziv_firme="Gamma d.o.o.", kontakt_ime="Maja"
+    )
 
     update_payload = {
         "naziv_firme": "Gamma Consulting",
@@ -128,7 +90,7 @@ def test_update_zakupnik_applies_changes():
     }
 
     response = client.put(
-        f"/api/zakupnici/{created['id']}", json=update_payload, headers=AUTH_HEADERS
+        f"/api/zakupnici/{created['id']}", json=update_payload, headers=admin_headers
     )
     assert response.status_code == 200, response.text
     updated = response.json()
@@ -138,7 +100,7 @@ def test_update_zakupnik_applies_changes():
 
     # Fetch again to ensure persistence
     fetch_response = client.get(
-        "/api/zakupnici", params={"search": "Gamma"}, headers=AUTH_HEADERS
+        "/api/zakupnici", params={"search": "Gamma"}, headers=admin_headers
     )
     assert fetch_response.status_code == 200
     results = fetch_response.json()
@@ -146,7 +108,7 @@ def test_update_zakupnik_applies_changes():
     assert results[0]["kontakt_email"] == "marija@gamma.hr"
 
 
-def test_update_zakupnik_returns_404_for_missing_entity():
+def test_update_zakupnik_returns_404_for_missing_entity(client, admin_headers):
     missing_payload = {
         "naziv_firme": "Nonexistent",
         "ime_prezime": None,
@@ -159,7 +121,7 @@ def test_update_zakupnik_returns_404_for_missing_entity():
     }
 
     response = client.put(
-        "/api/zakupnici/missing-id", json=missing_payload, headers=AUTH_HEADERS
+        "/api/zakupnici/missing-id", json=missing_payload, headers=admin_headers
     )
     assert response.status_code == 404
     body = response.json()

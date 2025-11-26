@@ -1,5 +1,7 @@
 # MariaDB Migration Blueprint
 
+> **Status:** Completed. The backend now runs on MariaDB using the document-store layer described below; this blueprint remains for documentation and future audits.
+
 ## 1. Background & Goals
 
 - Replace the current MongoDB persistence layer (Motor + custom tenant scoping) with MariaDB while preserving API behaviour and tenancy rules.

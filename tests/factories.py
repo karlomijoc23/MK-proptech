@@ -26,6 +26,7 @@ def create_property(client, headers, **overrides) -> Dict[str, Any]:
 def create_unit(client, headers, nekretnina_id: str, **overrides) -> Dict[str, Any]:
     payload = {
         "oznaka": overrides.pop("oznaka", "A1"),
+        "naziv": overrides.pop("naziv", "Unit A1"),
         "status": overrides.pop("status", "dostupno"),
         "povrsina_m2": overrides.pop("povrsina_m2", 120.0),
         **overrides,
@@ -134,12 +135,13 @@ def create_invoice(client, headers, **overrides) -> Dict[str, Any]:
         "datum_dospijeca": overrides.get(
             "datum_dospijeca", (today + timedelta(days=15)).isoformat()
         ),
+        "iznos": overrides.get("iznos", overrides.get("iznos_za_platiti", 500.0)),
         "iznos_za_platiti": overrides.get("iznos_za_platiti", 500.0),
         "iznos_placen": overrides.get("iznos_placen"),
         "valuta": overrides.get("valuta", "EUR"),
         "status": overrides.get("status", "due"),
         "napomena": overrides.get("napomena", "Mjesečna potrošnja"),
-        "stavke": overrides.get("stavke"),
+        "stavke": overrides.get("stavke", []),
         "placeno_na_dan": overrides.get("placeno_na_dan"),
     }
     response = client.post("/api/racuni", json=payload, headers=headers)

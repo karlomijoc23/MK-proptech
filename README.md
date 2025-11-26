@@ -6,7 +6,7 @@ Unified property-operations platform with a FastAPI backend, a React (CRACO) fro
 
 - Python 3.9+
 - Node.js 20+ (Corepack enabled for Yarn)
-- MongoDB 7+ when `USE_IN_MEMORY_DB=false`
+- MariaDB 11.4+ (or compatible managed instance) when `USE_IN_MEMORY_DB=false`
 
 ## Repository Layout
 
@@ -16,7 +16,7 @@ frontend/         React SPA (CRACO) and shared UI components
 scripts/          Start/stop helpers for dev servers
 brand/, docs/     Design guidelines, RBAC matrix, etc.
 tests/            Pytest suites and shared factories
-backend_test.py   External API smoke tester (defaults to localhost)
+tests/            Pytest suites and shared factories
 ```
 
 ## Getting Started
@@ -41,16 +41,16 @@ corepack yarn install
 
 Use environment files (`.env`, `.env.local`) or exported variables. Key settings:
 
-| Variable                                       | Description                                                                  |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `MONGO_URL`, `DB_NAME`                         | Mongo connection (required when persistence enabled)                         |
-| `USE_IN_MEMORY_DB`                             | `true` (default) keeps all data transient; set `false` for Mongo             |
-| `OPENAI_API_KEY`                               | Enables AI endpoints (`/api/ai/*`); fallback templates still work when empty |
-| `API_TOKENS`                                   | Comma-separated `token:role` pairs for Bearer auth                           |
-| `AUTO_RUN_MIGRATIONS`, `SEED_ADMIN_ON_STARTUP` | Control automatic migrations/seed                                            |
-| `INITIAL_ADMIN_*`                              | Bootstrap credentials for the first admin                                    |
-| `CORS_ORIGINS`                                 | Allowed origins for the SPA                                                  |
-| `REACT_APP_BACKEND_URL`                        | Frontend pointer to the API                                                  |
+| Variable                                                                          | Description                                                                  |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL` **or** (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`) | MariaDB connection details (required when persistence enabled)               |
+| `USE_IN_MEMORY_DB`                                                                | `true` (default) keeps all data transient; set `false` to use MariaDB        |
+| `OPENAI_API_KEY`                                                                  | Enables AI endpoints (`/api/ai/*`); fallback templates still work when empty |
+| `API_TOKENS`                                                                      | Comma-separated `token:role` pairs for Bearer auth                           |
+| `AUTO_RUN_MIGRATIONS`, `SEED_ADMIN_ON_STARTUP`                                    | Control automatic migrations/seed                                            |
+| `INITIAL_ADMIN_*`                                                                 | Bootstrap credentials for the first admin                                    |
+| `CORS_ORIGINS`                                                                    | Allowed origins for the SPA                                                  |
+| `REACT_APP_BACKEND_URL`                                                           | Frontend pointer to the API                                                  |
 
 > Sample envs live at `backend/.env`, `backend/.env.production.example`, and `frontend/.env` (plus `.env.production.example`); copy to `.env.local` or your deployment secrets store as needed.
 
@@ -70,9 +70,8 @@ Successful authentication stores a Bearer token inside `localStorage` under the 
 
 ```
 source backend/.venv/bin/activate
-python -m backend.manage migrate       # apply migrations
-python -m backend.manage seed-admin    # ensure initial admin
-python -m backend.manage init          # migrate + seed according to env flags
+alembic upgrade head           # apply migrations
+# Admin seeding happens automatically on startup if configured
 ```
 
 The FastAPI app runs `initialize_persistence()` automatically when `USE_IN_MEMORY_DB=false`.
@@ -88,13 +87,10 @@ Backed start/stop scripts prevent duplicate processes:
 ./scripts/stop_frontend.sh
 ```
 
-If you need persistence locally, start MongoDB first (binary installed in `deps/mongodb`):
+If you need persistence locally, start the bundled MariaDB service first:
 
 ```bash
-deps/mongodb/bin/mongod \
-  --dbpath deps/mongodb-data \
-  --logpath deps/mongodb-data/mongod.log \
-  --fork
+docker compose -f docker-compose.mariadb.yml up -d mariadb
 ```
 
 ## Authentication
@@ -107,7 +103,7 @@ deps/mongodb/bin/mongod \
 
 - Backend: `pytest`
 - Frontend: `corepack yarn test` (runs Jest with `CI=true --runInBand --detectOpenHandles`)
-- API smoke: `python backend_test.py` (`BACKEND_BASE_URL` overrides target)
+- Frontend: `corepack yarn test` (runs Jest with `CI=true --runInBand --detectOpenHandles`)
 - Formatting hooks: `pre-commit run --all-files`
 
 Pre-commit currently runs:
@@ -121,7 +117,7 @@ Pre-commit currently runs:
 
 - Every request is logged to `/api/activity-logs` with actor/scope metadata.
 - AI contract helpers degrade gracefully when no `OPENAI_API_KEY` is provided.
-- Runtime artifacts (logs, pid files) remain untracked; `deps/` houses the local Mongo install.
+- Runtime artifacts (logs, pid files) remain untracked; `deps/` houses optional local tooling.
 
 ### Multi-tenant behaviour
 
@@ -134,15 +130,3 @@ Pre-commit currently runs:
 - Document validation is driven by `frontend/src/shared/documentRequirements.json`. Each type describes whether property/tenant/contract association is mandatory and lists any metadata fields that must be captured.
 - The helper `getDocumentRequirements` (exported from `frontend/src/shared/documents.js`) merges defaults, normalises field identifiers, and is shared between the FastAPI document endpoints and the React wizard.
 - Metadata validation occurs on the backend (`create_dokument`) and rejects payloads that miss required metadata or supply malformed values. Tests covering these rules are in `tests/test_tenant_scoping.py::test_document_metadata_validation`.
-
-## Ready-for-publish Checklist
-
-- [x] Automated migrations/seeders verified against Mongo
-- [x] Consistent formatting enforced via pre-commit
-- [x] Flake8 linting re-enabled with targeted configuration
-- [x] Production env templates added (`backend/.env.production.example`, `frontend/.env.production.example`)
-- [x] CI workflow (`.github/workflows/ci.yml`) running tests and formatting checks
-- [x] Tenant migration plan documented (data backfill, membership seeding, rollout checklist) - see `docs/tenant-migration-plan.md`
-- [x] QA pass covering AI-assisted document flows and multi-tenant access scenarios - follow `docs/qa-playbook.md` and `backend_test.py`
-
-Once the remaining checklist items are complete, the project is ready for deployment packaging.

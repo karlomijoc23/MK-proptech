@@ -8,9 +8,16 @@ export const getBackendUrl = () => {
 
   if (typeof window !== "undefined") {
     const { protocol, hostname, port } = window.location;
-    const derivedPort = port === "3000" ? "8000" : port;
-    const portSegment = derivedPort ? `:${derivedPort}` : "";
-    return `${protocol}//${hostname}${portSegment}`;
+    // If running on localhost or a local IP, assume backend is on the same host at port 8000
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("172.") ||
+      hostname.startsWith("10.")
+    ) {
+      return `${protocol}//${hostname}:8000`;
+    }
   }
 
   return "http://localhost:8000";
@@ -101,8 +108,17 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only trigger logout for 401s on critical endpoints or if repeated
+    // For now, let's just ensure we don't loop.
+    // Also, if the error is from a "check" endpoint, maybe don't logout immediately?
+    // But 401 usually means token is invalid.
+
+    // Check if the request was for a public endpoint or if we are already logging out
     if (error?.response?.status === 401) {
-      window.dispatchEvent(new Event("auth:unauthorized"));
+      // Avoid dispatching if we are already on login page
+      if (window.location.pathname !== "/login") {
+        window.dispatchEvent(new Event("auth:unauthorized"));
+      }
     }
     return Promise.reject(error);
   },

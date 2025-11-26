@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Dict, Iterable
 
@@ -9,8 +10,49 @@ os.environ.setdefault("USE_IN_MEMORY_DB", "true")
 os.environ.setdefault("OPENAI_API_KEY", "test")
 os.environ.setdefault("AUTO_RUN_MIGRATIONS", "false")
 os.environ.setdefault("SEED_ADMIN_ON_STARTUP", "false")
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
 
-from backend.server import DEFAULT_TENANT_ID, app, db  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
+from app.db.instance import db  # noqa: E402
+from app.main import app  # noqa: E402
+
+settings = get_settings()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def init_test_db():
+    import asyncio
+
+    from app.db.base import Base
+
+    # Ensure models are loaded
+    from app.db.session import get_engine
+
+    async def _init():
+        engine = get_engine()
+        print(f"DEBUG: DB URL is {settings.DB_SETTINGS.sqlalchemy_url()}")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    async def _teardown():
+        engine = get_engine()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+
+    try:
+        asyncio.run(_init())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(_init())
+
+    yield
+
+    try:
+        asyncio.run(_teardown())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(_teardown())
+
 
 RESET_COLLECTIONS = (
     "nekretnine",
@@ -29,13 +71,20 @@ RESET_COLLECTIONS = (
 
 
 def _clear_collections(collection_names: Iterable[str] = RESET_COLLECTIONS) -> None:
-    for name in collection_names:
-        collection = getattr(db, name, None)
-        if collection is None:
-            continue
-        documents = getattr(collection, "_documents", None)
-        if documents is not None:
-            documents.clear()
+    import asyncio
+
+    async def clear():
+        for name in collection_names:
+            collection = getattr(db, name, None)
+            if collection is None:
+                continue
+            await collection.delete_many({})
+
+    try:
+        asyncio.run(clear())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(clear())
 
 
 def _bootstrap_users(client: TestClient) -> Dict[str, Dict[str, str]]:
@@ -48,6 +97,19 @@ def _bootstrap_users(client: TestClient) -> Dict[str, Dict[str, str]]:
     }
     response = client.post("/api/auth/register", json=admin_payload)
     assert response.status_code == 200, response.text
+
+    # Force update role in DB since register endpoint ignores it
+    async def set_admin_role():
+        await db.users.update_one(
+            {"email": admin_payload["email"]},
+            {"$set": {"role": "admin", "scopes": admin_payload["scopes"]}},
+        )
+
+    try:
+        asyncio.run(set_admin_role())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(set_admin_role())
 
     login_resp = client.post(
         "/api/auth/login",
@@ -67,6 +129,18 @@ def _bootstrap_users(client: TestClient) -> Dict[str, Dict[str, str]]:
     assert response.status_code == 200, response.text
     pm_user = response.json()
 
+    # Force update role in DB
+    async def set_pm_role():
+        await db.users.update_one(
+            {"email": pm_payload["email"]}, {"$set": {"role": "property_manager"}}
+        )
+
+    try:
+        asyncio.run(set_pm_role())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(set_pm_role())
+
     pm_login = client.post(
         "/api/auth/login",
         json={"email": pm_payload["email"], "password": pm_payload["password"]},
@@ -74,13 +148,48 @@ def _bootstrap_users(client: TestClient) -> Dict[str, Dict[str, str]]:
     assert pm_login.status_code == 200, pm_login.text
     pm_token = pm_login.json()["access_token"]
 
-    tenant_header = {"X-Tenant-Id": DEFAULT_TENANT_ID}
+    # Create tenant membership for PM
+    async def create_membership():
+        await db.tenant_memberships.insert_one(
+            {
+                "tenant_id": settings.DEFAULT_TENANT_ID,
+                "user_id": pm_user["id"],
+                "role": "property_manager",
+                "status": "active",
+            }
+        )
+
+    try:
+        asyncio.run(create_membership())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(create_membership())
+
+    tenant_header = {"X-Tenant-Id": settings.DEFAULT_TENANT_ID}
+
+    # Ensure default tenant exists in DB
+    async def create_default_tenant():
+        tenant = await db.tenants.find_one({"id": settings.DEFAULT_TENANT_ID})
+        if not tenant:
+            await db.tenants.insert_one(
+                {
+                    "id": settings.DEFAULT_TENANT_ID,
+                    "naziv": "Default Tenant",
+                    "status": "active",
+                }
+            )
+
+    try:
+        asyncio.run(create_default_tenant())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(create_default_tenant())
 
     return {
         "admin_headers": {**admin_headers, **tenant_header},
         "pm_headers": {
             "Authorization": f"Bearer {pm_token}",
-            "X-Tenant-Id": DEFAULT_TENANT_ID,
+            "X-Tenant-Id": settings.DEFAULT_TENANT_ID,
         },
         "pm_user": pm_user,
     }

@@ -36,18 +36,22 @@ def test_document_metadata_validation(client, pm_headers):
 
     response = client.post(
         "/api/dokumenti",
-        json={
+        data={
             "naziv": "Mjesečni račun",
             "tip": "racun",
             "nekretnina_id": property_doc["id"],
             "zakupnik_id": tenant["id"],
             "ugovor_id": contract["id"],
-            "metadata": {},
+            "metadata": "invalid-json",
         },
         headers=pm_headers,
     )
-    assert response.status_code == 400
-    assert "metadata" in response.json().get("detail", "").lower()
+    assert response.status_code == 422
+    detail = response.json().get("detail")
+    if isinstance(detail, list):
+        assert any("metadata" in str(d).lower() for d in detail)
+    else:
+        assert "metadata" in str(detail).lower()
 
 
 def test_update_active_tenant_profile(client, admin_headers):
@@ -94,6 +98,27 @@ def test_tenant_update_requires_elevated_role(client, pm_headers, admin_headers)
         "Authorization": f"Bearer {token}",
         "X-Tenant-Id": pm_headers["X-Tenant-Id"],
     }
+
+    # Add membership for viewer
+    import asyncio
+
+    from app.db.instance import db
+
+    async def add_member():
+        await db.tenant_memberships.insert_one(
+            {
+                "tenant_id": pm_headers["X-Tenant-Id"],
+                "user_id": login.json()["user"]["id"],
+                "role": "viewer",
+                "status": "active",
+            }
+        )
+
+    try:
+        asyncio.run(add_member())
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(add_member())
 
     forbidden = client.put(
         f"/api/tenants/{pm_headers['X-Tenant-Id']}",

@@ -1,5 +1,7 @@
 # Tenant Migration Plan
 
+> **Status:** Legacy reference only. Production now runs on MariaDB; keep this document for historical context if you ever need to recover the original MongoDB workflow.
+
 This runbook explains how to migrate existing single-tenant data into the new tenant-aware model introduced in `backend/server.py`. It assumes you already run the production stack on MongoDB (no in-memory database) and that all API traffic can be paused during the migration window.
 
 ## Goals

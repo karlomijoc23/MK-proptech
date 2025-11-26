@@ -27,6 +27,15 @@ import UploadStep from "./steps/UploadStep";
 import MetaStep from "./steps/MetaStep";
 import LinkingStep from "./steps/LinkingStep";
 import ManualUnitForm from "./components/ManualUnitForm";
+import NekretninarForm from "../properties/NekretninarForm";
+import ZakupnikForm from "../tenants/ZakupnikForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
+import { normaliseNekretninaPayload } from "../../shared/units";
 
 const DocumentWizardContext = React.createContext(null);
 
@@ -901,29 +910,33 @@ const DocumentWizard = ({
     }
   }, []);
 
-  const handleCreatePropertyFromAI = useCallback(async () => {
-    if (!aiSuggestions?.nekretnina) return;
-    setQuickCreateLoading((prev) => ({ ...prev, property: true }));
-    const suggestion = aiSuggestions.nekretnina;
-    const toNumber = (value, fallback = 0) => {
-      const num = Number(value);
-      return Number.isFinite(num) ? num : fallback;
-    };
-    const toNumberOrNull = (value) => {
-      const num = Number(value);
-      return Number.isFinite(num) ? num : null;
-    };
-    try {
-      const payload = {
-        naziv: suggestion.naziv || `Nekretnina ${Date.now()}`,
-        adresa: suggestion.adresa || "Nepoznata adresa",
-        katastarska_opcina: suggestion.katastarska_opcina || "Nepoznata općina",
-        broj_kat_cestice: suggestion.broj_kat_cestice || "N/A",
-        vrsta: suggestion.vrsta || "ostalo",
-        povrsina: toNumber(suggestion.povrsina, 0),
-        godina_izgradnje: suggestion.godina_izgradnje || null,
-        vlasnik: suggestion.vlasnik || "Nepoznat vlasnik",
-        udio_vlasnistva: suggestion.udio_vlasnistva || "1/1",
+  const [showPropertyCreateDialog, setShowPropertyCreateDialog] =
+    useState(false);
+  const [propertyPreFillData, setPropertyPreFillData] = useState(null);
+
+  const handleCreatePropertyFromAI = useCallback(
+    (overrideData = null) => {
+      const suggestion = overrideData || aiSuggestions?.nekretnina || {};
+
+      const toNumber = (value, fallback = "") => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : fallback;
+      };
+      const toNumberOrNull = (value) => {
+        const num = Number(value);
+        return Number.isFinite(num) ? num : "";
+      };
+
+      const prefill = {
+        naziv: suggestion.naziv || "",
+        adresa: suggestion.adresa || "",
+        katastarska_opcina: suggestion.katastarska_opcina || "",
+        broj_kat_cestice: suggestion.broj_kat_cestice || "",
+        vrsta: suggestion.vrsta || "stan",
+        povrsina: toNumber(suggestion.povrsina),
+        godina_izgradnje: suggestion.godina_izgradnje || "",
+        vlasnik: suggestion.vlasnik || "",
+        udio_vlasnistva: suggestion.udio_vlasnistva || "",
         nabavna_cijena: toNumberOrNull(suggestion.nabavna_cijena),
         trzisna_vrijednost: toNumberOrNull(suggestion.trzisna_vrijednost),
         prosllogodisnji_prihodi: toNumberOrNull(
@@ -936,25 +949,57 @@ const DocumentWizard = ({
         proslogodisnji_neto_prihod: toNumberOrNull(
           suggestion.proslogodisnji_neto_prihod || suggestion.neto_prihod,
         ),
-        zadnja_obnova: suggestion.zadnja_obnova || null,
-        potrebna_ulaganja: suggestion.potrebna_ulaganja || null,
+        zadnja_obnova: suggestion.zadnja_obnova || "",
+        potrebna_ulaganja: suggestion.potrebna_ulaganja || "",
         troskovi_odrzavanja: toNumberOrNull(suggestion.troskovi_odrzavanja),
-        osiguranje: suggestion.osiguranje || null,
-        sudski_sporovi: suggestion.sudski_sporovi || null,
-        hipoteke: suggestion.hipoteke || null,
-        napomene: suggestion.napomene || null,
+        osiguranje: suggestion.osiguranje || "",
+        sudski_sporovi: suggestion.sudski_sporovi || "",
+        hipoteke: suggestion.hipoteke || "",
+        napomene: suggestion.napomene || "",
       };
-      const response = await api.createNekretnina(payload);
-      toast.success("Nekretnina je kreirana iz AI prijedloga");
-      await refreshEntities();
-      setFormData((prev) => ({ ...prev, nekretnina_id: response.data.id }));
-    } catch (error) {
-      console.error("Greška pri kreiranju nekretnine iz AI prijedloga:", error);
-      toast.error("Greška pri kreiranju nekretnine");
-    } finally {
-      setQuickCreateLoading((prev) => ({ ...prev, property: false }));
-    }
-  }, [aiSuggestions, refreshEntities]);
+
+      setPropertyPreFillData(prefill);
+      setShowPropertyCreateDialog(true);
+    },
+    [aiSuggestions],
+  );
+
+  const handlePropertyCreateSubmit = useCallback(
+    async (formPayload) => {
+      setQuickCreateLoading((prev) => ({ ...prev, property: true }));
+      try {
+        const { property, units } = normaliseNekretninaPayload(formPayload);
+        const response = await api.createNekretnina(property);
+        const createdProperty = response.data;
+
+        if (units && units.length) {
+          for (const unitPayload of units) {
+            if (!unitPayload.oznaka) continue;
+            try {
+              await api.createUnit(createdProperty.id, unitPayload);
+            } catch (error) {
+              console.error("Neuspjelo kreiranje podprostora:", error);
+              toast.warning(`Podprostor ${unitPayload.oznaka} nije kreiran.`);
+            }
+          }
+        }
+
+        toast.success("Nekretnina je uspješno kreirana");
+        await refreshEntities();
+        setFormData((prev) => ({ ...prev, nekretnina_id: createdProperty.id }));
+        setShowPropertyCreateDialog(false);
+      } catch (error) {
+        console.error("Greška pri kreiranju nekretnine:", error);
+        toast.error("Greška pri kreiranju nekretnine");
+      } finally {
+        setQuickCreateLoading((prev) => ({ ...prev, property: false }));
+      }
+    },
+    [refreshEntities],
+  );
+
+  const [showTenantCreateDialog, setShowTenantCreateDialog] = useState(false);
+  const [tenantPreFillData, setTenantPreFillData] = useState(null);
 
   const handleCreateTenantFromAI = useCallback(
     async (suggestionOverride = null) => {
@@ -962,75 +1007,62 @@ const DocumentWizard = ({
         toast.info("Zakupnik nije potreban za ovaj tip dokumenta.");
         return;
       }
-      const suggestion = suggestionOverride || aiSuggestions?.zakupnik;
-      if (!suggestion) return;
+      const suggestion = suggestionOverride || aiSuggestions?.zakupnik || {};
+
+      const fallbackName =
+        suggestion.naziv_firme ||
+        suggestion.ime_prezime ||
+        suggestion.kontakt_ime ||
+        "Zakupnik";
+
+      const prefill = {
+        tip:
+          suggestion.tip || (suggestion.naziv_firme ? "zakupnik" : "partner"),
+        naziv_firme: suggestion.naziv_firme || "",
+        ime_prezime: suggestion.ime_prezime || "",
+        oib: suggestion.oib || "",
+        sjediste: suggestion.sjediste || "",
+        kontakt_ime: suggestion.kontakt_ime || fallbackName,
+        kontakt_email: suggestion.kontakt_email || "",
+        kontakt_telefon: suggestion.kontakt_telefon || "",
+        status: suggestion.status || "aktivan",
+        opis_usluge: suggestion.opis_usluge || "",
+        adresa_ulica: suggestion.adresa_ulica || "",
+        adresa_kucni_broj: suggestion.adresa_kucni_broj || "",
+        adresa_postanski_broj: suggestion.adresa_postanski_broj || "",
+        adresa_grad: suggestion.adresa_grad || "",
+        adresa_drzava: suggestion.adresa_drzava || "",
+        pdv_obveznik:
+          suggestion.pdv_obveznik === true ||
+          suggestion.pdv_obveznik === "true",
+        pdv_id: suggestion.pdv_id || "",
+        maticni_broj: suggestion.maticni_broj || "",
+        registracijski_broj: suggestion.registracijski_broj || "",
+      };
+
+      setTenantPreFillData(prefill);
+      setShowTenantCreateDialog(true);
+    },
+    [allowsTenant, aiSuggestions],
+  );
+
+  const handleTenantCreateSubmit = useCallback(
+    async (formPayload) => {
       setQuickCreateLoading((prev) => ({ ...prev, tenant: true }));
       try {
-        const parseFlag = (value) => {
-          if (typeof value === "boolean") {
-            return value;
-          }
-          if (typeof value === "string") {
-            const normalised = value.trim().toLowerCase();
-            return ["da", "yes", "true", "1"].includes(normalised);
-          }
-          return false;
-        };
-
-        const fallbackName =
-          suggestion.naziv_firme ||
-          suggestion.ime_prezime ||
-          suggestion.kontakt_ime ||
-          "Zakupnik";
-
-        const payload = {
-          tip:
-            suggestion.tip || (suggestion.naziv_firme ? "zakupnik" : "partner"),
-          naziv_firme: suggestion.naziv_firme || null,
-          ime_prezime: suggestion.ime_prezime || null,
-          oib: suggestion.oib || `N/A-${Date.now()}`,
-          sjediste: suggestion.sjediste || "Nije navedeno",
-          kontakt_ime: suggestion.kontakt_ime || fallbackName,
-          kontakt_email: suggestion.kontakt_email || "kontakt@nedefinirano.hr",
-          kontakt_telefon: suggestion.kontakt_telefon || "000-000-000",
-          status: suggestion.status || "aktivan",
-          opis_usluge: suggestion.opis_usluge || null,
-          adresa_ulica: suggestion.adresa_ulica || null,
-          adresa_kucni_broj: suggestion.adresa_kucni_broj || null,
-          adresa_postanski_broj: suggestion.adresa_postanski_broj || null,
-          adresa_grad: suggestion.adresa_grad || null,
-          adresa_drzava: suggestion.adresa_drzava || null,
-          pdv_obveznik: parseFlag(suggestion.pdv_obveznik),
-          pdv_id: suggestion.pdv_id || null,
-          maticni_broj: suggestion.maticni_broj || null,
-          registracijski_broj: suggestion.registracijski_broj || null,
-          eracun_dostava_kanal: suggestion.eracun_dostava_kanal || null,
-          eracun_identifikator: suggestion.eracun_identifikator || null,
-          eracun_email: suggestion.eracun_email || null,
-          eracun_posrednik: suggestion.eracun_posrednik || null,
-          fiskalizacija_napomena: suggestion.fiskalizacija_napomena || null,
-          odgovorna_osoba: suggestion.odgovorna_osoba || null,
-        };
-
-        if (!payload.naziv_firme && !payload.ime_prezime) {
-          payload.naziv_firme = fallbackName;
-        }
-
-        const response = await api.createZakupnik(payload);
-        toast.success("Zakupnik je kreiran iz AI prijedloga");
+        const response = await api.createZakupnik(formPayload);
+        toast.success("Zakupnik je uspješno kreiran");
         await refreshEntities();
         setFormData((prev) => ({ ...prev, zakupnik_id: response.data.id }));
+        setShowTenantCreateDialog(false);
       } catch (error) {
-        console.error(
-          "Greška pri kreiranju zakupnika iz AI prijedloga:",
-          error,
-        );
+        console.error("Greška pri kreiranju zakupnika:", error);
         toast.error("Greška pri kreiranju zakupnika");
       } finally {
         setQuickCreateLoading((prev) => ({ ...prev, tenant: false }));
       }
     },
-    [aiSuggestions, allowsTenant, refreshEntities],
+    [refreshEntities],
   );
 
   const handleCreateContractFromAI = useCallback(async () => {
@@ -1588,6 +1620,40 @@ const DocumentWizard = ({
           </div>
         </div>
       </form>
+
+      <Dialog
+        open={showPropertyCreateDialog}
+        onOpenChange={setShowPropertyCreateDialog}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Dodaj novu nekretninu</DialogTitle>
+          </DialogHeader>
+          <NekretninarForm
+            nekretnina={propertyPreFillData}
+            onSubmit={handlePropertyCreateSubmit}
+            onCancel={() => setShowPropertyCreateDialog(false)}
+            submitting={quickCreateLoading.property}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showTenantCreateDialog}
+        onOpenChange={setShowTenantCreateDialog}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Dodaj novog zakupnika</DialogTitle>
+          </DialogHeader>
+          <ZakupnikForm
+            zakupnik={tenantPreFillData}
+            onSubmit={handleTenantCreateSubmit}
+            onCancel={() => setShowTenantCreateDialog(false)}
+            submitting={quickCreateLoading.tenant}
+          />
+        </DialogContent>
+      </Dialog>
     </DocumentWizardContext.Provider>
   );
 };

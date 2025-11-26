@@ -1,0 +1,2290 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/gs/Documents/MK-proptech
+plugins: anyio-4.11.0
+collecting ... collected 1 item
+
+tests/test_tenant_scoping.py::test_document_metadata_validation FAILED   [100%]
+
+=================================== FAILURES ===================================
+______________________ test_document_metadata_validation _______________________
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+  |     yield
+  |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 193, in __call__
+  |     response_sent.set()
+  |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/runner.py", line 344, in from_call
+    |     result: TResult | None = func()
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/runner.py", line 246, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/logging.py", line 850, in pytest_runtest_call
+    |     yield
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/skipping.py", line 263, in pytest_runtest_call
+    |     return (yield)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/runner.py", line 178, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/python.py", line 1671, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/_pytest/python.py", line 157, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |   File "/Users/gs/Documents/MK-proptech/tests/test_tenant_scoping.py", line 20, in test_document_metadata_validation
+    |     property_doc = create_property(client, pm_headers, naziv="Toranj X")
+    |   File "/Users/gs/Documents/MK-proptech/tests/factories.py", line 21, in create_property
+    |     response = client.post("/api/nekretnine", json=payload, headers=headers)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 633, in post
+    |     return super().post(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 1144, in post
+    |     return self.request(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 516, in request
+    |     return super().request(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 825, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 398, in handle_request
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 395, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py", line 321, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 445, in result
+    |     return self.__get_result()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 390, in __get_result
+    |     raise self._exception
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py", line 252, in _call_func
+    |     retval = await retval_or_awaitable
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/applications.py", line 123, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/app/main.py", line 116, in activity_logger
+    |     response = await call_next(request)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response_sent.set()
+    |   File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    |     self.gen.throw(type, value, traceback)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "/Users/gs/Documents/MK-proptech/backend/app/main.py", line 84, in add_security_headers
+    |     response = await call_next(request)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 165, in call_next
+    |     raise app_exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 151, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 756, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 776, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 297, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 77, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    |     raise exc
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 72, in app
+    |     response = await func(request)
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 269, in app
+    |     solved_result = await solve_dependencies(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py", line 572, in solve_dependencies
+    |     solved_result = await solve_dependencies(
+    |   File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py", line 600, in solve_dependencies
+    |     solved = await call(**sub_values)
+    |   File "/Users/gs/Documents/MK-proptech/backend/app/api/deps.py", line 99, in get_current_user
+    |     role = user_doc.get("role", DEFAULT_ROLE)
+    | NameError: name 'DEFAULT_ROLE' is not defined
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/tests/test_tenant_scoping.py", line 20, in test_document_metadata_validation
+    property_doc = create_property(client, pm_headers, naziv="Toranj X")
+  File "/Users/gs/Documents/MK-proptech/tests/factories.py", line 21, in create_property
+    response = client.post("/api/nekretnine", json=payload, headers=headers)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 633, in post
+    return super().post(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 1144, in post
+    return self.request(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 516, in request
+    return super().request(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 398, in handle_request
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/testclient.py", line 395, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py", line 321, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 445, in result
+    return self.__get_result()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py", line 390, in __get_result
+    raise self._exception
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py", line 252, in _call_func
+    retval = await retval_or_awaitable
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/app/main.py", line 116, in activity_logger
+    response = await call_next(request)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response_sent.set()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py", line 135, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/Users/gs/Documents/MK-proptech/backend/app/main.py", line 84, in add_security_headers
+    response = await call_next(request)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/routing.py", line 269, in app
+    solved_result = await solve_dependencies(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py", line 572, in solve_dependencies
+    solved_result = await solve_dependencies(
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py", line 600, in solve_dependencies
+    solved = await call(**sub_values)
+  File "/Users/gs/Documents/MK-proptech/backend/app/api/deps.py", line 99, in get_current_user
+    role = user_doc.get("role", DEFAULT_ROLE)
+NameError: name 'DEFAULT_ROLE' is not defined
+
+During handling of the above exception, another exception occurred:
+
+client = <starlette.testclient.TestClient object at 0x10406a640>
+pm_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNGIxM2I5NS1jYmY4LTRkNTktYjEzNC1lZjhlYjU3NmM...IjoxNzY0ODQxNjc3LCJpYXQiOjE3NjQxNTA0Nzd9.A1EwyJahMwyQfGOR1z8R0XowiDdYq56LrJnYDUpba8c', 'X-Tenant-Id': 'tenant-default'}
+
+    def test_document_metadata_validation(client, pm_headers):
+>       property_doc = create_property(client, pm_headers, naziv="Toranj X")
+
+tests/test_tenant_scoping.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <starlette.testclient.TestClient object at 0x10406a640>
+headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNGIxM2I5NS1jYmY4LTRkNTktYjEzNC1lZjhlYjU3NmM...IjoxNzY0ODQxNjc3LCJpYXQiOjE3NjQxNTA0Nzd9.A1EwyJahMwyQfGOR1z8R0XowiDdYq56LrJnYDUpba8c', 'X-Tenant-Id': 'tenant-default'}
+overrides = {'naziv': 'Toranj X'}
+payload = {'adresa': 'Primorska 1', 'broj_kat_cestice': '123/1', 'godina_izgradnje': 2010, 'katastarska_opcina': 'Zagreb', ...}
+
+    def create_property(client, headers, **overrides) -> Dict[str, Any]:
+        payload = {**DEFAULT_PROPERTY_PAYLOAD, **overrides}
+>       response = client.post("/api/nekretnine", json=payload, headers=headers)
+
+tests/factories.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+url = '/api/nekretnine'
+
+    def post(  # type: ignore[override]
+        self,
+        url: httpx._types.URLTypes,
+        *,
+        content: httpx._types.RequestContent | None = None,
+        data: _RequestData | None = None,
+        files: httpx._types.RequestFiles | None = None,
+        json: typing.Any = None,
+        params: httpx._types.QueryParamTypes | None = None,
+        headers: httpx._types.HeaderTypes | None = None,
+        cookies: httpx._types.CookieTypes | None = None,
+        auth: httpx._types.AuthTypes
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+        follow_redirects: bool | None = None,
+        allow_redirects: bool | None = None,
+        timeout: httpx._types.TimeoutTypes
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+        extensions: dict[str, typing.Any] | None = None,
+    ) -> httpx.Response:
+        redirect = self._choose_redirect_arg(follow_redirects, allow_redirects)
+>       return super().post(
+            url,
+            content=content,
+            data=data,
+            files=files,
+            json=json,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            auth=auth,
+            follow_redirects=redirect,
+            timeout=timeout,
+            extensions=extensions,
+        )
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/testclient.py:633: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+url = '/api/nekretnine'
+
+    def post(
+        self,
+        url: URL | str,
+        *,
+        content: RequestContent | None = None,
+        data: RequestData | None = None,
+        files: RequestFiles | None = None,
+        json: typing.Any | None = None,
+        params: QueryParamTypes | None = None,
+        headers: HeaderTypes | None = None,
+        cookies: CookieTypes | None = None,
+        auth: AuthTypes | UseClientDefault = USE_CLIENT_DEFAULT,
+        follow_redirects: bool | UseClientDefault = USE_CLIENT_DEFAULT,
+        timeout: TimeoutTypes | UseClientDefault = USE_CLIENT_DEFAULT,
+        extensions: RequestExtensions | None = None,
+    ) -> Response:
+        """
+        Send a `POST` request.
+    
+        **Parameters**: See `httpx.request`.
+        """
+>       return self.request(
+            "POST",
+            url,
+            content=content,
+            data=data,
+            files=files,
+            json=json,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            auth=auth,
+            follow_redirects=follow_redirects,
+            timeout=timeout,
+            extensions=extensions,
+        )
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:1144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>, method = 'POST'
+url = URL('http://testserver/api/nekretnine')
+
+    def request(  # type: ignore[override]
+        self,
+        method: str,
+        url: httpx._types.URLTypes,
+        *,
+        content: httpx._types.RequestContent | None = None,
+        data: _RequestData | None = None,
+        files: httpx._types.RequestFiles | None = None,
+        json: typing.Any = None,
+        params: httpx._types.QueryParamTypes | None = None,
+        headers: httpx._types.HeaderTypes | None = None,
+        cookies: httpx._types.CookieTypes | None = None,
+        auth: httpx._types.AuthTypes
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+        follow_redirects: bool | None = None,
+        allow_redirects: bool | None = None,
+        timeout: httpx._types.TimeoutTypes
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+        extensions: dict[str, typing.Any] | None = None,
+    ) -> httpx.Response:
+        url = self._merge_url(url)
+        redirect = self._choose_redirect_arg(follow_redirects, allow_redirects)
+>       return super().request(
+            method,
+            url,
+            content=content,
+            data=data,
+            files=files,
+            json=json,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            auth=auth,
+            follow_redirects=redirect,
+            timeout=timeout,
+            extensions=extensions,
+        )
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/testclient.py:516: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>, method = 'POST'
+url = URL('http://testserver/api/nekretnine')
+
+    def request(
+        self,
+        method: str,
+        url: URL | str,
+        *,
+        content: RequestContent | None = None,
+        data: RequestData | None = None,
+        files: RequestFiles | None = None,
+        json: typing.Any | None = None,
+        params: QueryParamTypes | None = None,
+        headers: HeaderTypes | None = None,
+        cookies: CookieTypes | None = None,
+        auth: AuthTypes | UseClientDefault | None = USE_CLIENT_DEFAULT,
+        follow_redirects: bool | UseClientDefault = USE_CLIENT_DEFAULT,
+        timeout: TimeoutTypes | UseClientDefault = USE_CLIENT_DEFAULT,
+        extensions: RequestExtensions | None = None,
+    ) -> Response:
+        """
+        Build and send a request.
+    
+        Equivalent to:
+    
+        ```python
+        request = client.build_request(...)
+        response = client.send(request, ...)
+        ```
+    
+        See `Client.build_request()`, `Client.send()` and
+        [Merging of configuration][0] for how the various parameters
+        are merged with client-level configuration.
+    
+        [0]: /advanced/clients/#merging-of-configuration
+        """
+        if cookies is not None:
+            message = (
+                "Setting per-request cookies=<...> is being deprecated, because "
+                "the expected behaviour on cookie persistence is ambiguous. Set "
+                "cookies directly on the client instance instead."
+            )
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+    
+        request = self.build_request(
+            method=method,
+            url=url,
+            content=content,
+            data=data,
+            files=files,
+            json=json,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            extensions=extensions,
+        )
+>       return self.send(request, auth=auth, follow_redirects=follow_redirects)
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:825: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+request = <Request('POST', 'http://testserver/api/nekretnine')>
+
+    def send(
+        self,
+        request: Request,
+        *,
+        stream: bool = False,
+        auth: AuthTypes | UseClientDefault | None = USE_CLIENT_DEFAULT,
+        follow_redirects: bool | UseClientDefault = USE_CLIENT_DEFAULT,
+    ) -> Response:
+        """
+        Send a request.
+    
+        The request is sent as-is, unmodified.
+    
+        Typically you'll want to build one with `Client.build_request()`
+        so that any client-level configuration is merged into the request,
+        but passing an explicit `httpx.Request()` is supported as well.
+    
+        See also: [Request instances][0]
+    
+        [0]: /advanced/clients/#request-instances
+        """
+        if self._state == ClientState.CLOSED:
+            raise RuntimeError("Cannot send a request, as the client has been closed.")
+    
+        self._state = ClientState.OPENED
+        follow_redirects = (
+            self.follow_redirects
+            if isinstance(follow_redirects, UseClientDefault)
+            else follow_redirects
+        )
+    
+        self._set_timeout(request)
+    
+        auth = self._build_request_auth(request, auth)
+    
+>       response = self._send_handling_auth(
+            request,
+            auth=auth,
+            follow_redirects=follow_redirects,
+            history=[],
+        )
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:914: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+request = <Request('POST', 'http://testserver/api/nekretnine')>
+auth = <httpx.Auth object at 0x104054ca0>, follow_redirects = True, history = []
+
+    def _send_handling_auth(
+        self,
+        request: Request,
+        auth: Auth,
+        follow_redirects: bool,
+        history: list[Response],
+    ) -> Response:
+        auth_flow = auth.sync_auth_flow(request)
+        try:
+            request = next(auth_flow)
+    
+            while True:
+>               response = self._send_handling_redirects(
+                    request,
+                    follow_redirects=follow_redirects,
+                    history=history,
+                )
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:942: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+request = <Request('POST', 'http://testserver/api/nekretnine/')>
+follow_redirects = True, history = [<Response [307 Temporary Redirect]>]
+
+    def _send_handling_redirects(
+        self,
+        request: Request,
+        follow_redirects: bool,
+        history: list[Response],
+    ) -> Response:
+        while True:
+            if len(history) > self.max_redirects:
+                raise TooManyRedirects(
+                    "Exceeded maximum allowed redirects.", request=request
+                )
+    
+            for hook in self._event_hooks["request"]:
+                hook(request)
+    
+>           response = self._send_single_request(request)
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:979: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient.TestClient object at 0x10406a640>
+request = <Request('POST', 'http://testserver/api/nekretnine/')>
+
+    def _send_single_request(self, request: Request) -> Response:
+        """
+        Sends a single request, without handling any redirections.
+        """
+        transport = self._transport_for_url(request.url)
+        start = time.perf_counter()
+    
+        if not isinstance(request.stream, SyncByteStream):
+            raise RuntimeError(
+                "Attempted to send an async request with a sync Client instance."
+            )
+    
+        with request_context(request=request):
+>           response = transport.handle_request(request)
+
+../../Library/Python/3.9/lib/python/site-packages/httpx/_client.py:1014: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient._TestClientTransport object at 0x10406a820>
+request = <Request('POST', 'http://testserver/api/nekretnine/')>
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        scheme = request.url.scheme
+        netloc = request.url.netloc.decode(encoding="ascii")
+        path = request.url.path
+        raw_path = request.url.raw_path
+        query = request.url.query.decode(encoding="ascii")
+    
+        default_port = {"http": 80, "ws": 80, "https": 443, "wss": 443}[scheme]
+    
+        if ":" in netloc:
+            host, port_string = netloc.split(":", 1)
+            port = int(port_string)
+        else:
+            host = netloc
+            port = default_port
+    
+        # Include the 'host' header.
+        if "host" in request.headers:
+            headers: list[tuple[bytes, bytes]] = []
+        elif port == default_port:  # pragma: no cover
+            headers = [(b"host", host.encode())]
+        else:  # pragma: no cover
+            headers = [(b"host", (f"{host}:{port}").encode())]
+    
+        # Include other request headers.
+        headers += [
+            (key.lower().encode(), value.encode())
+            for key, value in request.headers.multi_items()
+        ]
+    
+        scope: dict[str, typing.Any]
+    
+        if scheme in {"ws", "wss"}:
+            subprotocol = request.headers.get("sec-websocket-protocol", None)
+            if subprotocol is None:
+                subprotocols: typing.Sequence[str] = []
+            else:
+                subprotocols = [value.strip() for value in subprotocol.split(",")]
+            scope = {
+                "type": "websocket",
+                "path": unquote(path),
+                "raw_path": raw_path,
+                "root_path": self.root_path,
+                "scheme": scheme,
+                "query_string": query.encode(),
+                "headers": headers,
+                "client": ["testclient", 50000],
+                "server": [host, port],
+                "subprotocols": subprotocols,
+                "state": self.app_state.copy(),
+                "extensions": {"websocket.http.response": {}},
+            }
+            session = WebSocketTestSession(self.app, scope, self.portal_factory)
+            raise _Upgrade(session)
+    
+        scope = {
+            "type": "http",
+            "http_version": "1.1",
+            "method": request.method,
+            "path": unquote(path),
+            "raw_path": raw_path,
+            "root_path": self.root_path,
+            "scheme": scheme,
+            "query_string": query.encode(),
+            "headers": headers,
+            "client": ["testclient", 50000],
+            "server": [host, port],
+            "extensions": {"http.response.debug": {}},
+            "state": self.app_state.copy(),
+        }
+    
+        request_complete = False
+        response_started = False
+        response_complete: anyio.Event
+        raw_kwargs: dict[str, typing.Any] = {"stream": io.BytesIO()}
+        template = None
+        context = None
+    
+        async def receive() -> Message:
+            nonlocal request_complete
+    
+            if request_complete:
+                if not response_complete.is_set():
+                    await response_complete.wait()
+                return {"type": "http.disconnect"}
+    
+            body = request.read()
+            if isinstance(body, str):
+                body_bytes: bytes = body.encode("utf-8")  # pragma: no cover
+            elif body is None:
+                body_bytes = b""  # pragma: no cover
+            elif isinstance(body, GeneratorType):
+                try:  # pragma: no cover
+                    chunk = body.send(None)
+                    if isinstance(chunk, str):
+                        chunk = chunk.encode("utf-8")
+                    return {"type": "http.request", "body": chunk, "more_body": True}
+                except StopIteration:  # pragma: no cover
+                    request_complete = True
+                    return {"type": "http.request", "body": b""}
+            else:
+                body_bytes = body
+    
+            request_complete = True
+            return {"type": "http.request", "body": body_bytes}
+    
+        async def send(message: Message) -> None:
+            nonlocal raw_kwargs, response_started, template, context
+    
+            if message["type"] == "http.response.start":
+                assert (
+                    not response_started
+                ), 'Received multiple "http.response.start" messages.'
+                raw_kwargs["status_code"] = message["status"]
+                raw_kwargs["headers"] = [
+                    (key.decode(), value.decode())
+                    for key, value in message.get("headers", [])
+                ]
+                response_started = True
+            elif message["type"] == "http.response.body":
+                assert (
+                    response_started
+                ), 'Received "http.response.body" without "http.response.start".'
+                assert (
+                    not response_complete.is_set()
+                ), 'Received "http.response.body" after response completed.'
+                body = message.get("body", b"")
+                more_body = message.get("more_body", False)
+                if request.method != "HEAD":
+                    raw_kwargs["stream"].write(body)
+                if not more_body:
+                    raw_kwargs["stream"].seek(0)
+                    response_complete.set()
+            elif message["type"] == "http.response.debug":
+                template = message["info"]["template"]
+                context = message["info"]["context"]
+    
+        try:
+            with self.portal_factory() as portal:
+                response_complete = portal.call(anyio.Event)
+                portal.call(self.app, scope, receive, send)
+        except BaseException as exc:
+            if self.raise_server_exceptions:
+>               raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/testclient.py:398: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.testclient._TestClientTransport object at 0x10406a820>
+request = <Request('POST', 'http://testserver/api/nekretnine/')>
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        scheme = request.url.scheme
+        netloc = request.url.netloc.decode(encoding="ascii")
+        path = request.url.path
+        raw_path = request.url.raw_path
+        query = request.url.query.decode(encoding="ascii")
+    
+        default_port = {"http": 80, "ws": 80, "https": 443, "wss": 443}[scheme]
+    
+        if ":" in netloc:
+            host, port_string = netloc.split(":", 1)
+            port = int(port_string)
+        else:
+            host = netloc
+            port = default_port
+    
+        # Include the 'host' header.
+        if "host" in request.headers:
+            headers: list[tuple[bytes, bytes]] = []
+        elif port == default_port:  # pragma: no cover
+            headers = [(b"host", host.encode())]
+        else:  # pragma: no cover
+            headers = [(b"host", (f"{host}:{port}").encode())]
+    
+        # Include other request headers.
+        headers += [
+            (key.lower().encode(), value.encode())
+            for key, value in request.headers.multi_items()
+        ]
+    
+        scope: dict[str, typing.Any]
+    
+        if scheme in {"ws", "wss"}:
+            subprotocol = request.headers.get("sec-websocket-protocol", None)
+            if subprotocol is None:
+                subprotocols: typing.Sequence[str] = []
+            else:
+                subprotocols = [value.strip() for value in subprotocol.split(",")]
+            scope = {
+                "type": "websocket",
+                "path": unquote(path),
+                "raw_path": raw_path,
+                "root_path": self.root_path,
+                "scheme": scheme,
+                "query_string": query.encode(),
+                "headers": headers,
+                "client": ["testclient", 50000],
+                "server": [host, port],
+                "subprotocols": subprotocols,
+                "state": self.app_state.copy(),
+                "extensions": {"websocket.http.response": {}},
+            }
+            session = WebSocketTestSession(self.app, scope, self.portal_factory)
+            raise _Upgrade(session)
+    
+        scope = {
+            "type": "http",
+            "http_version": "1.1",
+            "method": request.method,
+            "path": unquote(path),
+            "raw_path": raw_path,
+            "root_path": self.root_path,
+            "scheme": scheme,
+            "query_string": query.encode(),
+            "headers": headers,
+            "client": ["testclient", 50000],
+            "server": [host, port],
+            "extensions": {"http.response.debug": {}},
+            "state": self.app_state.copy(),
+        }
+    
+        request_complete = False
+        response_started = False
+        response_complete: anyio.Event
+        raw_kwargs: dict[str, typing.Any] = {"stream": io.BytesIO()}
+        template = None
+        context = None
+    
+        async def receive() -> Message:
+            nonlocal request_complete
+    
+            if request_complete:
+                if not response_complete.is_set():
+                    await response_complete.wait()
+                return {"type": "http.disconnect"}
+    
+            body = request.read()
+            if isinstance(body, str):
+                body_bytes: bytes = body.encode("utf-8")  # pragma: no cover
+            elif body is None:
+                body_bytes = b""  # pragma: no cover
+            elif isinstance(body, GeneratorType):
+                try:  # pragma: no cover
+                    chunk = body.send(None)
+                    if isinstance(chunk, str):
+                        chunk = chunk.encode("utf-8")
+                    return {"type": "http.request", "body": chunk, "more_body": True}
+                except StopIteration:  # pragma: no cover
+                    request_complete = True
+                    return {"type": "http.request", "body": b""}
+            else:
+                body_bytes = body
+    
+            request_complete = True
+            return {"type": "http.request", "body": body_bytes}
+    
+        async def send(message: Message) -> None:
+            nonlocal raw_kwargs, response_started, template, context
+    
+            if message["type"] == "http.response.start":
+                assert (
+                    not response_started
+                ), 'Received multiple "http.response.start" messages.'
+                raw_kwargs["status_code"] = message["status"]
+                raw_kwargs["headers"] = [
+                    (key.decode(), value.decode())
+                    for key, value in message.get("headers", [])
+                ]
+                response_started = True
+            elif message["type"] == "http.response.body":
+                assert (
+                    response_started
+                ), 'Received "http.response.body" without "http.response.start".'
+                assert (
+                    not response_complete.is_set()
+                ), 'Received "http.response.body" after response completed.'
+                body = message.get("body", b"")
+                more_body = message.get("more_body", False)
+                if request.method != "HEAD":
+                    raw_kwargs["stream"].write(body)
+                if not more_body:
+                    raw_kwargs["stream"].seek(0)
+                    response_complete.set()
+            elif message["type"] == "http.response.debug":
+                template = message["info"]["template"]
+                context = message["info"]["context"]
+    
+        try:
+            with self.portal_factory() as portal:
+                response_complete = portal.call(anyio.Event)
+>               portal.call(self.app, scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/testclient.py:395: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <anyio._backends._asyncio.BlockingPortal object at 0x10436f6a0>
+func = <fastapi.applications.FastAPI object at 0x10329e1f0>
+args = ({'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function ..._request.<locals>.receive at 0x1042c1f70>, <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>)
+
+    def call(
+        self,
+        func: Callable[[Unpack[PosArgsT]], Awaitable[T_Retval] | T_Retval],
+        *args: Unpack[PosArgsT],
+    ) -> T_Retval:
+        """
+        Call the given function in the event loop thread.
+    
+        If the callable returns a coroutine object, it is awaited on.
+    
+        :param func: any callable
+        :raises RuntimeError: if the portal is not running or if this method is called
+            from within the event loop thread
+    
+        """
+>       return cast(T_Retval, self.start_task_soon(func, *args).result())
+
+../../Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py:321: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = None, timeout = None
+
+    def result(self, timeout=None):
+        """Return the result of the call that the future represents.
+    
+        Args:
+            timeout: The number of seconds to wait for the result if the future
+                isn't done. If None, then there is no limit on the wait time.
+    
+        Returns:
+            The result of the call that the future represents.
+    
+        Raises:
+            CancelledError: If the future was cancelled.
+            TimeoutError: If the future didn't finish executing before the given
+                timeout.
+            Exception: If the call raised then that exception will be raised.
+        """
+        try:
+            with self._condition:
+                if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
+                    raise CancelledError()
+                elif self._state == FINISHED:
+                    return self.__get_result()
+    
+                self._condition.wait(timeout)
+    
+                if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
+                    raise CancelledError()
+                elif self._state == FINISHED:
+>                   return self.__get_result()
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py:445: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = None
+
+    def __get_result(self):
+        if self._exception:
+            try:
+>               raise self._exception
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py:390: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <anyio._backends._asyncio.BlockingPortal object at 0x10436f6a0>
+func = <fastapi.applications.FastAPI object at 0x10329e1f0>
+args = ({'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function ..._request.<locals>.receive at 0x1042c1f70>, <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>)
+kwargs = {}, future = <Future at 0x10436fe50 state=finished raised NameError>
+
+    async def _call_func(
+        self,
+        func: Callable[[Unpack[PosArgsT]], Awaitable[T_Retval] | T_Retval],
+        args: tuple[Unpack[PosArgsT]],
+        kwargs: dict[str, Any],
+        future: Future[T_Retval],
+    ) -> None:
+        def callback(f: Future[T_Retval]) -> None:
+            if f.cancelled() and self._event_loop_thread_id not in (
+                None,
+                get_ident(),
+            ):
+                self.call(scope.cancel, "the future was cancelled")
+    
+        try:
+            retval_or_awaitable = func(*args, **kwargs)
+            if isawaitable(retval_or_awaitable):
+                with CancelScope() as scope:
+                    if future.cancelled():
+                        scope.cancel("the future was cancelled")
+                    else:
+                        future.add_done_callback(callback)
+    
+>                   retval = await retval_or_awaitable
+
+../../Library/Python/3.9/lib/python/site-packages/anyio/from_thread.py:252: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <fastapi.applications.FastAPI object at 0x10329e1f0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if self.root_path:
+            scope["root_path"] = self.root_path
+>       await super().__call__(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/fastapi/applications.py:1054: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <fastapi.applications.FastAPI object at 0x10329e1f0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        scope["app"] = self
+        if self.middleware_stack is None:
+            self.middleware_stack = self.build_middleware_stack()
+>       await self.middleware_stack(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/applications.py:123: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.errors.ServerErrorMiddleware object at 0x104190400>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        response_started = False
+    
+        async def _send(message: Message) -> None:
+            nonlocal response_started, send
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+            await self.app(scope, receive, _send)
+        except Exception as exc:
+            request = Request(scope)
+            if self.debug:
+                # In debug mode, return traceback responses.
+                response = self.debug_response(request, exc)
+            elif self.handler is None:
+                # Use our default 500 error handler.
+                response = self.error_response(request, exc)
+            else:
+                # Use an installed 500 error handler.
+                if is_async_callable(self.handler):
+                    response = await self.handler(request, exc)
+                else:
+                    response = await run_in_threadpool(self.handler, request, exc)
+    
+            if not response_started:
+                await response(scope, receive, send)
+    
+            # We always continue to raise the exception.
+            # This allows servers to log the error, or allows test clients
+            # to optionally raise the error within the test case.
+>           raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.errors.ServerErrorMiddleware object at 0x104190400>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function _TestClientTransport.handle_request.<locals>.send at 0x104060280>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        response_started = False
+    
+        async def _send(message: Message) -> None:
+            nonlocal response_started, send
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+>           await self.app(scope, receive, _send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/errors.py:164: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.base.BaseHTTPMiddleware object at 0x1041903a0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function ServerErrorMiddleware.__call__.<locals>._send at 0x1042f6430>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        request = _CachedRequest(scope, receive)
+        wrapped_receive = request.wrapped_receive
+        response_sent = anyio.Event()
+    
+        async def call_next(request: Request) -> Response:
+            app_exc: Exception | None = None
+            send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+            recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+            send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+            async def receive_or_disconnect() -> Message:
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                async with anyio.create_task_group() as task_group:
+    
+                    async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                        result = await func()
+                        task_group.cancel_scope.cancel()
+                        return result
+    
+                    task_group.start_soon(wrap, response_sent.wait)
+                    message = await wrap(wrapped_receive)
+    
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                return message
+    
+            async def close_recv_stream_on_response_sent() -> None:
+                await response_sent.wait()
+                recv_stream.close()
+    
+            async def send_no_error(message: Message) -> None:
+                try:
+                    await send_stream.send(message)
+                except anyio.BrokenResourceError:
+                    # recv_stream has been closed, i.e. response_sent has been set.
+                    return
+    
+            async def coro() -> None:
+                nonlocal app_exc
+    
+                async with send_stream:
+                    try:
+                        await self.app(scope, receive_or_disconnect, send_no_error)
+                    except Exception as exc:
+                        app_exc = exc
+    
+            task_group.start_soon(close_recv_stream_on_response_sent)
+            task_group.start_soon(coro)
+    
+            try:
+                message = await recv_stream.receive()
+                info = message.get("info", None)
+                if message["type"] == "http.response.debug" and info is not None:
+                    message = await recv_stream.receive()
+            except anyio.EndOfStream:
+                if app_exc is not None:
+                    raise app_exc
+                raise RuntimeError("No response returned.")
+    
+            assert message["type"] == "http.response.start"
+    
+            async def body_stream() -> typing.AsyncGenerator[bytes, None]:
+                async with recv_stream:
+                    async for message in recv_stream:
+                        assert message["type"] == "http.response.body"
+                        body = message.get("body", b"")
+                        if body:
+                            yield body
+                        if not message.get("more_body", False):
+                            break
+    
+                if app_exc is not None:
+                    raise app_exc
+    
+            response = _StreamingResponse(
+                status_code=message["status"], content=body_stream(), info=info
+            )
+            response.raw_headers = message["headers"]
+            return response
+    
+        with collapse_excgroups():
+            async with anyio.create_task_group() as task_group:
+                response = await self.dispatch_func(request, call_next)
+                await response(scope, wrapped_receive, send)
+>               response_sent.set()
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <contextlib._GeneratorContextManager object at 0x104368430>
+type = <class 'exceptiongroup.ExceptionGroup'>
+value = ExceptionGroup('unhandled errors in a TaskGroup', [NameError("name 'DEFAULT_ROLE' is not defined")])
+traceback = <traceback object at 0x104376d80>
+
+    def __exit__(self, type, value, traceback):
+        if type is None:
+            try:
+                next(self.gen)
+            except StopIteration:
+                return False
+            else:
+                raise RuntimeError("generator didn't stop")
+        else:
+            if value is None:
+                # Need to force instantiation so we can reliably
+                # tell if we get the same exception back
+                value = type()
+            try:
+>               self.gen.throw(type, value, traceback)
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextmanager
+    def collapse_excgroups() -> typing.Generator[None, None, None]:
+        try:
+            yield
+        except BaseException as exc:
+            if has_exceptiongroups:
+                while isinstance(exc, BaseExceptionGroup) and len(exc.exceptions) == 1:
+                    exc = exc.exceptions[0]  # pragma: no cover
+    
+>           raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_utils.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.base.BaseHTTPMiddleware object at 0x1041903a0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function _TestClientTransport.handle_request.<locals>.receive at 0x1042c1f70>
+send = <function ServerErrorMiddleware.__call__.<locals>._send at 0x1042f6430>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        request = _CachedRequest(scope, receive)
+        wrapped_receive = request.wrapped_receive
+        response_sent = anyio.Event()
+    
+        async def call_next(request: Request) -> Response:
+            app_exc: Exception | None = None
+            send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+            recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+            send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+            async def receive_or_disconnect() -> Message:
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                async with anyio.create_task_group() as task_group:
+    
+                    async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                        result = await func()
+                        task_group.cancel_scope.cancel()
+                        return result
+    
+                    task_group.start_soon(wrap, response_sent.wait)
+                    message = await wrap(wrapped_receive)
+    
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                return message
+    
+            async def close_recv_stream_on_response_sent() -> None:
+                await response_sent.wait()
+                recv_stream.close()
+    
+            async def send_no_error(message: Message) -> None:
+                try:
+                    await send_stream.send(message)
+                except anyio.BrokenResourceError:
+                    # recv_stream has been closed, i.e. response_sent has been set.
+                    return
+    
+            async def coro() -> None:
+                nonlocal app_exc
+    
+                async with send_stream:
+                    try:
+                        await self.app(scope, receive_or_disconnect, send_no_error)
+                    except Exception as exc:
+                        app_exc = exc
+    
+            task_group.start_soon(close_recv_stream_on_response_sent)
+            task_group.start_soon(coro)
+    
+            try:
+                message = await recv_stream.receive()
+                info = message.get("info", None)
+                if message["type"] == "http.response.debug" and info is not None:
+                    message = await recv_stream.receive()
+            except anyio.EndOfStream:
+                if app_exc is not None:
+                    raise app_exc
+                raise RuntimeError("No response returned.")
+    
+            assert message["type"] == "http.response.start"
+    
+            async def body_stream() -> typing.AsyncGenerator[bytes, None]:
+                async with recv_stream:
+                    async for message in recv_stream:
+                        assert message["type"] == "http.response.body"
+                        body = message.get("body", b"")
+                        if body:
+                            yield body
+                        if not message.get("more_body", False):
+                            break
+    
+                if app_exc is not None:
+                    raise app_exc
+    
+            response = _StreamingResponse(
+                status_code=message["status"], content=body_stream(), info=info
+            )
+            response.raw_headers = message["headers"]
+            return response
+    
+        with collapse_excgroups():
+            async with anyio.create_task_group() as task_group:
+>               response = await self.dispatch_func(request, call_next)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.middleware.base._CachedRequest object at 0x104368c70>
+call_next = <function BaseHTTPMiddleware.__call__.<locals>.call_next at 0x1042f6160>
+
+    @app.middleware("http")
+    async def activity_logger(request: Request, call_next):
+        request_id = str(uuid.uuid4())
+        start_time = time.perf_counter()
+    
+        try:
+>           response = await call_next(request)
+
+backend/app/main.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.middleware.base._CachedRequest object at 0x104368c70>
+
+    async def call_next(request: Request) -> Response:
+        app_exc: Exception | None = None
+        send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+        recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+        send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+        async def receive_or_disconnect() -> Message:
+            if response_sent.is_set():
+                return {"type": "http.disconnect"}
+    
+            async with anyio.create_task_group() as task_group:
+    
+                async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                    result = await func()
+                    task_group.cancel_scope.cancel()
+                    return result
+    
+                task_group.start_soon(wrap, response_sent.wait)
+                message = await wrap(wrapped_receive)
+    
+            if response_sent.is_set():
+                return {"type": "http.disconnect"}
+    
+            return message
+    
+        async def close_recv_stream_on_response_sent() -> None:
+            await response_sent.wait()
+            recv_stream.close()
+    
+        async def send_no_error(message: Message) -> None:
+            try:
+                await send_stream.send(message)
+            except anyio.BrokenResourceError:
+                # recv_stream has been closed, i.e. response_sent has been set.
+                return
+    
+        async def coro() -> None:
+            nonlocal app_exc
+    
+            async with send_stream:
+                try:
+                    await self.app(scope, receive_or_disconnect, send_no_error)
+                except Exception as exc:
+                    app_exc = exc
+    
+        task_group.start_soon(close_recv_stream_on_response_sent)
+        task_group.start_soon(coro)
+    
+        try:
+            message = await recv_stream.receive()
+            info = message.get("info", None)
+            if message["type"] == "http.response.debug" and info is not None:
+                message = await recv_stream.receive()
+        except anyio.EndOfStream:
+            if app_exc is not None:
+>               raise app_exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def coro() -> None:
+        nonlocal app_exc
+    
+        async with send_stream:
+            try:
+>               await self.app(scope, receive_or_disconnect, send_no_error)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.base.BaseHTTPMiddleware object at 0x104190340>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x1042f68b0>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1042f6670>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        request = _CachedRequest(scope, receive)
+        wrapped_receive = request.wrapped_receive
+        response_sent = anyio.Event()
+    
+        async def call_next(request: Request) -> Response:
+            app_exc: Exception | None = None
+            send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+            recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+            send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+            async def receive_or_disconnect() -> Message:
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                async with anyio.create_task_group() as task_group:
+    
+                    async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                        result = await func()
+                        task_group.cancel_scope.cancel()
+                        return result
+    
+                    task_group.start_soon(wrap, response_sent.wait)
+                    message = await wrap(wrapped_receive)
+    
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                return message
+    
+            async def close_recv_stream_on_response_sent() -> None:
+                await response_sent.wait()
+                recv_stream.close()
+    
+            async def send_no_error(message: Message) -> None:
+                try:
+                    await send_stream.send(message)
+                except anyio.BrokenResourceError:
+                    # recv_stream has been closed, i.e. response_sent has been set.
+                    return
+    
+            async def coro() -> None:
+                nonlocal app_exc
+    
+                async with send_stream:
+                    try:
+                        await self.app(scope, receive_or_disconnect, send_no_error)
+                    except Exception as exc:
+                        app_exc = exc
+    
+            task_group.start_soon(close_recv_stream_on_response_sent)
+            task_group.start_soon(coro)
+    
+            try:
+                message = await recv_stream.receive()
+                info = message.get("info", None)
+                if message["type"] == "http.response.debug" and info is not None:
+                    message = await recv_stream.receive()
+            except anyio.EndOfStream:
+                if app_exc is not None:
+                    raise app_exc
+                raise RuntimeError("No response returned.")
+    
+            assert message["type"] == "http.response.start"
+    
+            async def body_stream() -> typing.AsyncGenerator[bytes, None]:
+                async with recv_stream:
+                    async for message in recv_stream:
+                        assert message["type"] == "http.response.body"
+                        body = message.get("body", b"")
+                        if body:
+                            yield body
+                        if not message.get("more_body", False):
+                            break
+    
+                if app_exc is not None:
+                    raise app_exc
+    
+            response = _StreamingResponse(
+                status_code=message["status"], content=body_stream(), info=info
+            )
+            response.raw_headers = message["headers"]
+            return response
+    
+        with collapse_excgroups():
+            async with anyio.create_task_group() as task_group:
+                response = await self.dispatch_func(request, call_next)
+                await response(scope, wrapped_receive, send)
+>               response_sent.set()
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <contextlib._GeneratorContextManager object at 0x104368100>
+type = <class 'exceptiongroup.ExceptionGroup'>
+value = ExceptionGroup('unhandled errors in a TaskGroup', [NameError("name 'DEFAULT_ROLE' is not defined")])
+traceback = <traceback object at 0x10436b640>
+
+    def __exit__(self, type, value, traceback):
+        if type is None:
+            try:
+                next(self.gen)
+            except StopIteration:
+                return False
+            else:
+                raise RuntimeError("generator didn't stop")
+        else:
+            if value is None:
+                # Need to force instantiation so we can reliably
+                # tell if we get the same exception back
+                value = type()
+            try:
+>               self.gen.throw(type, value, traceback)
+
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/contextlib.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextmanager
+    def collapse_excgroups() -> typing.Generator[None, None, None]:
+        try:
+            yield
+        except BaseException as exc:
+            if has_exceptiongroups:
+                while isinstance(exc, BaseExceptionGroup) and len(exc.exceptions) == 1:
+                    exc = exc.exceptions[0]  # pragma: no cover
+    
+>           raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_utils.py:93: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.base.BaseHTTPMiddleware object at 0x104190340>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x1042f68b0>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1042f6670>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+    
+        request = _CachedRequest(scope, receive)
+        wrapped_receive = request.wrapped_receive
+        response_sent = anyio.Event()
+    
+        async def call_next(request: Request) -> Response:
+            app_exc: Exception | None = None
+            send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+            recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+            send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+            async def receive_or_disconnect() -> Message:
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                async with anyio.create_task_group() as task_group:
+    
+                    async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                        result = await func()
+                        task_group.cancel_scope.cancel()
+                        return result
+    
+                    task_group.start_soon(wrap, response_sent.wait)
+                    message = await wrap(wrapped_receive)
+    
+                if response_sent.is_set():
+                    return {"type": "http.disconnect"}
+    
+                return message
+    
+            async def close_recv_stream_on_response_sent() -> None:
+                await response_sent.wait()
+                recv_stream.close()
+    
+            async def send_no_error(message: Message) -> None:
+                try:
+                    await send_stream.send(message)
+                except anyio.BrokenResourceError:
+                    # recv_stream has been closed, i.e. response_sent has been set.
+                    return
+    
+            async def coro() -> None:
+                nonlocal app_exc
+    
+                async with send_stream:
+                    try:
+                        await self.app(scope, receive_or_disconnect, send_no_error)
+                    except Exception as exc:
+                        app_exc = exc
+    
+            task_group.start_soon(close_recv_stream_on_response_sent)
+            task_group.start_soon(coro)
+    
+            try:
+                message = await recv_stream.receive()
+                info = message.get("info", None)
+                if message["type"] == "http.response.debug" and info is not None:
+                    message = await recv_stream.receive()
+            except anyio.EndOfStream:
+                if app_exc is not None:
+                    raise app_exc
+                raise RuntimeError("No response returned.")
+    
+            assert message["type"] == "http.response.start"
+    
+            async def body_stream() -> typing.AsyncGenerator[bytes, None]:
+                async with recv_stream:
+                    async for message in recv_stream:
+                        assert message["type"] == "http.response.body"
+                        body = message.get("body", b"")
+                        if body:
+                            yield body
+                        if not message.get("more_body", False):
+                            break
+    
+                if app_exc is not None:
+                    raise app_exc
+    
+            response = _StreamingResponse(
+                status_code=message["status"], content=body_stream(), info=info
+            )
+            response.raw_headers = message["headers"]
+            return response
+    
+        with collapse_excgroups():
+            async with anyio.create_task_group() as task_group:
+>               response = await self.dispatch_func(request, call_next)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.middleware.base._CachedRequest object at 0x1043684f0>
+call_next = <function BaseHTTPMiddleware.__call__.<locals>.call_next at 0x10418ce50>
+
+    @app.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+>       response = await call_next(request)
+
+backend/app/main.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.middleware.base._CachedRequest object at 0x1043684f0>
+
+    async def call_next(request: Request) -> Response:
+        app_exc: Exception | None = None
+        send_stream: ObjectSendStream[typing.MutableMapping[str, typing.Any]]
+        recv_stream: ObjectReceiveStream[typing.MutableMapping[str, typing.Any]]
+        send_stream, recv_stream = anyio.create_memory_object_stream()
+    
+        async def receive_or_disconnect() -> Message:
+            if response_sent.is_set():
+                return {"type": "http.disconnect"}
+    
+            async with anyio.create_task_group() as task_group:
+    
+                async def wrap(func: typing.Callable[[], typing.Awaitable[T]]) -> T:
+                    result = await func()
+                    task_group.cancel_scope.cancel()
+                    return result
+    
+                task_group.start_soon(wrap, response_sent.wait)
+                message = await wrap(wrapped_receive)
+    
+            if response_sent.is_set():
+                return {"type": "http.disconnect"}
+    
+            return message
+    
+        async def close_recv_stream_on_response_sent() -> None:
+            await response_sent.wait()
+            recv_stream.close()
+    
+        async def send_no_error(message: Message) -> None:
+            try:
+                await send_stream.send(message)
+            except anyio.BrokenResourceError:
+                # recv_stream has been closed, i.e. response_sent has been set.
+                return
+    
+        async def coro() -> None:
+            nonlocal app_exc
+    
+            async with send_stream:
+                try:
+                    await self.app(scope, receive_or_disconnect, send_no_error)
+                except Exception as exc:
+                    app_exc = exc
+    
+        task_group.start_soon(close_recv_stream_on_response_sent)
+        task_group.start_soon(coro)
+    
+        try:
+            message = await recv_stream.receive()
+            info = message.get("info", None)
+            if message["type"] == "http.response.debug" and info is not None:
+                message = await recv_stream.receive()
+        except anyio.EndOfStream:
+            if app_exc is not None:
+>               raise app_exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def coro() -> None:
+        nonlocal app_exc
+    
+        async with send_stream:
+            try:
+>               await self.app(scope, receive_or_disconnect, send_no_error)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/base.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.cors.CORSMiddleware object at 0x1041902e0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1043661f0>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":  # pragma: no cover
+            await self.app(scope, receive, send)
+            return
+    
+        method = scope["method"]
+        headers = Headers(scope=scope)
+        origin = headers.get("origin")
+    
+        if origin is None:
+>           await self.app(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/cors.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.middleware.exceptions.ExceptionMiddleware object at 0x1041902b0>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1043661f0>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] not in ("http", "websocket"):
+            await self.app(scope, receive, send)
+            return
+    
+        scope["starlette.exception_handlers"] = (
+            self._exception_handlers,
+            self._status_handlers,
+        )
+    
+        conn: Request | WebSocket
+        if scope["type"] == "http":
+            conn = Request(scope, receive, send)
+        else:
+            conn = WebSocket(scope, receive, send)
+    
+>       await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/middleware/exceptions.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1043661f0>
+
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+        response_started = False
+    
+        async def sender(message: Message) -> None:
+            nonlocal response_started
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+            await app(scope, receive, sender)
+        except Exception as exc:
+            handler = None
+    
+            if isinstance(exc, HTTPException):
+                handler = status_handlers.get(exc.status_code)
+    
+            if handler is None:
+                handler = _lookup_exception_handler(exception_handlers, exc)
+    
+            if handler is None:
+>               raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.send_no_error at 0x1043661f0>
+
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+        response_started = False
+    
+        async def sender(message: Message) -> None:
+            nonlocal response_started
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+>           await app(scope, receive, sender)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <fastapi.routing.APIRouter object at 0x103f50580>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        The main entry point to the Router class.
+        """
+>       await self.middleware_stack(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/routing.py:756: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <fastapi.routing.APIRouter object at 0x103f50580>
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def app(self, scope: Scope, receive: Receive, send: Send) -> None:
+        assert scope["type"] in ("http", "websocket", "lifespan")
+    
+        if "router" not in scope:
+            scope["router"] = self
+    
+        if scope["type"] == "lifespan":
+            await self.lifespan(scope, receive, send)
+            return
+    
+        partial = None
+    
+        for route in self.routes:
+            # Determine if any route matches the incoming scope,
+            # and hand over to the matching route if found.
+            match, child_scope = route.matches(scope)
+            if match == Match.FULL:
+                scope.update(child_scope)
+>               await route.handle(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/routing.py:776: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = APIRoute(path='/api/nekretnine/', name='create_property', methods=['POST'])
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if self.methods and scope["method"] not in self.methods:
+            headers = {"Allow": ", ".join(self.methods)}
+            if "app" in scope:
+                raise HTTPException(status_code=405, headers=headers)
+            else:
+                response = PlainTextResponse(
+                    "Method Not Allowed", status_code=405, headers=headers
+                )
+            await response(scope, receive, send)
+        else:
+>           await self.app(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/routing.py:297: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def app(scope: Scope, receive: Receive, send: Send) -> None:
+        request = Request(scope, receive, send)
+    
+        async def app(scope: Scope, receive: Receive, send: Send) -> None:
+            if is_async_callable(func):
+                response = await func(request)
+            else:
+                response = await run_in_threadpool(func, request)
+            await response(scope, receive, send)
+    
+>       await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/routing.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+        response_started = False
+    
+        async def sender(message: Message) -> None:
+            nonlocal response_started
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+            await app(scope, receive, sender)
+        except Exception as exc:
+            handler = None
+    
+            if isinstance(exc, HTTPException):
+                handler = status_handlers.get(exc.status_code)
+    
+            if handler is None:
+                handler = _lookup_exception_handler(exception_handlers, exc)
+    
+            if handler is None:
+>               raise exc
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366430>
+
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+        response_started = False
+    
+        async def sender(message: Message) -> None:
+            nonlocal response_started
+    
+            if message["type"] == "http.response.start":
+                response_started = True
+            await send(message)
+    
+        try:
+>           await app(scope, receive, sender)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/_exception_handler.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+scope = {'app': <fastapi.applications.FastAPI object at 0x10329e1f0>, 'client': ['testclient', 50000], 'endpoint': <function create_property at 0x103e3c040>, 'extensions': {'http.response.debug': {}}, ...}
+receive = <function BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.receive_or_disconnect at 0x10418c430>
+send = <function wrap_app_handling_exceptions.<locals>.wrapped_app.<locals>.sender at 0x104366310>
+
+    async def app(scope: Scope, receive: Receive, send: Send) -> None:
+        if is_async_callable(func):
+>           response = await func(request)
+
+../../Library/Python/3.9/lib/python/site-packages/starlette/routing.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.requests.Request object at 0x104190e20>
+
+    async def app(request: Request) -> Response:
+        response: Union[Response, None] = None
+        async with AsyncExitStack() as file_stack:
+            try:
+                body: Any = None
+                if body_field:
+                    if is_body_form:
+                        body = await request.form()
+                        file_stack.push_async_callback(body.close)
+                    else:
+                        body_bytes = await request.body()
+                        if body_bytes:
+                            json_body: Any = Undefined
+                            content_type_value = request.headers.get("content-type")
+                            if not content_type_value:
+                                json_body = await request.json()
+                            else:
+                                message = email.message.Message()
+                                message["content-type"] = content_type_value
+                                if message.get_content_maintype() == "application":
+                                    subtype = message.get_content_subtype()
+                                    if subtype == "json" or subtype.endswith("+json"):
+                                        json_body = await request.json()
+                            if json_body != Undefined:
+                                body = json_body
+                            else:
+                                body = body_bytes
+            except json.JSONDecodeError as e:
+                validation_error = RequestValidationError(
+                    [
+                        {
+                            "type": "json_invalid",
+                            "loc": ("body", e.pos),
+                            "msg": "JSON decode error",
+                            "input": {},
+                            "ctx": {"error": e.msg},
+                        }
+                    ],
+                    body=e.doc,
+                )
+                raise validation_error from e
+            except HTTPException:
+                # If a middleware raises an HTTPException, it should be raised again
+                raise
+            except Exception as e:
+                http_error = HTTPException(
+                    status_code=400, detail="There was an error parsing the body"
+                )
+                raise http_error from e
+            errors: List[Any] = []
+            async with AsyncExitStack() as async_exit_stack:
+>               solved_result = await solve_dependencies(
+                    request=request,
+                    dependant=dependant,
+                    body=body,
+                    dependency_overrides_provider=dependency_overrides_provider,
+                    async_exit_stack=async_exit_stack,
+                )
+
+../../Library/Python/3.9/lib/python/site-packages/fastapi/routing.py:269: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def solve_dependencies(
+        *,
+        request: Union[Request, WebSocket],
+        dependant: Dependant,
+        body: Optional[Union[Dict[str, Any], FormData]] = None,
+        background_tasks: Optional[StarletteBackgroundTasks] = None,
+        response: Optional[Response] = None,
+        dependency_overrides_provider: Optional[Any] = None,
+        dependency_cache: Optional[Dict[Tuple[Callable[..., Any], Tuple[str]], Any]] = None,
+        async_exit_stack: AsyncExitStack,
+    ) -> Tuple[
+        Dict[str, Any],
+        List[Any],
+        Optional[StarletteBackgroundTasks],
+        Response,
+        Dict[Tuple[Callable[..., Any], Tuple[str]], Any],
+    ]:
+        values: Dict[str, Any] = {}
+        errors: List[Any] = []
+        if response is None:
+            response = Response()
+            del response.headers["content-length"]
+            response.status_code = None  # type: ignore
+        dependency_cache = dependency_cache or {}
+        sub_dependant: Dependant
+        for sub_dependant in dependant.dependencies:
+            sub_dependant.call = cast(Callable[..., Any], sub_dependant.call)
+            sub_dependant.cache_key = cast(
+                Tuple[Callable[..., Any], Tuple[str]], sub_dependant.cache_key
+            )
+            call = sub_dependant.call
+            use_sub_dependant = sub_dependant
+            if (
+                dependency_overrides_provider
+                and dependency_overrides_provider.dependency_overrides
+            ):
+                original_call = sub_dependant.call
+                call = getattr(
+                    dependency_overrides_provider, "dependency_overrides", {}
+                ).get(original_call, original_call)
+                use_path: str = sub_dependant.path  # type: ignore
+                use_sub_dependant = get_dependant(
+                    path=use_path,
+                    call=call,
+                    name=sub_dependant.name,
+                    security_scopes=sub_dependant.security_scopes,
+                )
+    
+>           solved_result = await solve_dependencies(
+                request=request,
+                dependant=use_sub_dependant,
+                body=body,
+                background_tasks=background_tasks,
+                response=response,
+                dependency_overrides_provider=dependency_overrides_provider,
+                dependency_cache=dependency_cache,
+                async_exit_stack=async_exit_stack,
+            )
+
+../../Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py:572: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def solve_dependencies(
+        *,
+        request: Union[Request, WebSocket],
+        dependant: Dependant,
+        body: Optional[Union[Dict[str, Any], FormData]] = None,
+        background_tasks: Optional[StarletteBackgroundTasks] = None,
+        response: Optional[Response] = None,
+        dependency_overrides_provider: Optional[Any] = None,
+        dependency_cache: Optional[Dict[Tuple[Callable[..., Any], Tuple[str]], Any]] = None,
+        async_exit_stack: AsyncExitStack,
+    ) -> Tuple[
+        Dict[str, Any],
+        List[Any],
+        Optional[StarletteBackgroundTasks],
+        Response,
+        Dict[Tuple[Callable[..., Any], Tuple[str]], Any],
+    ]:
+        values: Dict[str, Any] = {}
+        errors: List[Any] = []
+        if response is None:
+            response = Response()
+            del response.headers["content-length"]
+            response.status_code = None  # type: ignore
+        dependency_cache = dependency_cache or {}
+        sub_dependant: Dependant
+        for sub_dependant in dependant.dependencies:
+            sub_dependant.call = cast(Callable[..., Any], sub_dependant.call)
+            sub_dependant.cache_key = cast(
+                Tuple[Callable[..., Any], Tuple[str]], sub_dependant.cache_key
+            )
+            call = sub_dependant.call
+            use_sub_dependant = sub_dependant
+            if (
+                dependency_overrides_provider
+                and dependency_overrides_provider.dependency_overrides
+            ):
+                original_call = sub_dependant.call
+                call = getattr(
+                    dependency_overrides_provider, "dependency_overrides", {}
+                ).get(original_call, original_call)
+                use_path: str = sub_dependant.path  # type: ignore
+                use_sub_dependant = get_dependant(
+                    path=use_path,
+                    call=call,
+                    name=sub_dependant.name,
+                    security_scopes=sub_dependant.security_scopes,
+                )
+    
+            solved_result = await solve_dependencies(
+                request=request,
+                dependant=use_sub_dependant,
+                body=body,
+                background_tasks=background_tasks,
+                response=response,
+                dependency_overrides_provider=dependency_overrides_provider,
+                dependency_cache=dependency_cache,
+                async_exit_stack=async_exit_stack,
+            )
+            (
+                sub_values,
+                sub_errors,
+                background_tasks,
+                _,  # the subdependency returns the same response we have
+                sub_dependency_cache,
+            ) = solved_result
+            dependency_cache.update(sub_dependency_cache)
+            if sub_errors:
+                errors.extend(sub_errors)
+                continue
+            if sub_dependant.use_cache and sub_dependant.cache_key in dependency_cache:
+                solved = dependency_cache[sub_dependant.cache_key]
+            elif is_gen_callable(call) or is_async_gen_callable(call):
+                solved = await solve_generator(
+                    call=call, stack=async_exit_stack, sub_values=sub_values
+                )
+            elif is_coroutine_callable(call):
+>               solved = await call(**sub_values)
+
+../../Library/Python/3.9/lib/python/site-packages/fastapi/dependencies/utils.py:600: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.requests.Request object at 0x104190e20>
+
+    async def get_current_user(request: Request) -> Dict[str, Any]:
+    
+        # Check if endpoint is open
+        # Note: This check is usually done in middleware or before dependency injection
+        # But since we are using this as a dependency for the router, it will be called.
+        # However, for open endpoints, we might not want to enforce auth.
+        # In the original code, it returned a guest user for open endpoints.
+        # Here, we will rely on the router to apply this dependency only where needed,
+        # OR we can keep the logic if we apply it globally.
+        # Given the plan to use APIRouter dependencies, we should probably be strict here
+        # and not apply this dependency to auth endpoints.
+        # BUT, the original code had a global middleware-like approach.
+        # Let's stick to standard FastAPI: apply dependency to protected routes.
+        # So I will remove the OPEN_ENDPOINTS check from here and assume this is only called
+        # for protected routes.
+    
+        auth_header = request.headers.get("Authorization", "")
+        token_value: Optional[str] = None
+        if auth_header.startswith("Bearer "):
+            token_value = auth_header.split(" ", 1)[1].strip()
+        elif auth_header:
+            token_value = auth_header.strip()
+    
+        if not token_value:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Neautorizirano",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+        # API Tokens check (omitted for now as it relies on a global dict in server.py,
+        # we should move it to config or DB if needed, but for now let's focus on JWT)
+    
+        try:
+            payload = jwt.decode(
+                token_value, settings.AUTH_SECRET, algorithms=[settings.AUTH_ALGORITHM]
+            )
+        except JWTError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Neautorizirano",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+    
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Neautorizirano",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+        # We need to fetch the user from DB
+        # Since db.users.find_one returns a dict, we use it.
+        user_doc = await db.users.find_one({"id": user_id})
+        if not user_doc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Neautorizirano",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+        # We can convert to User model but for performance we might keep it as dict
+        # or convert it. The original code converted it.
+        # Let's convert it to keep typing happy.
+        # But wait, the User model expects datetime objects, and mongo stores strings.
+        # We need the parse_from_mongo helper.
+        # I should move parse_from_mongo to db/query_utils or similar.
+    
+        # For now, I will implement a simple parser here or move the helper.
+        # Let's move the helper to app/db/utils.py (renamed from query_utils or added to it)
+        # Actually, I'll add it to this file for now or use a local helper.
+    
+        # Let's assume user_doc has ISO strings.
+        # I'll just pass it as is to the principal dict for now,
+        # as the original code did `User(**parse_from_mongo(user_doc))` then converted back to dict for principal.
+    
+>       role = user_doc.get("role", DEFAULT_ROLE)
+E       NameError: name 'DEFAULT_ROLE' is not defined
+
+backend/app/api/deps.py:99: NameError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG: DB URL is sqlite+aiosqlite:///./test.db
+------------------------------ Captured log setup ------------------------------
+WARNING  passlib.handlers.bcrypt:bcrypt.py:622 (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/Users/gs/Library/Python/3.9/lib/python/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+AttributeError: module 'bcrypt' has no attribute '__about__'
+=============================== warnings summary ===============================
+../../Library/Python/3.9/lib/python/site-packages/starlette/formparsers.py:12
+  /Users/gs/Library/Python/3.9/lib/python/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_tenant_scoping.py::test_document_metadata_validation - NameError: name 'DEFAULT_ROLE' is not defined
+========================= 1 failed, 1 warning in 2.09s =========================

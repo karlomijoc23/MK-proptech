@@ -1,14 +1,11 @@
-"""SQLAlchemy persistence scaffolding for the MariaDB migration.
+"""Persistence utilities for the MariaDB-backed document store."""
 
-This package currently exposes helpers to build the async engine and session
-factory. The models/repositories will be filled in as the migration progresses.
-"""
-
-from .database import Base, get_async_session, get_engine, get_settings
+from .database import Base, dispose_engine, get_async_session, get_engine, get_settings
 
 __all__ = [
     "Base",
     "get_engine",
     "get_async_session",
     "get_settings",
+    "dispose_engine",
 ]

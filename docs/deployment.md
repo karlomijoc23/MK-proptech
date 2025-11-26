@@ -5,7 +5,7 @@ This document walks through deploying the MK-proptech stack using Render for the
 ## 1. Prerequisites
 
 - GitHub repository with latest changes pushed.
-- MongoDB Atlas project (or compatible managed MongoDB) with a dedicated database user.
+- MariaDB database (managed or self-hosted) reachable from Render, with a dedicated user.
 - Production values for secrets (AUTH_SECRET, API tokens, SMTP creds, etc.).
 
 ## 2. Backend on Render
@@ -13,7 +13,7 @@ This document walks through deploying the MK-proptech stack using Render for the
 Render uses `render.yaml` and the Dockerfile under `backend/`.
 
 1. **Create secrets (Render Dashboard → Secrets):**
-   - `mk-proptech-mongo-url` → Mongo connection string.
+   - `mk-proptech-database-url` → MariaDB connection string.
    - `mk-proptech-auth-secret` → strong JWT secret.
    - `mk-proptech-api-tokens` → optional comma-separated tokens (`token:role`).
    - `mk-proptech-initial-admin-email` / `mk-proptech-initial-admin-password` → only for first deploy.
@@ -25,7 +25,7 @@ Render uses `render.yaml` and the Dockerfile under `backend/`.
    - Attach a **Persistent Disk** (e.g. `/app/uploads`, 1 GB) to preserve uploaded PDFs.
    - Set a health check path `/api/health` and enable auto deploy.
 
-3. **Database:** point `MONGO_URL` to Atlas. Allow Render IP addresses if using IP allowlists.
+3. **Database:** ensure `DATABASE_URL` points to your MariaDB instance and allow Render IP addresses if using allowlists.
 
 4. **Migrations & Admin seeding:**
    - Once the service boots, open the “Shell” tab and run `python -m backend.manage migrate`.
@@ -58,7 +58,7 @@ Render uses `render.yaml` and the Dockerfile under `backend/`.
 - Run smoke tests: `BACKEND_BASE_URL=https://api.example.com BACKEND_API_TOKEN=<token> BACKEND_TENANT_ID=tenant-default python3 backend_test.py`
 - Verify the React build against the production API (login, documents preview, tenant switching).
 - Confirm uploads persist (Render persistent disk) and are served via HTTPS.
-- Monitor logs (Render dashboard) and set up alerts for MongoDB Atlas.
+- Monitor logs (Render dashboard) and configure alerts on your MariaDB host.
 - Schedule regular backups and rotate API tokens.
 
 ## 6. Optional: Render Static Frontend
