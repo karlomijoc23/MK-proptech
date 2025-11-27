@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from dotenv import load_dotenv
 
@@ -38,6 +38,13 @@ class DatabaseSettings:
 class Settings:
     PROJECT_NAME: str = "MK Proptech API"
     API_V1_STR: str = "/api"
+
+    # CORS
+    BACKEND_CORS_ORIGINS: List[str] = [
+        x.strip()
+        for x in os.environ.get("BACKEND_CORS_ORIGINS", "*").split(",")
+        if x.strip()
+    ]
 
     # Auth
     AUTH_SECRET: str = os.environ.get("AUTH_SECRET", "dev-secret-key-change-in-prod")

@@ -3,7 +3,7 @@ import os
 import sys
 
 # Set env var BEFORE imports to ensure it picks up SQLite
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./app.db"
+# os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./app.db"
 
 # Add backend to path so we can import app modules
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))

@@ -76,22 +76,39 @@ alembic upgrade head           # apply migrations
 
 The FastAPI app runs `initialize_persistence()` automatically when `USE_IN_MEMORY_DB=false`.
 
-## Running Services
+## Daily Operations (How to Run)
 
-Backed start/stop scripts prevent duplicate processes:
+### Starting the App
 
-```bash
-./scripts/start_backend.sh    # uvicorn with reload on :8000
-./scripts/start_frontend.sh   # CRACO dev server on :3000
-./scripts/stop_backend.sh
-./scripts/stop_frontend.sh
-```
+1.  **Start Backend**:
+    ```bash
+    ./scripts/start_backend.sh
+    ```
+2.  **Start Frontend**:
+    ```bash
+    ./scripts/start_frontend.sh
+    ```
+3.  **Access**: Open `http://localhost:3000` in your browser.
 
-If you need persistence locally, start the bundled MariaDB service first:
+### Stopping the App
 
-```bash
-docker compose -f docker-compose.mariadb.yml up -d mariadb
-```
+- Press `Ctrl+C` in the terminal windows where the servers are running.
+- Or run:
+  ```bash
+  ./scripts/stop_backend.sh
+  ./scripts/stop_frontend.sh
+  ```
+
+### Data Persistence
+
+- **Your data is safe**: All users, tenants, and documents are stored in your local **MariaDB** database.
+- **Turning off the computer**: You can safely turn off your computer. The database saves data to your hard drive.
+- **Restarting**: When you turn your computer back on, just run the "Starting the App" commands above. MariaDB should start automatically (managed by Homebrew).
+
+### Troubleshooting
+
+- **"Site can't be reached"**: Ensure both backend and frontend scripts are running.
+- **"Database connection failed"**: Ensure MariaDB is running (`brew services start mariadb`).
 
 ## Authentication
 
