@@ -56,6 +56,15 @@ async def get_dashboard_stats(
     if portfolio_value > 0:
         roi_percentage = (annual_yield / portfolio_value) * 100
 
+    # Count maintenance tasks by status
+    maintenance_new = await db.maintenance_tasks.count_documents({"status": "novi"})
+    maintenance_waiting = await db.maintenance_tasks.count_documents(
+        {"status": "ceka_dobavljaca"}
+    )
+    maintenance_in_progress = await db.maintenance_tasks.count_documents(
+        {"status": "u_tijeku"}
+    )
+
     return {
         "ukupno_nekretnina": total_properties,
         "aktivni_ugovori": active_contracts,
@@ -65,4 +74,7 @@ async def get_dashboard_stats(
         "ukupna_vrijednost_portfelja": portfolio_value,
         "godisnji_prinos": annual_yield,
         "prinos_postotak": round(roi_percentage, 2),
+        "odrzavanje_novo": maintenance_new,
+        "odrzavanje_ceka_dobavljaca": maintenance_waiting,
+        "odrzavanje_u_tijeku": maintenance_in_progress,
     }

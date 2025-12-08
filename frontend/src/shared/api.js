@@ -1,32 +1,15 @@
 import axios from "axios";
 
 export const getBackendUrl = () => {
-  const envValue = process.env.REACT_APP_BACKEND_URL?.trim();
-  if (envValue) {
-    return envValue.replace(/\/$/, "");
-  }
-
-  if (typeof window !== "undefined") {
-    const { protocol, hostname, port } = window.location;
-    // If running on localhost or a local IP, assume backend is on the same host at port 8000
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("172.") ||
-      hostname.startsWith("10.")
-    ) {
-      return `${protocol}//${hostname}:8000`;
-    }
-  }
-
   return "http://localhost:8000";
 };
 
 export const BACKEND_URL = getBackendUrl();
 const API_ROOT = `${BACKEND_URL}/api`;
 
-export const apiClient = axios.create();
+export const apiClient = axios.create({
+  timeout: 120000, // 2 minutes timeout for AI operations
+});
 
 const TENANT_STORAGE_KEY = "proptech:currentTenantId";
 const DEFAULT_TENANT_ID =
@@ -148,11 +131,12 @@ export const api = {
   updateZakupnik: (id, data) =>
     apiClient.put(`${API_ROOT}/zakupnici/${id}`, data),
 
-  getUgovori: () => apiClient.get(`${API_ROOT}/ugovori`),
+  getUgovori: (params = {}) => apiClient.get(`${API_ROOT}/ugovori`, { params }),
   createUgovor: (data) => apiClient.post(`${API_ROOT}/ugovori`, data),
   updateUgovor: (id, data) => apiClient.put(`${API_ROOT}/ugovori/${id}`, data),
   updateStatusUgovora: (id, status) =>
     apiClient.put(`${API_ROOT}/ugovori/${id}/status`, { novi_status: status }),
+  deleteUgovor: (id) => apiClient.delete(`${API_ROOT}/ugovori/${id}`),
 
   getDokumenti: () => apiClient.get(`${API_ROOT}/dokumenti`),
   getDokumentiNekretnine: (id) =>
@@ -194,12 +178,11 @@ export const api = {
       formData.append("file", data.file);
     }
 
-    return apiClient.post(`${API_ROOT}/dokumenti`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return apiClient.post(`${API_ROOT}/dokumenti`, formData);
   },
+  updateDokument: (id, data) =>
+    apiClient.put(`${API_ROOT}/dokumenti/${id}`, data),
+  deleteDokument: (id) => apiClient.delete(`${API_ROOT}/dokumenti/${id}`),
 
   getUnits: (params = {}) => apiClient.get(`${API_ROOT}/units`, { params }),
   getUnitsForProperty: (propertyId) =>
@@ -221,11 +204,7 @@ export const api = {
   parsePdfContract: (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    return apiClient.post(`${API_ROOT}/ai/parse-pdf-contract`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    return apiClient.post(`${API_ROOT}/ai/parse-pdf-contract`, formData);
   },
 
   getMaintenanceTasks: (params = {}) =>
@@ -246,6 +225,21 @@ export const api = {
 
   markReminderAsSent: (id) =>
     apiClient.put(`${API_ROOT}/podsjetnici/${id}/oznaci-poslan`),
+
+  getHandoverProtocols: (contractId) =>
+    apiClient.get(`${API_ROOT}/handover-protocols/contract/${contractId}`),
+  createHandoverProtocol: (data) =>
+    apiClient.post(`${API_ROOT}/handover-protocols`, data),
+  updateHandoverProtocol: (id, data) =>
+    apiClient.put(`${API_ROOT}/handover-protocols/${id}`, data),
+  deleteHandoverProtocol: (id) =>
+    apiClient.delete(`${API_ROOT}/handover-protocols/${id}`),
+
+  getBackendUrl: getBackendUrl,
+
+  // Tenant Members
+  addTenantMember: (tenantId, data) =>
+    api.post(`/tenants/${tenantId}/members`, data),
 };
 
 export const buildDocumentUrl = (dokument) => {

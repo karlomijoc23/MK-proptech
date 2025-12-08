@@ -1,5 +1,1631 @@
 yarn run v1.22.22
 warning ../../../package.json: No license field
 $ craco start
-Something is already running on port 3000.
-Done in 1.35s.
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:30561) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:30561) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+Starting the development server...
+
+Compiled successfully!
+
+You can now view frontend in the browser.
+
+  Local:            http://localhost:3000
+  On Your Network:  http://192.168.100.62:3000
+
+Note that the development build is not optimized.
+To create a production build, use yarn build.
+
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninarForm.jsx
+Syntax error: Unexpected token, expected "," (95:2) (95:2)
+ERROR in ./src/features/properties/NekretninarForm.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninarForm.jsx: Unexpected token, expected "," (95:2)
+
+  93 |     }
+  94 |   }
+> 95 |   }, [units, formData.povrsina]);
+     |   ^
+  96 |
+  97 | // Auto-calculate Net Income (Prihod - Rashod + Amortizacija)
+  98 | React.useEffect(() => {
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.unexpected (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6650:16)
+    at FlowParserMixin.expect (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6930:12)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11247:14)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11124:19)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3683:18)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11098:19)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3649:18)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11089:17)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseVar (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13393:91)
+
+ERROR in [eslint] 
+src/features/properties/NekretninarForm.jsx
+  Line 95:2:  Parsing error: Unexpected token, expected "," (95:2)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninarForm.jsx
+Syntax error: Unexpected token, expected "," (95:2) (95:2)
+ERROR in ./src/features/properties/NekretninarForm.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninarForm.jsx: Unexpected token, expected "," (95:2)
+
+  93 |     }
+  94 |   }
+> 95 |   }, [units, formData.povrsina]);
+     |   ^
+  96 |
+  97 | // Auto-calculate Net Income (Prihod - Rashod + Amortizacija)
+  98 | React.useEffect(() => {
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.unexpected (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6650:16)
+    at FlowParserMixin.expect (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6930:12)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11247:14)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11124:19)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3683:18)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11098:19)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3649:18)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11089:17)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseVar (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13393:91)
+
+ERROR in [eslint] 
+src/features/properties/NekretninarForm.jsx
+  Line 95:2:  Parsing error: Unexpected token, expected "," (95:2)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninarForm.jsx
+Syntax error: Expected corresponding JSX closing tag for <div>. (781:20) (781:20)
+ERROR in ./src/features/properties/NekretninarForm.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninarForm.jsx: Expected corresponding JSX closing tag for <div>. (781:20)
+
+  779 |                         </div>
+  780 |                       Novi podprostor {index + 1}
+> 781 |                     </p>
+      |                     ^
+  782 |                     <Button
+  783 |                       type="button"
+  784 |                       variant="ghost"
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseReturnStatement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13151:28)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12807:21)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+
+ERROR in [eslint] 
+src/features/properties/NekretninarForm.jsx
+  Line 781:20:  Parsing error: Expected corresponding JSX closing tag for <div>. (781:20)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninarForm.jsx
+Syntax error: Missing semicolon. (902:17) (902:17)
+ERROR in ./src/features/properties/NekretninarForm.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninarForm.jsx: Missing semicolon. (902:17)
+
+  900 |                     </div>
+  901 |                   </div>
+> 902 |                 ))}
+      |                  ^
+  903 |             </div>
+  904 |           )}
+  905 |         </TabsContent>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.semicolon (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6926:10)
+    at FlowParserMixin.parseReturnStatement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13152:12)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12807:21)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11124:19)
+    at FlowParserMixin.parseSubscript (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3683:18)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11098:19)
+    at FlowParserMixin.parseSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3649:18)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11089:17)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+
+ERROR in [eslint] 
+src/features/properties/NekretninarForm.jsx
+  Line 902:17:  Parsing error: Missing semicolon. (902:17)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Unexpected token (349:32) (349:32)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Unexpected token (349:32)
+
+  347 |                             </TableRow>
+  348 |                         ) : (
+> 349 |                                 const expired = isExpired(ugovor.datum_zavrsetka);
+      |                                 ^
+  350 |                         const expiring = isExpiring(ugovor.datum_zavrsetka);
+  351 |                                 const property = nekretnine.find(n => n.id === ugovor.nekretnina_id);
+  352 |                         const propertyName = property?.naziv || "—";
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.unexpected (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6650:16)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11451:16)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3049:77
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3049:27)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10889:17)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.jsxParseExpressionContainer (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4665:31)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4744:36)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 349:32:  Parsing error: Unexpected token (349:32)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28) (371:28)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+  369 |                                 </div>
+  370 |                             </TableCell>
+> 371 |                             <TableCell>
+      |                             ^
+  372 |                                 <div className="flex flex-col text-xs text-muted-foreground">
+  373 |                                     <span>{formatDate(ugovor.datum_pocetka)}</span>
+  374 |                                     <span className={expired ? "text-destructive font-medium" : ""}>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4795:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 371:28:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28) (371:28)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+  369 |                                 </div>
+  370 |                             </TableCell>
+> 371 |                             <TableCell>
+      |                             ^
+  372 |                                 <div className="flex flex-col text-xs text-muted-foreground">
+  373 |                                     <span>{formatDate(ugovor.datum_pocetka)}</span>
+  374 |                                     <span className={expired ? "text-destructive font-medium" : ""}>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4795:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 371:28:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28) (371:28)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+  369 |                                 </div>
+  370 |                             </TableCell>
+> 371 |                             <TableCell>
+      |                             ^
+  372 |                                 <div className="flex flex-col text-xs text-muted-foreground">
+  373 |                                     <span>{formatDate(ugovor.datum_pocetka)}</span>
+  374 |                                     <span className={expired ? "text-destructive font-medium" : ""}>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4795:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 371:28:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28) (371:28)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+  369 |                                 </div>
+  370 |                             </TableCell>
+> 371 |                             <TableCell>
+      |                             ^
+  372 |                                 <div className="flex flex-col text-xs text-muted-foreground">
+  373 |                                     <span>{formatDate(ugovor.datum_pocetka)}</span>
+  374 |                                     <span className={expired ? "text-destructive font-medium" : ""}>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4795:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 371:28:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/contracts/UgovoriPage.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28) (371:28)
+ERROR in ./src/features/contracts/UgovoriPage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/contracts/UgovoriPage.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+  369 |                                 </div>
+  370 |                             </TableCell>
+> 371 |                             <TableCell>
+      |                             ^
+  372 |                                 <div className="flex flex-col text-xs text-muted-foreground">
+  373 |                                     <span>{formatDate(ugovor.datum_pocetka)}</span>
+  374 |                                     <span className={expired ? "text-destructive font-medium" : ""}>
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4795:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12904:23)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseExprListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12185:18)
+    at FlowParserMixin.parseCallExpressionArguments (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11256:22)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11190:29)
+
+ERROR in [eslint] 
+src/features/contracts/UgovoriPage.jsx
+  Line 371:28:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (371:28)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninarForm.jsx
+Syntax error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (816:20) (816:20)
+ERROR in ./src/features/properties/NekretninarForm.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninarForm.jsx: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (816:20)
+
+  814 |                       </DropdownMenu>
+  815 |                     </div>
+> 816 |                     <div className="grid gap-3 md:grid-cols-3">
+      |                     ^
+  817 |                       <div>
+  818 |                         <Label>Oznaka *</Label>
+  819 |                         <Input
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4775:18)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseExpressionBase (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10788:23)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12431:16)
+    at FlowParserMixin.parseExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10784:17)
+    at FlowParserMixin.parseReturnStatement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13151:28)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12807:21)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseStatementListItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12756:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:61)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseBlock (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13306:10)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12110:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+
+ERROR in [eslint] 
+src/features/properties/NekretninarForm.jsx
+  Line 816:20:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (816:20)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninaDetails.jsx
+Syntax error: Identifier 'TableHeader' has already been declared. (42:2) (42:2)
+ERROR in ./src/features/properties/NekretninaDetails.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninaDetails.jsx: Identifier 'TableHeader' has already been declared. (42:2)
+
+  40 |   TableHeader,
+  41 |   TableRow,
+> 42 |   TableHeader,
+     |   ^
+  43 |   TableRow,
+  44 | } from "../../components/ui/table";
+  45 | import {
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1647:19)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1613:12)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1714:11)
+    at FlowParserMixin.declareNameFromIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7594:16)
+    at FlowParserMixin.checkIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7590:12)
+    at FlowParserMixin.checkLVal (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7529:12)
+    at FlowParserMixin.finishImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14275:10)
+    at FlowParserMixin.parseImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3489:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14411:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14251:37)
+    at FlowParserMixin.parseImport (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14244:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12885:27)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseModuleItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12753:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:36)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseProgram (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12634:10)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12624:25)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3718:28)
+    at FlowParserMixin.parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14501:10)
+    at parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14535:38)
+    at parser (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:261:32)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:223:11)
+
+ERROR in [eslint] 
+src/features/properties/NekretninaDetails.jsx
+  Line 42:2:  Parsing error: Identifier 'TableHeader' has already been declared. (42:2)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninaDetails.jsx
+Syntax error: Identifier 'TableHeader' has already been declared. (42:2) (42:2)
+ERROR in ./src/features/properties/NekretninaDetails.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninaDetails.jsx: Identifier 'TableHeader' has already been declared. (42:2)
+
+  40 |   TableHeader,
+  41 |   TableRow,
+> 42 |   TableHeader,
+     |   ^
+  43 |   TableRow,
+  44 | } from "../../components/ui/table";
+  45 | import {
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1647:19)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1613:12)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1714:11)
+    at FlowParserMixin.declareNameFromIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7594:16)
+    at FlowParserMixin.checkIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7590:12)
+    at FlowParserMixin.checkLVal (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7529:12)
+    at FlowParserMixin.finishImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14275:10)
+    at FlowParserMixin.parseImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3489:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14411:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14251:37)
+    at FlowParserMixin.parseImport (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14244:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12885:27)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseModuleItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12753:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:36)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseProgram (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12634:10)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12624:25)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3718:28)
+    at FlowParserMixin.parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14501:10)
+    at parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14535:38)
+    at parser (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:261:32)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:223:11)
+
+ERROR in [eslint] 
+src/features/properties/NekretninaDetails.jsx
+  Line 42:2:  Parsing error: Identifier 'TableHeader' has already been declared. (42:2)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninaDetails.jsx
+Syntax error: Identifier 'TableHeader' has already been declared. (42:2) (42:2)
+ERROR in ./src/features/properties/NekretninaDetails.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninaDetails.jsx: Identifier 'TableHeader' has already been declared. (42:2)
+
+  40 |   TableHeader,
+  41 |   TableRow,
+> 42 |   TableHeader,
+     |   ^
+  43 |   TableRow,
+  44 | } from "../../components/ui/table";
+  45 | import {
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1647:19)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1613:12)
+    at FlowScopeHandler.declareName (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:1714:11)
+    at FlowParserMixin.declareNameFromIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7594:16)
+    at FlowParserMixin.checkIdentifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7590:12)
+    at FlowParserMixin.checkLVal (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:7529:12)
+    at FlowParserMixin.finishImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14275:10)
+    at FlowParserMixin.parseImportSpecifier (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3489:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14411:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14251:37)
+    at FlowParserMixin.parseImport (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14244:17)
+    at FlowParserMixin.parseStatementContent (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12885:27)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12776:17)
+    at FlowParserMixin.parseStatementLike (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2949:24)
+    at FlowParserMixin.parseModuleItem (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12753:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13325:36)
+    at FlowParserMixin.parseBlockBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:13318:10)
+    at FlowParserMixin.parseProgram (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12634:10)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12624:25)
+    at FlowParserMixin.parseTopLevel (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3718:28)
+    at FlowParserMixin.parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14501:10)
+    at parse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:14535:38)
+    at parser (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:261:32)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/Users/gs/Documents/MK-proptech/frontend/node_modules/gensync/index.js:223:11)
+
+ERROR in [eslint] 
+src/features/properties/NekretninaDetails.jsx
+  Line 42:2:  Parsing error: Identifier 'TableHeader' has already been declared. (42:2)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (372:12) (372:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (372:12)
+
+  370 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  371 |                         : "—"}
+> 372 |             </span>
+      |             ^
+  373 |           </div>
+  374 |               </div>
+  375 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 372:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (372:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (400:12) (400:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+  398 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  399 |                         : "—"}
+> 400 |             </span>
+      |             ^
+  401 |           </div>
+  402 |               </div>
+  403 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 400:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (400:12) (400:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+  398 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  399 |                         : "—"}
+> 400 |             </span>
+      |             ^
+  401 |           </div>
+  402 |               </div>
+  403 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 400:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (400:12) (400:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+  398 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  399 |                         : "—"}
+> 400 |             </span>
+      |             ^
+  401 |           </div>
+  402 |               </div>
+  403 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 400:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (400:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (401:12) (401:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (401:12)
+
+  399 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  400 |                         : "—"}
+> 401 |             </span>
+      |             ^
+  402 |           </div>
+  403 |               </div>
+  404 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 401:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (401:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <CardContent>. (401:12) (401:12)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <CardContent>. (401:12)
+
+  399 |               ? `${property.nabavna_cijena.toLocaleString("hr-HR")} €`
+  400 |                         : "—"}
+> 401 |             </span>
+      |             ^
+  402 |           </div>
+  403 |               </div>
+  404 |
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4731:32)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 401:12:  Parsing error: Expected corresponding JSX closing tag for <CardContent>. (401:12)
+
+webpack compiled with 2 errors
+Compiling...
+Failed to compile.
+
+[eslint] 
+src/features/properties/NekretninePage.jsx
+Syntax error: Expected corresponding JSX closing tag for <Card>. (432:14) (432:14)
+ERROR in ./src/features/properties/NekretninePage.jsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: /Users/gs/Documents/MK-proptech/frontend/src/features/properties/NekretninePage.jsx: Expected corresponding JSX closing tag for <Card>. (432:14)
+
+  430 |                  })()}
+  431 |             </div>
+> 432 |               </div>
+      |               ^
+  433 |
+  434 |       <div className="flex gap-2 mt-auto">
+  435 |         <Button
+    at constructor (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:367:19)
+    at FlowParserMixin.raise (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6630:19)
+    at FlowParserMixin.jsxParseElementAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4760:16)
+    at FlowParserMixin.jsxParseElement (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4782:17)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4792:19)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:39
+    at FlowParserMixin.tryParse (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:6938:20)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3531:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12503:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11683:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12103:24)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3099:16)
+    at FlowParserMixin.parseFunctionBody (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:2923:12)
+    at FlowParserMixin.parseArrowExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12085:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11695:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3624:18)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11335:23)
+    at FlowParserMixin.parseExprAtom (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:4797:20)
+    at FlowParserMixin.parseExprSubscripts (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11085:23)
+    at FlowParserMixin.parseUpdate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11070:21)
+    at FlowParserMixin.parseMaybeUnary (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:11050:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10903:61)
+    at FlowParserMixin.parseExprOps (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10908:23)
+    at FlowParserMixin.parseMaybeConditional (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10885:23)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10835:21)
+    at FlowParserMixin.parseMaybeAssign (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:3582:18)
+    at /Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:10804:39
+    at FlowParserMixin.allowInAnd (/Users/gs/Documents/MK-proptech/frontend/node_modules/@babel/parser/lib/index.js:12436:12)
+
+ERROR in [eslint] 
+src/features/properties/NekretninePage.jsx
+  Line 432:14:  Parsing error: Expected corresponding JSX closing tag for <Card>. (432:14)
+
+webpack compiled with 2 errors
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully

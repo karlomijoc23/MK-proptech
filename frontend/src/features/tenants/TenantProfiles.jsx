@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../shared/auth";
 import { useEntityStore } from "../../shared/entityStore";
 import { api } from "../../shared/api";
 import { toast } from "../../components/ui/sonner";
@@ -62,6 +63,7 @@ const emptyInviteForm = {
   full_name: "",
   role: "tenant",
   password: "",
+  tenantId: "",
 };
 
 const formatLabel = (tenant) => {
@@ -91,15 +93,17 @@ const TenantProfiles = () => {
   const [inviteForm, setInviteForm] = useState(emptyInviteForm);
   const [inviting, setInviting] = useState(false);
 
+  const { user } = useAuth();
+
   const activeSummary = useMemo(
     () => tenants.find((item) => item.id === tenantId),
     [tenants, tenantId],
   );
 
-  const canCreateProfiles = useMemo(
-    () => canManageTenants(activeSummary?.role),
-    [activeSummary?.role],
-  );
+  const canCreateProfiles = useMemo(() => {
+    if (user?.role === "admin" || user?.role === "owner") return true;
+    return canManageTenants(activeSummary?.role);
+  }, [activeSummary?.role, user?.role]);
   const canManageUsers = canCreateProfiles;
 
   const loadTenants = useCallback(async () => {
@@ -188,6 +192,7 @@ const TenantProfiles = () => {
 
   const handleSelectTenant = (id) => {
     setSelectedTenantId(id);
+    setInviteForm((prev) => ({ ...prev, tenantId: id }));
   };
 
   const handleSetActive = async (id) => {
@@ -280,13 +285,31 @@ const TenantProfiles = () => {
     }
     setInviting(true);
     try {
-      await api.registerUser({
+      const registerRes = await api.registerUser({
         email: inviteForm.email.trim(),
         password: inviteForm.password,
         full_name: inviteForm.full_name.trim() || undefined,
         role: inviteForm.role,
       });
-      toast.success("Korisnik je uspješno dodan.");
+
+      const newUser = registerRes.data;
+
+      // Assign to selected tenant
+      const targetTenantId = inviteForm.tenantId || selectedTenantId;
+      if (targetTenantId && newUser?.id) {
+        try {
+          await api.addTenantMember(targetTenantId, {
+            user_id: newUser.id,
+            role: "member", // Default role
+          });
+          toast.success("Korisnik je dodan u profil.");
+        } catch (assignErr) {
+          console.error("Failed to assign user to tenant", assignErr);
+          toast.warning("Korisnik je kreiran, ali nije dodan u profil.");
+        }
+      }
+
+      toast.success("Korisnik je uspješno registriran.");
       setInviteForm(emptyInviteForm);
       await loadUsers();
     } catch (err) {
@@ -621,6 +644,31 @@ const TenantProfiles = () => {
                   }
                   placeholder="Opcionalno"
                 />
+              </div>
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
+                  htmlFor="invite-tenant"
+                >
+                  Profil
+                </label>
+                <Select
+                  value={inviteForm.tenantId}
+                  onValueChange={(value) =>
+                    handleInviteFieldChange("tenantId", value)
+                  }
+                >
+                  <SelectTrigger id="invite-tenant">
+                    <SelectValue placeholder="Odaberite profil" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedTenants.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {formatLabel(tenant)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label

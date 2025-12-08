@@ -1,3 +1,8 @@
+import base64
+import io
+import json
+import logging
+import re
 from typing import Any, Dict, Optional
 
 from app.api import deps
@@ -5,10 +10,13 @@ from app.core.config import get_settings
 from app.db.instance import db
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from openai import OpenAI
+from PIL import Image
 from pydantic import BaseModel
+from pypdf import PdfReader
 
 router = APIRouter()
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 class AnnexRequest(BaseModel):
@@ -26,10 +34,6 @@ async def generate_contract_annex(request: AnnexRequest):
         raise HTTPException(status_code=404, detail="Ugovor nije pronađen")
 
     api_key = settings.OPENAI_API_KEY
-
-    # Check if API key is valid (not empty and not "test" unless we want to mock)
-    # The test mocks OpenAI class, so we should try to use it if key is present.
-    # But the test also tests fallback when key is empty.
 
     if not api_key:
         return {
@@ -74,10 +78,7 @@ async def generate_contract_annex(request: AnnexRequest):
             },
         }
     except Exception as e:
-        # If OpenAI fails, or if key is invalid/test, we might fall back or error.
-        # The test expects success with source="openai" if key is present (mocked).
-        # If we are in test env with "test" key, real OpenAI would fail.
-        # But the test mocks the class.
+        logger.error(f"Error generating annex: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -86,133 +87,152 @@ async def parse_pdf_contract(
     file: UploadFile = File(...),
     current_user: Dict[str, Any] = Depends(deps.get_current_user),
 ):
-    import base64
-    import io
-    import json
+    logger.info(f"Starting PDF analysis for file: {file.filename}")
 
-    from PIL import Image
-    from pypdf import PdfReader
-
-    # 1. Extract text from PDF
-    text = ""
-    images = []
-
+    # 1. Read file content
     try:
         contents = await file.read()
         pdf_file = io.BytesIO(contents)
         reader = PdfReader(pdf_file)
-
-        # Limit to first few pages to avoid token limits
-        for page in reader.pages[:5]:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-
-            # Collect images if text is sparse
-            if len(text) < 100:
-                for img in page.images:
-                    images.append(img)
-
     except Exception as e:
+        logger.error(f"Failed to read PDF: {e}")
         raise HTTPException(
             status_code=400, detail=f"Neuspješno čitanje PDF-a: {str(e)}"
         )
 
-    # 2. Determine mode (Text vs Vision)
+    # 2. Extract text and images
+    text = ""
+    images = []
+
+    try:
+        # Limit to first 5 pages
+        for i, page in enumerate(reader.pages[:5]):
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+
+            # If text is sparse, look for images (scans)
+            if len(text) < 200:
+                try:
+                    for img in page.images:
+                        images.append(img)
+                except Exception as img_err:
+                    logger.warning(f"Failed to extract images from page {i}: {img_err}")
+
+    except Exception as e:
+        logger.error(f"Error extracting content from PDF: {e}")
+        # Continue if we have at least some content, otherwise raise
+        if not text and not images:
+            raise HTTPException(
+                status_code=400, detail=f"Greška pri analizi sadržaja PDF-a: {str(e)}"
+            )
+
+    # 3. Determine mode
     use_vision = False
     if len(text.strip()) < 50 and images:
         use_vision = True
+        logger.info("Using Vision mode (scanned document detected)")
     elif len(text.strip()) < 50 and not images:
         raise HTTPException(
             status_code=400, detail="Nije pronađen tekst niti slike u PDF-u."
         )
+    else:
+        logger.info("Using Text mode")
 
-    # 3. Call OpenAI
+    # 4. Prepare OpenAI Client
     api_key = settings.OPENAI_API_KEY
+
+    # MOCK RESPONSE if no key
     if not api_key:
-        # Fallback mock
+        logger.warning("No OpenAI API key found. Returning mock response.")
         return {
             "success": True,
             "data": {
-                "broj_ugovora": "MOCK-NO-KEY",
-                "zakupnik": "Nema API ključa",
-                "oib": "",
-                "adresa": "",
-                "datum_sklapanja": None,
-                "datum_pocetka": None,
-                "datum_zavrsetka": None,
-                "iznos_zakupnine": 0,
-                "valuta": "EUR",
-                "period_placanja": "mjesečno",
-                "depozit": 0,
-                "otkazni_rok_dani": 0,
+                "ugovor": {
+                    "interna_oznaka": "MOCK-UGOVOR-001",
+                    "datum_sklapanja": "2024-01-01",
+                    "datum_pocetka": "2024-02-01",
+                    "datum_zavrsetka": "2025-02-01",
+                    "sazetak": "Ovo je mock sažetak jer nema API ključa.",
+                },
+                "financije": {"iznos": 1000.00, "valuta": "EUR"},
+                "zakupnik": {
+                    "naziv_firme": "Mock Tvrtka d.o.o.",
+                    "oib": "12345678901",
+                    "adresa": "Ilica 1, Zagreb",
+                },
+                "nekretnina": {"naziv": "Poslovni Centar", "adresa": "Vukovarska 10"},
             },
         }
 
     try:
         client = OpenAI(api_key=api_key)
+        model = "gpt-3.5-turbo"
+        messages = []
+
+        system_prompt = "Ti si asistent za analizu pravnih dokumenata (ugovora o zakupu). Vraćaš isključivo JSON."
+
+        json_structure = """
+        {
+            "ugovor": {
+                "interna_oznaka": "string ili null (broj ugovora)",
+                "datum_sklapanja": "YYYY-MM-DD ili null (pretvori iz teksta npr. '1. siječnja 2024.' -> '2024-01-01')",
+                "datum_pocetka": "YYYY-MM-DD ili null (pretvori iz teksta)",
+                "datum_zavrsetka": "YYYY-MM-DD ili null (pretvori iz teksta, ako je na 1 godinu dodaj 1 godinu na početak)",
+                "sazetak": "string (kratki opis bitnih stavki)"
+            },
+            "financije": {
+                "iznos": number (samo iznos zakupnine) ili null,
+                "valuta": "string (EUR, USD...)"
+            },
+            "zakupnik": {
+                "naziv_firme": "string ili null",
+                "oib": "string ili null",
+                "adresa": "string ili null"
+            },
+            "nekretnina": {
+                "naziv": "string ili null",
+                "adresa": "string ili null"
+            },
+            "property_unit": {
+                "naziv": "string ili null (oznaka podprostora)"
+            }
+        }
+        """
 
         if use_vision:
-            # Prepare image for Vision API
-            # Take the first image found (usually the scan of the page)
+            model = "gpt-4o"
+            # Process first image
             img_obj = images[0]
-            # img_obj.data contains bytes
-            # We might need to convert/resize if too large, but let's try direct base64 first
-            # PIL is useful to ensure it's a valid image format (PNG/JPEG)
-
             image_data = img_obj.data
+
+            # Convert to base64
+            # Try to ensure it's a valid format using PIL
             try:
                 pil_img = Image.open(io.BytesIO(image_data))
-                # Convert to RGB if needed (e.g. if CMYK)
                 if pil_img.mode not in ("RGB", "L"):
                     pil_img = pil_img.convert("RGB")
 
-                # Resize if too big (max 2000x2000 is a good rule of thumb for tokens)
+                # Resize to avoid token limits
                 pil_img.thumbnail((2000, 2000))
 
-                # Save to buffer as JPEG
                 buff = io.BytesIO()
                 pil_img.save(buff, format="JPEG")
                 base64_image = base64.b64encode(buff.getvalue()).decode("utf-8")
                 media_type = "image/jpeg"
-            except Exception as img_err:
-                print(f"Image processing error: {img_err}")
-                # Fallback to raw data if PIL fails, assuming it's already a valid format
+            except Exception as e:
+                logger.warning(f"Image conversion failed, trying raw bytes: {e}")
                 base64_image = base64.b64encode(image_data).decode("utf-8")
-                media_type = "image/jpeg"  # Assumption
+                media_type = "image/jpeg"
 
-            prompt_messages = [
-                {
-                    "role": "system",
-                    "content": "Ti si asistent za analizu pravnih dokumenata. Vraćaš isključivo JSON.",
-                },
+            messages = [
+                {"role": "system", "content": system_prompt},
                 {
                     "role": "user",
                     "content": [
                         {
                             "type": "text",
-                            "text": """
-                                Analiziraj ovu sliku ugovora o zakupu i izvuci ključne podatke u JSON formatu.
-                                Traženi format JSON-a:
-                                {
-                                    "broj_ugovora": "string ili null",
-                                    "zakupnik": "string (naziv tvrtke ili ime) ili null",
-                                    "oib": "string (11 znamenki) ili null",
-                                    "adresa": "string (adresa zakupnika) ili null",
-                                    "adresa_nekretnine": "string (adresa predmeta zakupa) ili null",
-                                    "naziv_nekretnine_iz_ugovora": "string (naziv zgrade/centra ako postoji) ili null",
-                                    "podprostor": "string (oznaka ili naziv jedinice, npr. Ured 101) ili null",
-                                    "datum_sklapanja": "YYYY-MM-DD ili null",
-                                    "datum_pocetka": "YYYY-MM-DD ili null",
-                                    "datum_zavrsetka": "YYYY-MM-DD ili null",
-                                    "iznos_zakupnine": number (samo iznos) ili null,
-                                    "valuta": "string (EUR, USD...) ili null",
-                                    "period_placanja": "string (mjesečno, kvartalno...) ili null",
-                                    "depozit": number ili null,
-                                    "otkazni_rok_dani": number (broj dana) ili null
-                                }
-                                Vrati SAMO JSON objekt.
-                            """,
+                            "text": f"Analiziraj ovu sliku ugovora i izvuci podatke u JSON formatu:\n{json_structure}",
                         },
                         {
                             "type": "image_url",
@@ -223,151 +243,130 @@ async def parse_pdf_contract(
                     ],
                 },
             ]
-            model = "gpt-4o"  # Vision capable model
-
         else:
             # Text mode
-            prompt = f"""
-            Analiziraj sljedeći tekst ugovora o zakupu i izvuci ključne podatke u JSON formatu.
-            Tekst ugovora:
-            {text[:4000]}
-
-            Traženi format JSON-a:
-            {{
-                "broj_ugovora": "string ili null",
-                "zakupnik": "string (naziv tvrtke ili ime) ili null",
-                "oib": "string (11 znamenki) ili null",
-                "adresa": "string (adresa zakupnika) ili null",
-                "adresa_nekretnine": "string (adresa predmeta zakupa) ili null",
-                "naziv_nekretnine_iz_ugovora": "string (naziv zgrade/centra ako postoji) ili null",
-                "podprostor": "string (oznaka ili naziv jedinice, npr. Ured 101) ili null",
-                "datum_sklapanja": "YYYY-MM-DD ili null",
-                "datum_pocetka": "YYYY-MM-DD ili null",
-                "datum_zavrsetka": "YYYY-MM-DD ili null",
-                "iznos_zakupnine": number (samo iznos) ili null,
-                "valuta": "string (EUR, USD...) ili null",
-                "period_placanja": "string (mjesečno, kvartalno...) ili null",
-                "depozit": number ili null,
-                "otkazni_rok_dani": number (broj dana) ili null
-            }}
-            Vrati SAMO JSON objekt, bez dodatnog teksta.
-            """
-            prompt_messages = [
+            messages = [
+                {"role": "system", "content": system_prompt},
                 {
-                    "role": "system",
-                    "content": "Ti si asistent za analizu pravnih dokumenata. Vraćaš isključivo JSON.",
+                    "role": "user",
+                    "content": f"Analiziraj tekst ugovora i izvuci podatke u JSON formatu:\n{json_structure}\n\nTekst ugovora:\n{text[:4000]}",
                 },
-                {"role": "user", "content": prompt},
             ]
-            model = "gpt-3.5-turbo"
 
         response = client.chat.completions.create(
-            model=model, messages=prompt_messages, temperature=0, max_tokens=1000
+            model=model,
+            messages=messages,
+            temperature=0,
+            response_format={"type": "json_object"},
         )
 
-        content = response.choices[0].message.content.strip()
-        # Clean up markdown code blocks if present
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.endswith("```"):
-            content = content[:-3]
-
+        content = response.choices[0].message.content
         data = json.loads(content)
 
-        # Restructure data for frontend
-        structured_data = {
-            "document_type": "ugovor",  # Default, or inferred
-            "nekretnina": {
-                "adresa": data.get("adresa_nekretnine"),
-                "naziv": data.get("naziv_nekretnine_iz_ugovora"),
-            },
-            "zakupnik": {
-                "naziv_firme": data.get("zakupnik"),
-                "oib": data.get("oib"),
-                "adresa": data.get("adresa"),
-            },
-            "ugovor": {
-                "interna_oznaka": data.get("broj_ugovora"),
-                "datum_sklapanja": data.get("datum_sklapanja"),
-                "datum_pocetka": data.get("datum_pocetka"),
-                "datum_zavrsetka": data.get("datum_zavrsetka"),
-                "iznos": data.get("iznos_zakupnine"),
-                "valuta": data.get("valuta"),
-            },
-            "property_unit": {"naziv": data.get("podprostor")},
-            "financije": {
-                "iznos": data.get("iznos_zakupnine"),
-                "valuta": data.get("valuta"),
-                "period": data.get("period_placanja"),
-            },
-        }
+        # Post-processing / Enrichment
+        # Try to match Tenant and Property from DB
 
-        # 1. Try to find Property
-        extracted_address = data.get("adresa_nekretnine")
-        extracted_prop_name = data.get("naziv_nekretnine_iz_ugovora")
-        found_property = None
+        # 1. Match Tenant
+        if data.get("zakupnik"):
+            zakupnik_data = data["zakupnik"]
+            query = []
+            if zakupnik_data.get("oib"):
+                query.append({"oib": zakupnik_data["oib"]})
+            if zakupnik_data.get("naziv_firme"):
+                query.append(
+                    {
+                        "naziv_firme": {
+                            "$regex": re.escape(zakupnik_data["naziv_firme"]),
+                            "$options": "i",
+                        }
+                    }
+                )
 
-        if extracted_address or extracted_prop_name:
-            import re
+            if query:
+                found_tenant = await db.zakupnici.find_one({"$or": query})
+                if found_tenant:
+                    data["zakupnik"]["id"] = found_tenant["id"]
+                    # Update fields if missing in AI response but present in DB? No, prefer AI for now or keep as is.
 
-            queries = []
-            if extracted_address:
-                safe_addr = re.escape(extracted_address.split(",")[0].strip())
-                if len(safe_addr) > 3:
-                    queries.append({"adresa": {"$regex": safe_addr, "$options": "i"}})
-
-            if extracted_prop_name:
-                safe_name = re.escape(extracted_prop_name)
-                if len(safe_name) > 3:
-                    queries.append({"naziv": {"$regex": safe_name, "$options": "i"}})
-
-            if queries:
-                found_property = await db.nekretnine.find_one({"$or": queries})
-                if found_property:
-                    # Enrich structured data with found ID (optional, frontend might do its own lookup)
-                    structured_data["nekretnina"]["id"] = found_property.get("id")
-                    structured_data["nekretnina"]["found_naziv"] = found_property.get(
-                        "naziv"
+        # 2. Match Property
+        if data.get("nekretnina"):
+            prop_data = data["nekretnina"]
+            query = []
+            if prop_data.get("naziv"):
+                query.append(
+                    {
+                        "naziv": {
+                            "$regex": re.escape(prop_data["naziv"]),
+                            "$options": "i",
+                        }
+                    }
+                )
+            if prop_data.get("adresa"):
+                # Simple address match (first part)
+                addr_part = prop_data["adresa"].split(",")[0].strip()
+                if len(addr_part) > 3:
+                    query.append(
+                        {"adresa": {"$regex": re.escape(addr_part), "$options": "i"}}
                     )
 
-        # 2. Try to find Unit (Podprostor)
-        extracted_unit = data.get("podprostor")
-        if found_property and extracted_unit:
-            safe_unit = re.escape(extracted_unit)
-            unit = await db.property_units.find_one(
-                {
-                    "nekretnina_id": found_property.get("id"),
-                    "naziv": {"$regex": safe_unit, "$options": "i"},
-                }
-            )
-            if unit:
-                structured_data["matched_property_unit"] = {
-                    "id": unit.get("id"),
-                    "naziv": unit.get("naziv"),
-                    "oznaka": unit.get("oznaka"),
-                    "nekretnina_id": unit.get("nekretnina_id"),
-                }
+            if query:
+                found_prop = await db.nekretnine.find_one({"$or": query})
+                if found_prop:
+                    data["nekretnina"]["id"] = found_prop["id"]
 
-        # 3. Try to find Tenant
-        extracted_tenant = data.get("zakupnik")
-        extracted_oib = data.get("oib")
-        if extracted_oib or extracted_tenant:
-            tenant_queries = []
-            if extracted_oib:
-                tenant_queries.append({"oib": extracted_oib})
-            if extracted_tenant:
-                safe_tenant = re.escape(extracted_tenant)
-                tenant_queries.append(
-                    {"naziv": {"$regex": safe_tenant, "$options": "i"}}
-                )
-                tenant_queries.append({"ime": {"$regex": safe_tenant, "$options": "i"}})
+                    # 3. Match Unit if Property found
+                    if data.get("property_unit") and data["property_unit"].get("naziv"):
+                        unit_name = data["property_unit"]["naziv"]
+                        found_unit = await db.property_units.find_one(
+                            {
+                                "nekretnina_id": found_prop["id"],
+                                "oznaka": {
+                                    "$regex": re.escape(unit_name),
+                                    "$options": "i",
+                                },
+                            }
+                        )
+                        if found_unit:
+                            data["property_unit"]["id"] = found_unit["id"]
 
-            found_tenant = await db.zakupnici.find_one({"$or": tenant_queries})
-            if found_tenant:
-                structured_data["zakupnik"]["id"] = found_tenant.get("id")
-
-        return {"success": True, "data": structured_data}
+        return {"success": True, "data": data}
 
     except Exception as e:
-        print(f"OpenAI error: {e}")
+        logger.error(f"OpenAI analysis failed: {e}")
+
+        # Check for Quota Exceeded or other API errors
+        error_msg = str(e).lower()
+        if (
+            "quota" in error_msg
+            or "rate limit" in error_msg
+            or "insufficient_quota" in error_msg
+        ):
+            logger.warning("OpenAI Quota Exceeded. Returning mock data.")
+            return {
+                "success": True,
+                "data": {
+                    "ugovor": {
+                        "interna_oznaka": "MOCK-QUOTA-001",
+                        "datum_sklapanja": "2024-01-01",
+                        "datum_pocetka": "2024-02-01",
+                        "datum_zavrsetka": "2025-02-01",
+                        "sazetak": "Ovo je mock sažetak jer je OpenAI kvota prekoračena.",
+                    },
+                    "financije": {"iznos": 1500.00, "valuta": "EUR"},
+                    "zakupnik": {
+                        "naziv_firme": "Mock Tvrtka (Quota Exceeded)",
+                        "oib": "12345678901",
+                        "adresa": "Ilica 1, Zagreb",
+                    },
+                    "nekretnina": {
+                        "naziv": "Poslovni Centar",
+                        "adresa": "Vukovarska 10",
+                    },
+                },
+                "metadata": {
+                    "source": "fallback_quota_exceeded",
+                    "original_error": str(e),
+                },
+            }
+
         raise HTTPException(status_code=500, detail=f"Greška pri AI analizi: {str(e)}")

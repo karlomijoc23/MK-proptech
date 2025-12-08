@@ -1,0 +1,804 @@
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$GuhRRlfu96dAKVCzzCBoquc68ZS80yf5LD5pfvQT56Q9CvLA97qR2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$vpf1tX0HICs/nNlqa2haxe1Ef2a4KwYOXujAbPqJtN76.BP0DFO.2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$N/E4iy6JghYfLTALgj8hLOkc/NskeIbD3CF1U/PlTmgWGuOPCA17K
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$cdTKGIq1rmZ3Dd06M6bSk.ACbMhTptQL0ujndHwPcx6Ki4N8enxs2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Hi1lReuWBMKDs2J5Db/RPOozMcAFnuDkPUqXj0Aufadre6hyW/hYm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$17fJ6pkCkr1LD3d4ss/s2OdV2/8wRcHD8OSOMMiCbiQdmJUs5pjUS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$o9igEMKRLfhgcVvVKeUywOrlzue1FuCInSRTUk7sn841PzJcL0u9S
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$JLMnC5xtLUfvbZ.K5mgTPeG3sZM5.rcWhCtnKMyrC1oMHrQLVYPde
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$6UTpvpiiC76kiDAhzFoSpui4MLgmhGFCDCJNghzNuj7Ge5cVEA9nm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$sif32I4gO67FrVqa35YGB.Ddc7OqP.WCQua.EmLrRtpD/fc.j788m
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Bx6wVHgiP8OM3gBPoBcfxOZxKdnLHNZhoyRQDgDiUeJ5n/Bj.lMuC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$b9eFoCX1zlZv5OUEaX4rmu3rX6PoiP4KhrJEzGb6sVuNts4b.l/U.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$AnjkUBw27ddgTVi1NcVGpeAd66vjXUcjEce3xB4fg8lJJSFZSXqSy
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ZQPJtJnKHJSXnMD0vQP6YOBmZ8aCuTY/5kTgKrhoVfFjHRGeMoMY2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$LK0y8.BNZ58T5i/v0vp3tuWd6/938CD42.huB8Ey6L.mn.F.5Q3Jq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$1jGX75tQzTPZ6ifK1wfEZeqMrE2GYhQGxg4jesduCBUtzZypXb1TG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$ly2/eJhlifGOuxqUmwcJxeiOaFCluHffBPKBtQaNW37L/8kFrdV2K
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$gqc6WmYCynJj4Iw2ZnSeFuVUfnn8dFuLvW0gGzwhQKymmgjH4FnKW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$lHDsSIr2EVzfe9EULl0oweHQIyBhgybjsvYRi3Q6iruDGOurZUIV.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$COXYDxZeQZEi55rVlkvtE.d1HZOS.OH53AxAyBpPQJy1v1BB2xCNS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$CVZ4Pozd2bmzXrAXO1RCru9j.Jf/riC0CGXHzNDWizQ0RFVgzoACq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$jJH5FMWj.YBV/FPyTm4flegwjux9GWeiuwGPpIQKZH9c/6Xh9G.pq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$hkBDer4Ffz0M03BPAwqvSegpTPBq.3bsgRfccIITuzku8Fu.Ix4VK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$LShEZVGO3Df6xdTePZRWL.Clgf5hyh.R97XwcRGE8q2yAytvUjOEC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$2X80KUCyvbz9gD4Vaj4A7O9SuFjuzTnex8xix0Hc8WEBT32TW3wW.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$J1TkUrbCZ/H8pD.58EpgU.bWdKCrXjw3XbNQXS/IXYaatruws2wgS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$tvccCaFMcgSdZggVHbKY9u29k8OQz2qDSQ3dEVIW.Em4iD6r3isXW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$VeJY/7myHHDFWSuc3ldPm.0qcQBj0nf6hrd50e05E2m16Mee6vvZe
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$VthoY4X47AIp.KE4niuzdeqet/6Z59FstGVZVbFWrZg3g9AQ5ufQ.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ge4K3VyWnZPHTLn6YllNge7cEQwN5vSYjG/INrfDPi/lexRDh1WEu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='viewer@example.com', password='ViewerPass123!'
+USER FOUND: True
+HASH: $2b$12$itoUd9TXxp8ehw1WB7xTM.BFiUb8IBmVz0bR2Eg5f.cDhYNGZmxtW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$gPf8GUjIENsl3wdaap3XUOKPHHi4jjAXFcOqf9mRlZUao4NnyAtzC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$/aTlC/d.aJSC7VgzYNSEseawxnDTIkogGYOOKd5rbwcrYLXLrGK1G
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$nPCJi9eyvPglfXCk3QRCxOjwxYZ8rzhmB4/4dl3sRPOwJ5IKS28Ge
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$x8AwEJDh3V8W30kqKsJ.y.9JLi8N0SRrq837BIOQXpn0iCPw/.gwO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$67wVV6L0Vo0alFYY73R.1eAbIRoooNLg6Va5j2BH6v0PJRJiKm756
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$VnyRtfhEyXE.5I.SfvMWjOzT.43Q3wA/7YyElNlhKnUKLnU0ykI/S
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$QyGHm3yS1CMng6z9lsyi5uyX3F5XfVfSWykujB/X7Hfuf0G5iHYm2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$2IPOG6TOMfRVIzcft5irR.Mprl6xPMH3OVraw28lWH.D4WfeLqpJW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$ltobYD3KKt8DhBPq9rQ/9eWCWv33NJzuehxuoVhC81oJkM9fu4mcO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$zfBmSMk457/g/PoILHz3fuHFi0o2k4GLO.mY7DQ44mlkpxsFQD.6S
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Vxl10VsiAt7BMcszpFRa2egBvqHsq6bdiYH9XnOjGpg622Gaz66.2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$aLujCFgfqoTqwUkjn4WXbuv8JOSX51MfnbPLOwO.wziR66Sme4X5O
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$sitCJwZ204jJNQiPZpaKGOvudT3jaM/bELZBbEjxSo76XT5W99266
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$Hl68RLUpXpaocpw8hpHj1e0WdAgcP49gi.WFe9fajCvkpuKMfB/Di
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$JMz.Cqgh8O4q2hRBDjvete21dv6945utxFISeqEf.Dy/fmVrV94j2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$B8/ALupHvecACQEyeVMLyu9xXiOIYIo.yxCJBE4NBn2FojxhKt91G
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$0jBybNVHZuCbiE6RrMt2AOfxt2D7J.VojU3j4P3ER4NuPkeVj.55S
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$Mt.Ih.QaH.X/5s.EeU9UiOKajkahdVxbdH/5QZpO/ns8h63aEX/8y
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$KnwkhkKbfHPSnJoq6VU3quh/7WF/Jj4YYFGeZC26mtkJWQi1CZOFq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$A/mJikOmQhEjibVkhkR06u38d0GLGMMZ3O3MsSVdXotI.Hag1fi7K
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$0xa2BdprnsGwp1uVR74pI.5YAmkNHxPn1JZIjmvODtaqXIKBU9GHe
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$y1BWOjInOTWRjDrTMAAnaeYjOn2x1SLH/62rUAYrg0lGr6qvCV2/m
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$AsD2MkctgWqS6tGKVk9tYeHfGRtuXQO1iGKJUNj.HxKM4c8A5IrCa
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$e8kOu7U4ZJrw1UQJv73.e.WkNm5gOsN7EUTHLYCBmBlXvDgw8zRM.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$SAG4J3zOo2PRbVkQ2LzgaOYEbP8mC1xKaa8RaTGQlTMF1oiU.9Eaq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ZKr1x38GJpQsR5vKKVl6ium91F3o3xVnDPe8EvCPcmptELzF/1./i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$huY20EBVgS91VYyk/b3c/.MNOCkYP7n13tIgyRB5BbrKAXxHL2ngu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$LUqi9U.py.qNxwusAmO1F.QfUyajoiJMDSOufQ7LvmIdNG6SMGAF.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$NhgaTdjMFssaHLeOoMpE/OeJMoTDryFRljWkMe1kEJkm3fqPNLwFe
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$AqVo3/YNm2Il7.m32UeSpuF89laMqKfZOzDA13AnrgSPGfWBKZJqO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$rgdX4UQxcXW1BQu6QysmK.y0WFmYIl2DNhrCzGL8xuyBvrignt8su
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$HkpCRJSMVoxLhPapftQ4a.UkGnbY4JgHfklwsIBmEkPjp9b/TsLce
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$LRpl6fP5rGH1cJWtKuK11OCcy99e4MwMlQljGymbes3Zbv6Wkmp1i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$bNxr5NCsCk7OQYdXTOcnY.JSwSgG55Us7NPWTEvfbgonmEFtPtCcO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$jFsm6kDJH5Js1r3RbbBqSeRVgFCIX3gDXQX522D4IQbzPBOHRfT92
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$B0fp3hL3w2GHVuQqLEBen.AkEnC2ZexIvvVE1plFcdovFOpGPWsVK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Dinsj8WUF7pP//ziDIGO4uZVks9Cl3wD6Wu5oZBKJTdTav/Qb1K7i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$aCDggB2KqI9zvarerWHL8OlwUVqvfnEyq3EYNnPtMoCqyF4JbP/1a
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='viewer@example.com', password='ViewerPass123!'
+USER FOUND: True
+HASH: $2b$12$XyIhq0v2Tnx9F4lnkiG0XOxeCcM8PScG5eNAuBhWcoI1uMvMdQqim
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$sJUaz8VlF1Yts4kvKDMWFuMjVcCMo22XXNtckLLiieB0UWL7e5TFi
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$TCJrBcoiNTkgFR9vi9xTxOhgX4B1bwOvpicKEfbktsIpvzON.eQDG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$L9RwNI92HJCTi6rMAKflve9XS9BM6.6k0QECAVWo.9DBAHPScknVu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$erCCDpcSqK3vCir0YzXhSu8HcS5PJWGJydHK.4Y6FMil/USsjfomq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$y3HwTy14eFfGLskbAhKrV.cfPhOEp0RkdrJ2dAIbDpXQ0mOSeKr1i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$qVUPClv6qd4tyQ1BgBuNVOgYj6RTAShH2VTX5QkNcL3MOUlJ0YeGW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$o7k55vEchwNXO/outtl7Te0zi4x9aQpE3xE3KeaQG8b7eaCFgoJry
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$coNToOpe/jz/8zCI4jE2Feh1mOSeq0rhHw9PoQTvroAmmNMeg7X3u
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$PfZFSIXDjErQotc7E8XoE.ROUHxQpbFSVSjEqDsHGHVl4/VQ0A7hO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$RqfdCP3rnCEPhA5wKhiNpOw3QA.i2boFwnvvKo.3/jzl1TDQWfN/e
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$BdyZRdbJz7RBsakDc1cvxO/dclH051yQZ5lu4K0embX8QgF1cl2.C
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$m7YNgVNvpPb/dLFdc/eMWOP4sXX1gznkVA.d3BMy2o7Yatn/uxOWK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$ozJJtEVR.X/NkFoVZjE1eug7i8GOwLN1d.DJgY6uz2atqvCdGrd/e
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ADfjYmJWJWdff3HaRutQyOEf3PioIbFm76/KHNwuuB7ujUTCGrYP.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$FkUzj8ABf9F6BmyWadDfXOv9ugIrI6isPsbu4n.4CdbmpMIl4UOd6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ylhBcWu4jgk00SGO/G5YvOQaIrLek7dWkh.7IVHVR5do/J3uXkKWm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$C7GSbxmQowIuDAAzwa/myeH7khg0iszVZQLVIReNiFXgBo9/bUnpm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$7QtW4AYuFV6xvmOjmM6Qb.WCjBbypSgIRRuwPAYwO5/8bR1mMlUZi
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$h8JRl2B41CMqfWWy4VOu1uEWjRrkmMv6lr6yz2AsYTPfGzAsOpzw2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$3.nxJkmbsnP0KbUCMqqFt..kNT07vh.rDhTx4C2HMn9..g7O4ktnS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$eXC.8VOnfsZgzKAI.eOZ3OUbRyhTiG9pla1arCqFO0MjjwuGQU6Ri
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$wDZwRTaqIDHfOlkPbxf2BOcTZeb.yUpti5qK1LvPkr5UcKuidb2aq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$3BTqn3/bHMebHqpDEXkyOutRfJJNeqK.pq2lI7Oo/z1LMXpL83WmC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$vjYzFGw36dQenMU8lZamE.SBn3c7WCx47i86dYY9dndg4WEhbqgUy
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$J.DBjBpW1TieRJrLpV82qusPRSari05kvizddcB0z6Wrim.sbFU4.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$Yn2Y.I9QYTK9rAivuj.qpOq0Mr8gc.Xhp/QmopMj/Z0e3Fz0HFyd2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$H4oy1Pfd6h7NaIz9QiRqyuI/IqA/xD5GqbfJNNJuH6OlFFPLsDxnS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$W2yhnYgjaOhjoyFRwM1BVOZ2C4ci06zzkd4XdaQZpajfb/lQpT7Xa
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$MAiy.h0UNTEdAMNjAmljm.vtcL0TcXgfS2Lx3e9Z5.Sv2Tc0alwx6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$cWDCuDc5VQp.esq9XX.HD.9oQMnZgu8MZsGsTAFuE4UzqGENyApoC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$L5on9Z3ifI7LbstaVYhJO.i8OAkZxiT5Hv9JbKIKDSze4xzomb88m
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$n9LcgmlGY1L.OL/.6UrktO0JNEirnG7PiJGb47HVNc1jzsD1EcgQS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Woho6vniC0ddnKy2UdVvIO0yQU4pJZv1AvauyqgjbylHb8q0.B7aO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$4lUc5XEOoEuGcYHSgxkRJ.zZimWLMcY28hiEGx2ybcoPpAcK16j8C
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$b4EjcA0Pf4yPvnOBajUCAeXQAyFHaUgaC5rDLOuhGrA1b.yKlR3Ti
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$8YV0quYEtvqb.GMUhGD2HuBmlQjTphfeGYGl9yhZrNKOyb6FgDBJW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$C9ENa4kOKpmg3p/z1rM4kODshUMtS54RGAIQjtxf9.Nd6C8Hvpkmm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$a.Y39QCkuXzXgQaAH84NQetk2XZfogZOJSigQzLJdMvevd9wTosaC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$WJwDi30YUbOnbbNBIyO4DexYYlFFBGFsNv0Aw4c5g.U1DYrdPRMUS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$i7FLa11zx3nZCLmC2mxgleYIgnN.JTHEBaDdNXyl8w0xW7UyTYUS2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='viewer@example.com', password='ViewerPass123!'
+USER FOUND: True
+HASH: $2b$12$uWDTNFtfFJadkILauwTRweiOv5AX.zHApSG6KdX85UuAHObWAx7wC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$hAojmzQt1tLEIig.EvlPWuqit8OvTlpHhuVxqHOTQghcKVqq5NFAC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$l0AUQKOk6QWW4ryTIBzdf.Y/rV3MiKKUqV821aSmmKCdHXksv1EQy
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$rPk3hQ6cCf.a2o1KSc.AuuTVrEMvHoa1yYDXhMVpf0vv5lq7qa81W
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$p1OR.o.zk8S02vm6CbRFi.8nDhYIp6nNC2g1PS4Rakh4yw0ERQfBm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$nR08oJfG2qtRwDVb2IVoP.BROgEKXSdus6tLR2HyeOEt4SttFKEkm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$6Df/nLvtpbT2Ua6q6LEf2unvZH46HYHikiYkgaQML5gEn0t4plzvm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$pKZouYOVY89XYICsOODPDeBr5NbaeaUk6rENjv68aZxYqPCVUssxu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$Gn833IynojxEOjEjdfrAx.U2KOU6WEYeyJQlYNQG1shCVERbhz95C
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$RxeQzxBjEi8rP6PeT8fd3.nRXK9hssrGXPPGGboWQSLrDzDeS2WGG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$RNOUDPCYMmPJk3rSdhgQUuKmllvN5aJACx2i68qMhVozehLKzdxIa
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$xHBmEOGrwZ7LQfMvuYr2FeDf8BiliHtIHx3aGkr97qP0sDL7rL766
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$aNPOf3HWfMcPIzI6onRUQeMnTtC1.s8q5y5SK4d6oIRSpPHNYoOYm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$8BqebA22zRoed72RyBBJE.LlHf/YhczN9ASohrr2ebBUme8eP7.jO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$wePoiY3woIgqlkUawaccRuI5RjC0TyHALB/ACFXiYlETh.vbyHNYO
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Ox.SLs0iJCkS3AubhD6NQOr500XsOfs1LPZFE5nFWywVeN8vkVQhq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$a247GI9X8/vsKiH7iRClnOP1EGAThhSmKHMc4r8N.pMCtpqgHLE8y
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$qBXK7w48jlMm7LzsGx/hIelfXvHDt3GP/uJOJhGNnWipACwvIGyhC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$oEfVcmaiJh6MDw6ZkMTZmO/WCT1.YrKpN0cYrv2cBPlqOjy/vShKG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$KUsor9eBAImmWAg87cfLtefI/0YGc9Op0vhbNj5AYeTo.ZdJ/4wPC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$BjqOz2ZJGRo4oGHiaVblT.oFONJY.C3ZLFd/aYeqJN6w7JzO9pi9O
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$iEIlC49Zn3J0lU7uXNc.Ge3RGR2CACJ24Tim.WnMs1pBMUZ2AViNi
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$QL8OIZSzPFzqPS9MqzAML.H1d8JIs7Z7rb.NCtIjWbfEBMjaqii8S
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$TpiD9XXZQXmiB31FuHRnkOKSPyQCesJdUstpyXUAi7UhchKzpOxe6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$LsYhxqx1SUcE8AzkHf4MTeW5Jxu/Vx.0Y8Kyxyw4HL2fzuohe/t7e
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$i8k0L2kXqyDCs4U7bboxR.lVtbGA8US0nl/cRZi2l2DCB678YnPs2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$9f2SZC9gGBDc2tqYjmcmeeDZV8Ihg863N9u2ZrStt3PUHNS4EK8we
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$nwhIm67V/sNodqpKv4zOO.3BnHWZt8LpAbNOmHd2RizXv13TrwH6q
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$QCB8Ve4JWYqPVYyg6WNavu.wDAhgBj93qGaGjEJMIFaUIxq9h372.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$1RA.Hc.ftdLtgqro1vvVFulHOb.nY3jx2ljdmmGjQjOK0S3f.HHUK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$YWh2l8tc06EA4H4gxBy5Beuumq1j90Bq4e6g9WfEoYnP1yaIkSyuu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$/qq9zxhCRwIHy/I5UZNY/eVsbQT2hkfm7tSUn8PqD9YsuyP302itm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$9QlRZG5y/211zFB5xCKsauYbN.O7feaqXxfPfrWJ5DY9iPkZRxFoG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$.dYtddDIXK5KTJ7jJ2IIJ.6WEItMaotG9g/fauNXGLsJWFNlXh0hK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$GgqT/44Kdm3IqpDxPlN.mOlFg3.pdpozzViQl1ugJ2L0rzX9w6dhC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$anLbgPkUJL2u1..yVhm0PO5k4k/2pL7JCtODzuIZTWvx87iurDMPG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$MDTlNCAeZ62e3lpL0mIYYOZ72cGQTsQyzaPFOLthK.0yp2px6hh1m
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$n8k6MGz9v3Wy0znp3dlkhOWiGeEU5Jn6OHyR6o2U8R2tSl7uHHDze
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$aMc1YOqV2F3w1ASBTWSATujXBxFpcFm32LUkOZ41ooZ/uCnhS2JOG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$/Kd561SHfhGcoR3etzMwlutYV2mi4bH91t8n07fIdCVcNcDFqjga6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$Kkm2Dv.ewojC4Ut3cnBQxOTLLRPHKqnSussVAP16TV7djplnmWplK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='viewer@example.com', password='ViewerPass123!'
+USER FOUND: True
+HASH: $2b$12$hndXoTVaDQ2AEIZmziV.7uLWjjul/mWV2hCFopwNmDO.BCSrSQdXS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$iPzDuL5mbQ30fCYprXqDx.4XJY4lLAVurq3mU.4a5tZPHEhqVjpHS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$kFL1.6eK6/7lWPkSzUbFmekMLf592cb0jrNTk8a9/hPoBk/P7Xx6.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$YNwpt8mBYNUo769ir4lJbOPVLE83siREO0VkmNjXC/J7lrrioRgQC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$fnW/X8Va4dmg5MzVxUgltOl3R2.mj3CpWXUPLuvpK1xPRwqJYKHCa
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$W2MFwOxWziYvAX0V8N7Dou2h6iPo2/ZVw7rxlGjEvS/T3lfmQsg.O
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ZyzNjklN9nOSbFArat.2/OM3QK3oX0cM1ZOs0fk2fxF49Ts89DuYm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$dqFP1MhkQQdbo9d8VXu/P.rhQpPdgOr7/nJOhLV.TfOmT1aeTIljy
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$ytz4yCVDo.K8nmqnpGel/OjRNgregxuDxg7UX/QcsBuHZm7JKUvh.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$UZm1Iy1CCmadenZBcRFAKud0yD1tGDPSNx9Bg6.//cYnplz4PNxEG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$VYjKvdr6Xrb4uCQ/EHHE..aNQsKDxRsK.KCk6FDXgxSOgSuOlxJFe
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$wlax74IbTuPrYidnwDdSyu/wYC3.QiwgdNQmpF5L1B/RVLkTUsQcm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$mhNFczorTqG.MckK227X5.q5rDF5Ebx0WMU39Uuv65L9m3gkjf/Yq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$nhTvVekXjenyYWdXxqdNt./fsDJZfl/pYojI8Ds12lmfQ7uDeGMW2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$OnOT.i314OfYlVtmDalHQ.4FXC0esqhtueyqwLq59IQG5IRZLxinS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$RhUE8alyw5eh1yEtT2f1NO7Rucf7dGUyPt0lkU3vhJVrt8RABJIAS
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$n9zfHdl9tM/DjRwQFLlTPuoNhy4fCctz/TOwrrAJORd28XC/O0AJu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$H1dVzfTjPPa2A0Kw5r1gIemD4sndQ42pG8rHAlK0bsW7vBlGlL7.C
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$0LX02iE6GFUxPEKDK0O9reUa1eQ5nvg4K.tqyF8JbG25JtCNvw8R.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$aUVh6HBawgadmvNofKmttegUaEOB413rEmqpMZtOWqlhJcoMe1hU.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$iMv2c1/VSwItudTs5a3wBuqsZuyOWhVRa67OdmWhjA5DRt1SNIW7m
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$1epSZd10AolOlu7ve3cBf.OyOW8R.cxGbfetLaMshI9YfzVxo3GVK
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$q/64GWQK2D4yCdfFbmDoIeadNgViBP6nUM8Rjz5iZLqHz5paFMLVC
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$JbrhDiTs.tDsGVE05aH6IOTHF0SIZsIEtilV8suLdpTalOHmPkto.
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$idr1KCgnaZkFBrEdwNJAceSPICA5HmOC.GiCZj0zxykyOGH01bW22
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$W.GIc6wxTqDMqzx5t3Eeb.O6qzNcM8xQdjBksJm2r6eXTBOqdQXE6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$INNDyQeUYu3BfdIhV177cepJ8FcFFQST8tBuehyrSofdj4HiUHkre
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$flTeltasXqX3GCSHRXhFz.8wJ6v.GY896HFg3E1Xtr9BuYotE2v6i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$oU4N3kJWpo.vEdNa5sIYX.IdNZICdyrMeg7ea9eHu9k1hL2WRXwvi
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$e1c.8/JEKyKzLETi3K510emy2DLN6Z5hhY8cxPkgpOPeAshmq/Vwu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$KhtYvv3hHJgC2IJLQToRHOQDLsZR6xpBF6Enh2dn7aJ1XKvVSlLvG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$IwS6Mbu2BvpHmJwygIL9PeIyW0DxyZATmN9m3p71CBaK0gnnwosTm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$bcCd1d.thf6xfYqimDGzP.K6OU//D4.H4FXz100NRwywGL39BNpQm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$Z5wDyyfjWB4zTqopBotk1uY4f2NJY37j2DL1pEC.KxsON16XcwPxm
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$pCAyxAanALnleVZE9j6X8uTi7bJPHCZ8uRNyMN.1iskkGJUgFSRDu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$UetfVSR1PuxTO5umth93O.E7xZVJcHWZPf8Z5/MWQfliKQylDuyPq
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$zJeX/smO0fud.2u5C3GUPuYPcbUoa0JL/RsmJDpEIJUU1vcLtcuda
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$lXz4u3bl1woy2C.0pZvyi.7Op699SmCoLY8U2qqxsVDSx8HYSehd2
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$CNig2/x/FyfTXeQADA5Pi.2s4z6W4YqLf.2/444QwAuJ/ZbvJ2oeu
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$SD9jkdhsa8jashVOTqjI5OOR1xwGcmEGlhus9KLDQ30iS0NUYzz1a
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$mmf5Bpbhavp7kl9uKcA2qebiwoyxWjDZxU82/AIhXJOmYroEtWCe6
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='viewer@example.com', password='ViewerPass123!'
+USER FOUND: True
+HASH: $2b$12$Xs5sai0mFydwC1StZ6t2KOo.T1kJu.cQYsxdb4z6V8sbFFdj8eMYy
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$atpaVCareXd4wlzaJXL9J.etT7IGG2r6xCYGevBLIL9CHzySFPUhW
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$vCKm9kkwBWROv7NjbVeuUOEXZTjsrVzLkT3hc1H7GtkRkabNT/iES
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$8neAbh6mkkP/h3WECcb4Bu4g3bv18hI5v8IQgKle8fRkAWeLq/c6i
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$k0S9HgpvLgy6qOenq73EYOSoheD8QjJANBHQFW8HHzbY2Ob3Yt1nG
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$zrEgeR2dHbIWLlzJo3srmev6X0wxuNIJ7ZXtTMZ4Z1xpeEFwpvo9q
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$7ByeMF/2pkRiyjCdiR3FM.4b6GM2mRGipJdrkiwCzY6b3RPPbPJCe
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='admin@example.com', password='AdminPass123!'
+USER FOUND: True
+HASH: $2b$12$U223H5Z63o2hUtgsCxmOf.HPbpTfX1ogayblj7mch3k5S6e2TAL.u
+VERIFY RESULT: True
+LOGIN ATTEMPT: email='pm@example.com', password='PmPass123!'
+USER FOUND: True
+HASH: $2b$12$JtwGoQwkEK0qYh6afkTQl.D.obgkSoTRqCf5slECsBsGhD4LAHbdi
+VERIFY RESULT: True

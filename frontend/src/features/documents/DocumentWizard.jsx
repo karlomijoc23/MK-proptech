@@ -133,8 +133,29 @@ const DocumentWizard = ({
   onCancel,
   refreshEntities,
   loading,
+  initialData,
 }) => {
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState(
+    initialData
+      ? {
+          ...initialFormState,
+          ...initialData,
+          metadata: initialData.metadata || {},
+        }
+      : initialFormState,
+  );
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialFormState,
+        ...initialData,
+        metadata: initialData.metadata || {},
+      });
+    } else {
+      setFormData(initialFormState);
+    }
+  }, [initialData]);
   const [aiSuggestions, setAiSuggestions] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
@@ -682,7 +703,11 @@ const DocumentWizard = ({
         if (!payload.success) {
           const message = payload.message || "AI analiza PDF-a nije uspjela";
           setAiError(message);
-          toast.error(message);
+          toast.warning(
+            "AI analiza nije uspjela. Molimo unesite podatke ručno.",
+          );
+          // Do not return, allow manual entry
+          setAiLoading(false);
           return;
         }
 
@@ -863,23 +888,25 @@ const DocumentWizard = ({
         setAiApplied(true);
         toast.success("AI prijedlozi spremni – provjerite prijedloge ispod.");
       } catch (error) {
-        console.error("AI analiza dokumenta nije uspjela:", error);
-        const message =
-          error.response?.data?.detail || "Greška pri AI analizi dokumenta";
-        setAiError(message);
-        toast.error(message);
+        console.error("AI parse error:", error);
+        setAiError("AI analiza nije uspjela. Molimo unesite podatke ručno.");
+        toast.warning("AI analiza nije uspjela. Molimo unesite podatke ručno.");
+        // Ensure we don't block the UI, user can still proceed manually
       } finally {
-        toast.dismiss("document-pdf-parse");
         setAiLoading(false);
+        toast.dismiss("document-pdf-parse");
       }
     },
     [
-      formData,
-      findPropertyMatch,
-      findTenantMatch,
+      api,
+      applyDocumentTypeChange,
       findContractMatch,
+      findPropertyMatch,
       findPropertyUnitMatch,
+      findTenantMatch,
+      formData,
       refreshEntities,
+      zakupnici,
     ],
   );
 
@@ -1359,7 +1386,7 @@ const DocumentWizard = ({
 
   const canProceedToNextStep = useMemo(() => {
     if (activeStep === 0) {
-      return Boolean(uploadedFile || formData.file);
+      return Boolean(uploadedFile || formData.file || formData.id);
     }
     if (activeStep === 1) {
       const metaFieldsValid = activeRequirements.metaFields.every((field) => {
@@ -1376,6 +1403,7 @@ const DocumentWizard = ({
     activeRequirements,
     activeStep,
     formData.file,
+    formData.id,
     formData.metadata,
     formData.naziv,
     formData.tip,
@@ -1398,7 +1426,7 @@ const DocumentWizard = ({
     async (event) => {
       event.preventDefault();
       const requirements = getDocumentRequirements(formData.tip);
-      if (!formData.file) {
+      if (!formData.file && !formData.id) {
         toast.error("PDF dokument je obavezan. Učitajte PDF prije spremanja.");
         return;
       }

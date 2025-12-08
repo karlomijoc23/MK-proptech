@@ -115,6 +115,7 @@ class TenantAwareCollection:
 
     async def insert_one(self, document: Dict[str, Any], *args, **kwargs):
         tenant_id = self._get_tenant()
+        print(f"DEBUG: insert_one collection={self._name} tenant_id={tenant_id}")
         doc = self._ensure_tenant_on_document(document, tenant_id)
         return await self._collection.insert_one(doc, *args, **kwargs)
 

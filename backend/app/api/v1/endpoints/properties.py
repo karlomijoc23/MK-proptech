@@ -34,6 +34,8 @@ class PropertyCreate(BaseModel):
     sudski_sporovi: Optional[str] = None
     hipoteke: Optional[str] = None
     napomene: Optional[str] = None
+    slika: Optional[str] = None
+    financijska_povijest: Optional[list[Dict[str, Any]]] = None
 
 
 class PropertyUpdate(BaseModel):
@@ -59,6 +61,8 @@ class PropertyUpdate(BaseModel):
     sudski_sporovi: Optional[str] = None
     hipoteke: Optional[str] = None
     napomene: Optional[str] = None
+    slika: Optional[str] = None
+    financijska_povijest: Optional[list[Dict[str, Any]]] = None
 
 
 class PropertyUnitCreate(BaseModel):
@@ -176,3 +180,19 @@ async def create_property_unit(
 
     new_unit = await db.property_units.find_one({"id": result.inserted_id})
     return parse_from_mongo(new_unit)
+
+
+@router.get(
+    "/{id}/units", dependencies=[Depends(deps.require_scopes("properties:read"))]
+)
+async def get_property_units(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    existing = await db.nekretnine.find_one({"id": id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Nekretnina nije pronađena")
+
+    cursor = db.property_units.find({"nekretnina_id": id}).sort("oznaka", 1)
+    items = await cursor.to_list(None)
+    return [parse_from_mongo(item) for item in items]

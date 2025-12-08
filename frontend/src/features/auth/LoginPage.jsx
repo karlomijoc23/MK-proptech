@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/shared/auth";
 import { toast } from "@/components/ui/sonner";
+import logoMain from "../../assets/riforma-logo.png";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -42,10 +43,21 @@ const LoginPage = () => {
       toast.success("Dobrodošli natrag!");
       navigate("/", { replace: true });
     } catch (err) {
-      console.error("Neuspjela prijava", err);
+      console.error("Neuspjela prijava - detalji:", {
+        message: err.message,
+        response: err.response,
+        data: err.response?.data,
+        status: err.response?.status,
+      });
+      const errorDetails = {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      };
       setError(
         err?.response?.data?.detail ||
-          "Provjerite korisničke podatke i pokušajte ponovno.",
+          `Greška: ${err.message} (Status: ${err.response?.status || "N/A"})`,
       );
     } finally {
       setSubmitting(false);
@@ -59,8 +71,11 @@ const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-4">
+            <img src={logoMain} alt="Riforma" className="h-16 w-auto" />
+          </div>
           <CardTitle className="text-2xl font-semibold tracking-tight text-primary">
-            Prijavite se u MK Proptech
+            Prijavite se u riforma
           </CardTitle>
           <CardDescription>
             Koristite službene pristupne podatke koje vam je dodijelio
@@ -70,7 +85,12 @@ const LoginPage = () => {
         <CardContent>
           {error && (
             <Alert className="mb-4 border-destructive/40 bg-destructive/10 text-destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="break-all whitespace-pre-wrap text-xs">
+                {error}
+                {typeof error === "object"
+                  ? JSON.stringify(error, null, 2)
+                  : ""}
+              </AlertDescription>
             </Alert>
           )}
           <form className="space-y-4" onSubmit={handleSubmit}>

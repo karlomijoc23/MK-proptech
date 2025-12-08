@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { toast } from "sonner";
+import { toast } from "./ui/sonner";
 import { Settings, ChevronDown, Check, LogOut } from "lucide-react";
 import { api } from "../shared/api";
 import { useEntityStore } from "../shared/entityStore";
@@ -79,10 +79,6 @@ export const TenantSwitcher = ({ onLogout }) => {
       }
       const resolved = changeTenant(id);
       if (resolved) {
-        if (typeof window !== "undefined" && window.location?.reload) {
-          window.location.reload();
-          return;
-        }
         await loadTenants();
       }
     },
@@ -90,15 +86,8 @@ export const TenantSwitcher = ({ onLogout }) => {
   );
 
   const handleNavigateProfiles = useCallback(() => {
-    if (!canManageTenants(selectedTenant?.role)) {
-      toast("Nedostaju ovlasti", {
-        description:
-          "Samo vlasnici ili administratori mogu upravljati profilima.",
-      });
-      return;
-    }
     navigate("/profili");
-  }, [navigate, selectedTenant?.role]);
+  }, [navigate]);
 
   const handleLogout = useCallback(() => {
     onLogout?.();

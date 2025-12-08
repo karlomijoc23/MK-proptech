@@ -70,6 +70,7 @@ class TipDokumenta(str, Enum):
     RACUN = "racun"
     PROCJENA_VRIJEDNOSTI = "procjena_vrijednosti"
     LOKACIJSKA_INFORMACIJA = "lokacijska_informacija"
+    PRIMOPREDAJNI_ZAPISNIK = "primopredajni_zapisnik"
     OSTALO = "ostalo"
 
 
@@ -192,3 +193,20 @@ class TenantMembership(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     invited_by: Optional[str] = None
+
+
+class ProtocolType(str, Enum):
+    ENTRY = "entry"  # Ulazni
+    EXIT = "exit"  # Izlazni
+
+
+class HandoverProtocol(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    contract_id: str
+    type: ProtocolType
+    date: date
+    meter_readings: Dict[str, Any] = {}  # e.g. {"struja": "12345", "voda": "555"}
+    keys_handed_over: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = None

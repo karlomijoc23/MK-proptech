@@ -36,7 +36,7 @@ class DatabaseSettings:
 
 
 class Settings:
-    PROJECT_NAME: str = "MK Proptech API"
+    PROJECT_NAME: str = "Riforma API"
     API_V1_STR: str = "/api"
 
     # CORS

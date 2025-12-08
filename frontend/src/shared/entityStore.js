@@ -48,10 +48,21 @@ export const EntityStoreProvider = ({ children }) => {
           api.getMaintenanceTasks(),
         ]);
 
+      const zakupniciData = zakRes.data || [];
+      const ugovoriData = (ugRes.data || []).map((ugovor) => {
+        const zakupnik = zakupniciData.find((z) => z.id === ugovor.zakupnik_id);
+        return {
+          ...ugovor,
+          zakupnik_naziv: zakupnik
+            ? zakupnik.naziv_firme || zakupnik.ime_prezime || zakupnik.email
+            : null,
+        };
+      });
+
       setState({
         nekretnine: nekRes.data,
-        zakupnici: zakRes.data,
-        ugovori: ugRes.data,
+        zakupnici: zakupniciData,
+        ugovori: ugovoriData,
         dokumenti: dokRes.data,
         propertyUnits: unitRes.data,
         maintenanceTasks: maintenanceRes.data,

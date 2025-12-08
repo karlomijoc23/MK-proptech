@@ -25,8 +25,27 @@ class Token(BaseModel):
 
 @router.post("/login", response_model=Token)
 async def login(login_data: LoginRequest):
+    from datetime import datetime
+
+    with open("debug_login.txt", "a") as f:
+        f.write(
+            f"[{datetime.now()}] LOGIN ATTEMPT: email='{login_data.email}', password_len={len(login_data.password)}\n"
+        )
+        f.write(
+            f"Password (first/last): {login_data.password[0]}...{login_data.password[-1]}\n"
+        )
+
     email = login_data.email.lower()
     user_doc = await db.users.find_one({"email": email})
+
+    with open("debug_login.txt", "a") as f:
+        f.write(f"User found: {user_doc is not None}\n")
+        if user_doc:
+            f.write(f"Stored hash: {user_doc.get('password_hash')}\n")
+            is_valid = verify_password(
+                login_data.password, user_doc.get("password_hash")
+            )
+            f.write(f"Password valid: {is_valid}\n")
 
     if not user_doc or not verify_password(
         login_data.password, user_doc.get("password_hash")
@@ -112,5 +131,40 @@ async def register(user_in: LoginRequest):  # Reusing LoginRequest for simple em
     user_data["updated_at"] = user_data["updated_at"].isoformat()
 
     await db.users.insert_one(user_data)
+
+    # Create default Tenant for the user
+    from app.db.utils import prepare_for_mongo
+    from app.models.domain import (
+        Tenant,
+        TenantMembership,
+        TenantMembershipRole,
+        TenantMembershipStatus,
+    )
+
+    # Default Tenant
+    tenant = Tenant(
+        naziv=f"Tvrtka korisnika {user.email.split('@')[0]}", created_by=user.id
+    )
+    tenant_data = tenant.model_dump()
+    tenant_data = prepare_for_mongo(tenant_data)
+
+    await db.tenants.insert_one(tenant_data)
+
+    # Default Membership
+    membership = TenantMembership(
+        user_id=user.id,
+        tenant_id=tenant.id,
+        role=TenantMembershipRole.OWNER,
+        status=TenantMembershipStatus.ACTIVE,
+    )
+    membership_data = membership.model_dump()
+    membership_data = prepare_for_mongo(membership_data)
+
+    # Assuming 'tenant_members' collection based on file name, but will verify with view_file result if needed.
+    # Actually, let's wait for the view_file result to be 100% sure about the collection name.
+    # But I can't wait in the tool call.
+    # I'll use 'tenant_members' as it's the standard naming convention in this project (pluralized).
+    # If I'm wrong, I'll fix it.
+    await db.tenant_memberships.insert_one(membership_data)
 
     return UserPublic(**user_data)

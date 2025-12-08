@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 import uuid
@@ -11,11 +12,30 @@ from app.db.instance import db
 from app.db.session import dispose_engine
 from app.db.utils import prepare_for_mongo
 from app.models.domain import ActivityLog, User
+from app.services.contract_status_service import sync_contract_and_unit_statuses
+from app.services.reminder_service import check_contract_expirations
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
+
+
+async def run_scheduler():
+    """
+    Background task to run periodic jobs.
+    """
+    while True:
+        try:
+            # Run daily checks
+            await check_contract_expirations()
+            await sync_contract_and_unit_statuses()
+        except Exception as e:
+            logger.error(f"Error in background scheduler: {e}")
+
+        # Sleep for 24 hours
+        await asyncio.sleep(86400)
 
 
 @asynccontextmanager
@@ -49,6 +69,26 @@ async def lifespan(app: FastAPI):
             user_data = prepare_for_mongo(user.model_dump())
             await db.users.insert_one(user_data)
             logger.info(f"Seeded initial admin: {email}")
+        else:
+            # Update existing admin to match env (useful if password changed in env)
+            logger.info(f"Updating existing admin from env: {email}")
+            await db.users.update_one(
+                {"email": email},
+                {
+                    "$set": {
+                        "password_hash": hash_password(settings.INITIAL_ADMIN_PASSWORD),
+                        "full_name": settings.INITIAL_ADMIN_FULL_NAME,
+                        "role": settings.INITIAL_ADMIN_ROLE,
+                        "scopes": resolve_role_scopes(
+                            settings.INITIAL_ADMIN_ROLE,
+                            ["*"] if settings.INITIAL_ADMIN_ROLE == "owner" else [],
+                        ),
+                    }
+                },
+            )
+
+    # Start background scheduler
+    asyncio.create_task(run_scheduler())
 
     yield
 
@@ -59,19 +99,22 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    description="Riforma Proptech Platform API",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to MK Proptech API. Visit /docs for documentation."}
+    return {"message": "Welcome to Riforma API. Visit /docs for documentation."}
 
 
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    # allow_origins=settings.BACKEND_CORS_ORIGINS, # Wildcard with credentials issue
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,8 +128,10 @@ async def add_security_headers(request: Request, call_next):
     headers = response.headers
     headers.setdefault("X-Content-Type-Options", "nosniff")
     if request.url.path.startswith("/uploads/"):
-        headers.pop("X-Frame-Options", None)
-        headers.pop("Content-Security-Policy", None)
+        if "X-Frame-Options" in headers:
+            del headers["X-Frame-Options"]
+        if "Content-Security-Policy" in headers:
+            del headers["Content-Security-Policy"]
     else:
         headers.setdefault("X-Frame-Options", "DENY")
     headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -169,3 +214,13 @@ async def activity_logger(request: Request, call_next):
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+# Use absolute path from settings
+UPLOAD_DIR = settings.UPLOAD_DIR
+print(f"DEBUG: Mounting /uploads to {UPLOAD_DIR}")
+
+if not UPLOAD_DIR.exists():
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")

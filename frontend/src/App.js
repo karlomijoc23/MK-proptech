@@ -45,6 +45,9 @@ import {
 import { Textarea } from "./components/ui/textarea";
 import { Badge } from "./components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { Skeleton } from "./components/ui/skeleton";
+import PageTransition from "./components/PageTransition";
+import { AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -82,7 +85,6 @@ import {
   Printer,
   Archive,
   ArchiveRestore,
-  Wrench,
   Settings,
   Loader2,
   ChevronDown,
@@ -130,10 +132,24 @@ import {
   resolveUnitTenantName,
 } from "./shared/units";
 import DocumentViewer from "./features/documents/components/DocumentViewer";
+import DocumentWizard from "./features/documents/DocumentWizard";
 import { UnitStatusMap } from "./features/properties";
 import NekretninarForm from "./features/properties/NekretninarForm";
+import NekretninePage from "./features/properties/NekretninePage";
 import ZakupnikForm from "./features/tenants/ZakupnikForm";
+import ContractReport from "./features/contracts/ContractReport";
+import MaintenancePage from "./features/maintenance/MaintenancePage";
+import ZakupniciPage from "./features/tenants/ZakupniciPage";
 import TenantProfiles from "./features/tenants/TenantProfiles";
+import UgovoriPage from "./features/contracts/UgovoriPage";
+import MaintenanceBoard, {
+  MAINTENANCE_STATUS_META,
+  MAINTENANCE_STATUS_ORDER,
+  ALL_MAINTENANCE_STATUSES,
+  MAINTENANCE_PRIORITY_CONFIG,
+  MAINTENANCE_PRIORITY_ORDER,
+  EMPTY_MAINTENANCE_FORM,
+} from "./features/maintenance/MaintenanceBoard";
 import LoginPage from "./features/auth/LoginPage";
 import LinkedEntitySelect from "./components/LinkedEntitySelect";
 import { TenantSwitcher } from "./components/TenantSwitcher";
@@ -142,10 +158,6 @@ import { ClickableReminder } from "./components/ClickableReminder";
 import { AuditTimelinePanel } from "./components/AuditTimelinePanel";
 import { useAuditTimeline } from "./hooks/useAuditTimeline";
 import { dedupeRemindersById } from "./lib/utils";
-
-const DocumentsPageLazy = React.lazy(
-  () => import("./features/documents/DocumentsPage"),
-);
 
 const InfoField = ({ label, value, fallback = "—" }) => (
   <div className="space-y-1.5">
@@ -174,1675 +186,9 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 // Clickable Reminder Component
 
 // Dashboard Component
-const MAINTENANCE_STATUS_META = {
-  novi: {
-    title: "Novi",
-    description: "Prijave koje čekaju trijažu",
-    cardBorderClass: "border-l-4 border-sky-500",
-    badgeClass: "border border-sky-200 bg-sky-100 text-sky-700",
-  },
-  planiran: {
-    title: "Planiran",
-    description: "Termin i resursi su definirani",
-    cardBorderClass: "border-l-4 border-amber-500",
-    badgeClass: "border border-amber-200 bg-amber-100 text-amber-700",
-  },
-  u_tijeku: {
-    title: "U tijeku",
-    description: "Radovi su u tijeku",
-    cardBorderClass: "border-l-4 border-blue-500",
-    badgeClass: "border border-blue-200 bg-blue-100 text-blue-700",
-  },
-  ceka_dobavljaca: {
-    title: "Čeka dobavljača",
-    description: "Blokirano dok ne stigne dobavljač",
-    cardBorderClass: "border-l-4 border-purple-500",
-    badgeClass: "border border-purple-200 bg-purple-100 text-purple-700",
-  },
-  potrebna_odluka: {
-    title: "Potrebna odluka",
-    description: "Čeka odobrenje ili dodatni input",
-    cardBorderClass: "border-l-4 border-rose-500",
-    badgeClass: "border border-rose-200 bg-rose-100 text-rose-700",
-  },
-  zavrseno: {
-    title: "Završeno",
-    description: "Radni nalog je izvršen",
-    cardBorderClass: "border-l-4 border-emerald-500",
-    badgeClass: "border border-emerald-200 bg-emerald-100 text-emerald-700",
-  },
-  arhivirano: {
-    title: "Arhivirano",
-    description: "Ostavljeno za evidenciju",
-    cardBorderClass: "border-l-4 border-slate-400",
-    badgeClass: "border border-slate-200 bg-slate-100 text-slate-600",
-  },
-};
+// Maintenance constants moved to features/maintenance/MaintenanceBoard.jsx
 
-const MAINTENANCE_STATUS_ORDER = [
-  "novi",
-  "planiran",
-  "u_tijeku",
-  "ceka_dobavljaca",
-  "potrebna_odluka",
-  "zavrseno",
-];
-const ALL_MAINTENANCE_STATUSES = [...MAINTENANCE_STATUS_ORDER, "arhivirano"];
-
-const MAINTENANCE_PRIORITY_CONFIG = {
-  nisko: {
-    label: "Nizak prioritet",
-    className: "border border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  srednje: {
-    label: "Srednji prioritet",
-    className: "border border-sky-200 bg-sky-50 text-sky-700",
-  },
-  visoko: {
-    label: "Visok prioritet",
-    className: "border border-orange-200 bg-orange-50 text-orange-700",
-  },
-  kriticno: {
-    label: "Kritično",
-    className: "border border-red-200 bg-red-50 text-red-700",
-  },
-};
-
-const MAINTENANCE_PRIORITY_ORDER = ["kriticno", "visoko", "srednje", "nisko"];
-
-const EMPTY_MAINTENANCE_FORM = {
-  naziv: "",
-  opis: "",
-  prioritet: "srednje",
-  status: "novi",
-  nekretnina_id: "",
-  property_unit_id: "",
-  prijavio: "",
-  dodijeljeno: "",
-  rok: "",
-  oznake: "",
-  procijenjeni_trosak: "",
-  stvarni_trosak: "",
-};
-
-const MaintenanceBoard = ({
-  enableFilters = false,
-  enableList = false,
-  enableDetails = true,
-  title = "Radni nalozi održavanja",
-  description = "Kanban pregled naloga kako bi odjel upravljanja nekretninama imao jasan uvid.",
-}) => {
-  const {
-    maintenanceTasks,
-    nekretnine,
-    propertyUnitsById,
-    propertyUnitsByProperty,
-    refreshMaintenanceTasks,
-    syncMaintenanceTask,
-    loading: storeLoading,
-  } = useEntityStore();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState(EMPTY_MAINTENANCE_FORM);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusUpdating, setStatusUpdating] = useState(null);
-  const [filters, setFilters] = useState({
-    search: "",
-    prioritet: "all",
-    nekretnina: "all",
-    status: "all",
-    dueFrom: "",
-    dueTo: "",
-    oznaka: "",
-  });
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [commentForm, setCommentForm] = useState({ author: "", message: "" });
-  const [commentSubmitting, setCommentSubmitting] = useState(false);
-  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-
-  const propertyMap = useMemo(() => {
-    const map = {};
-    for (const property of nekretnine) {
-      if (property?.id) {
-        map[property.id] = property;
-      }
-    }
-    return map;
-  }, [nekretnine]);
-
-  const filteredTasks = useMemo(() => {
-    const searchTerm = filters.search.trim().toLowerCase();
-    const labelTerms = filters.oznaka
-      ? filters.oznaka
-          .split(",")
-          .map((item) => item.trim().toLowerCase())
-          .filter(Boolean)
-      : [];
-    let dueFromDate = filters.dueFrom ? new Date(filters.dueFrom) : null;
-    let dueToDate = filters.dueTo ? new Date(filters.dueTo) : null;
-
-    if (dueFromDate && Number.isNaN(dueFromDate.getTime())) {
-      dueFromDate = null;
-    }
-    if (dueToDate && Number.isNaN(dueToDate.getTime())) {
-      dueToDate = null;
-    }
-    if (dueToDate) {
-      dueToDate.setHours(23, 59, 59, 999);
-    }
-
-    return (maintenanceTasks || []).filter((task) => {
-      if (filters.prioritet !== "all" && task.prioritet !== filters.prioritet) {
-        return false;
-      }
-      if (filters.status !== "all" && task.status !== filters.status) {
-        return false;
-      }
-      if (
-        filters.nekretnina !== "all" &&
-        task.nekretnina_id !== filters.nekretnina
-      ) {
-        return false;
-      }
-
-      const dueDate = task.rok ? new Date(task.rok) : null;
-      const dueValid = dueDate && !Number.isNaN(dueDate.getTime());
-      if (dueFromDate && (!dueValid || dueDate < dueFromDate)) {
-        return false;
-      }
-      if (dueToDate && (!dueValid || dueDate > dueToDate)) {
-        return false;
-      }
-
-      if (labelTerms.length > 0) {
-        const labels = (task.oznake || []).map((item) => item.toLowerCase());
-        const matchesLabels = labelTerms.every((term) =>
-          labels.some((label) => label.includes(term)),
-        );
-        if (!matchesLabels) {
-          return false;
-        }
-      }
-
-      if (searchTerm) {
-        const property = propertyMap[task.nekretnina_id];
-        const haystack = [
-          task.naziv,
-          task.opis,
-          task.prijavio,
-          task.dodijeljeno,
-          property?.naziv,
-          property?.adresa,
-          ...(task.oznake || []),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        if (!haystack.includes(searchTerm)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [maintenanceTasks, filters, propertyMap]);
-
-  const groupedTasks = useMemo(() => {
-    const buckets = {};
-    for (const status of ALL_MAINTENANCE_STATUSES) {
-      buckets[status] = [];
-    }
-    for (const task of filteredTasks || []) {
-      const bucket = buckets[task.status] || (buckets[task.status] = []);
-      bucket.push(task);
-    }
-    Object.values(buckets).forEach((items) => {
-      items.sort((a, b) => {
-        const firstDue = a.rok ? new Date(a.rok) : null;
-        const secondDue = b.rok ? new Date(b.rok) : null;
-        const firstDueValue =
-          firstDue && !Number.isNaN(firstDue.getTime())
-            ? firstDue.getTime()
-            : Number.POSITIVE_INFINITY;
-        const secondDueValue =
-          secondDue && !Number.isNaN(secondDue.getTime())
-            ? secondDue.getTime()
-            : Number.POSITIVE_INFINITY;
-        if (firstDueValue !== secondDueValue) {
-          return firstDueValue - secondDueValue;
-        }
-        const firstUpdated = new Date(a.azuriran || a.kreiran || 0).getTime();
-        const secondUpdated = new Date(b.azuriran || b.kreiran || 0).getTime();
-        return secondUpdated - firstUpdated;
-      });
-    });
-    return buckets;
-  }, [filteredTasks]);
-
-  const columns = useMemo(
-    () =>
-      MAINTENANCE_STATUS_ORDER.map((status) => ({
-        status,
-        meta: MAINTENANCE_STATUS_META[status],
-        tasks: groupedTasks[status] || [],
-      })),
-    [groupedTasks],
-  );
-
-  const archivedTasks = groupedTasks.arhivirano || [];
-
-  const unitsForSelectedProperty = useMemo(() => {
-    if (!formData.nekretnina_id) {
-      return [];
-    }
-    return propertyUnitsByProperty[formData.nekretnina_id] || [];
-  }, [formData.nekretnina_id, propertyUnitsByProperty]);
-
-  const resetForm = useCallback(() => {
-    setFormData(EMPTY_MAINTENANCE_FORM);
-  }, []);
-
-  const handleDialogOpenChange = useCallback(
-    (open) => {
-      setIsDialogOpen(open);
-      if (!open) {
-        resetForm();
-      }
-    },
-    [resetForm],
-  );
-
-  const handleOpenDialog = useCallback(() => {
-    resetForm();
-    setIsDialogOpen(true);
-  }, [resetForm]);
-
-  const handleCreateTask = async (event) => {
-    event.preventDefault();
-    if (!formData.naziv.trim()) {
-      toast.error("Naziv radnog naloga je obavezan");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      const normaliseRelation = (value) => {
-        if (!value || value === "none") {
-          return undefined;
-        }
-        return value;
-      };
-      const parseCost = (value) => {
-        if (value === null || value === undefined || value === "") {
-          return undefined;
-        }
-        if (typeof value === "number") {
-          return Number.isFinite(value) ? value : undefined;
-        }
-        const normalised = value.replace(/[^0-9,.-]/g, "").replace(",", ".");
-        const parsed = Number(normalised);
-        return Number.isFinite(parsed) ? parsed : undefined;
-      };
-
-      const payload = {
-        naziv: formData.naziv.trim(),
-        opis: formData.opis.trim() || undefined,
-        prioritet: formData.prioritet,
-        status: formData.status,
-        nekretnina_id: normaliseRelation(formData.nekretnina_id),
-        property_unit_id: normaliseRelation(formData.property_unit_id),
-        prijavio: formData.prijavio.trim() || undefined,
-        dodijeljeno: formData.dodijeljeno.trim() || undefined,
-        rok: formData.rok || undefined,
-        oznake: formData.oznake
-          ? formData.oznake
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean)
-          : [],
-        procijenjeni_trosak: parseCost(formData.procijenjeni_trosak),
-        stvarni_trosak: parseCost(formData.stvarni_trosak),
-      };
-      const response = await api.createMaintenanceTask(payload);
-      toast.success("Radni nalog je dodan");
-      handleDialogOpenChange(false);
-      syncMaintenanceTask?.(response.data);
-      await refreshMaintenanceTasks();
-    } catch (error) {
-      console.error("Greška pri kreiranju radnog naloga:", error);
-      const message =
-        error.response?.data?.detail || "Greška pri kreiranju naloga";
-      toast.error(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const fetchTaskDetails = useCallback(
-    async (taskId) => {
-      setDetailLoading(true);
-      try {
-        const response = await api.getMaintenanceTask(taskId);
-        setSelectedTask(response.data);
-        syncMaintenanceTask?.(response.data);
-        return response.data;
-      } catch (error) {
-        console.error("Greška pri dohvaćanju detalja radnog naloga:", error);
-        toast.error("Greška pri dohvaćanju detalja naloga");
-        throw error;
-      } finally {
-        setDetailLoading(false);
-      }
-    },
-    [syncMaintenanceTask],
-  );
-
-  const handleCardClick = useCallback(
-    (task) => {
-      if (!enableDetails) {
-        return;
-      }
-      setSelectedTaskId(task.id);
-      setSelectedTask(task);
-      setDetailOpen(true);
-      fetchTaskDetails(task.id);
-    },
-    [enableDetails, fetchTaskDetails],
-  );
-
-  const handleDetailOpenChange = useCallback((open) => {
-    setDetailOpen(open);
-    if (!open) {
-      setSelectedTaskId(null);
-      setSelectedTask(null);
-      setCommentForm({ author: "", message: "" });
-    }
-  }, []);
-
-  const handleFilterChange = useCallback((field, value) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleResetFilters = useCallback(() => {
-    setFilters({
-      search: "",
-      prioritet: "all",
-      nekretnina: "all",
-      status: "all",
-      dueFrom: "",
-      dueTo: "",
-      oznaka: "",
-    });
-  }, []);
-
-  const handleCommentSubmit = async (event) => {
-    event.preventDefault();
-    if (!selectedTaskId) {
-      return;
-    }
-    if (!commentForm.message.trim()) {
-      toast.error("Komentar ne može biti prazan");
-      return;
-    }
-    setCommentSubmitting(true);
-    try {
-      const response = await api.addMaintenanceComment(selectedTaskId, {
-        poruka: commentForm.message.trim(),
-        autor: commentForm.author.trim() || undefined,
-      });
-      toast.success("Komentar je dodan");
-      setCommentForm({ author: "", message: "" });
-      const updatedTask = response.data;
-      syncMaintenanceTask?.(updatedTask);
-      setSelectedTask(updatedTask);
-      await refreshMaintenanceTasks();
-    } catch (error) {
-      console.error("Greška pri dodavanju komentara:", error);
-      const message =
-        error.response?.data?.detail || "Greška pri dodavanju komentara";
-      toast.error(message);
-    } finally {
-      setCommentSubmitting(false);
-    }
-  };
-
-  const activityItems = useMemo(() => {
-    if (!selectedTask || !selectedTask.aktivnosti) {
-      return [];
-    }
-    return [...selectedTask.aktivnosti].sort((a, b) => {
-      const first = new Date(
-        a.timestamp || a.vrijeme || a.created_at || 0,
-      ).getTime();
-      const second = new Date(
-        b.timestamp || b.vrijeme || b.created_at || 0,
-      ).getTime();
-      return second - first;
-    });
-  }, [selectedTask]);
-
-  const resolutionHours = useMemo(() => {
-    if (!selectedTask) {
-      return null;
-    }
-    if (!selectedTask.kreiran) {
-      return null;
-    }
-    const start = new Date(selectedTask.kreiran);
-    if (Number.isNaN(start.getTime())) {
-      return null;
-    }
-    const finishSource = selectedTask.zavrseno_na || selectedTask.azuriran;
-    if (!finishSource) {
-      return null;
-    }
-    const finish = new Date(finishSource);
-    if (Number.isNaN(finish.getTime())) {
-      return null;
-    }
-    const diff = (finish.getTime() - start.getTime()) / (1000 * 60 * 60);
-    return Number.isFinite(diff) && diff >= 0 ? diff : null;
-  }, [selectedTask]);
-
-  const selectedTaskPriority = useMemo(() => {
-    if (!selectedTask) {
-      return null;
-    }
-    return (
-      MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet] ||
-      MAINTENANCE_PRIORITY_CONFIG.srednje
-    );
-  }, [selectedTask]);
-
-  const activityLabels = {
-    kreiran: "Nalog kreiran",
-    promjena_statusa: "Promjena statusa",
-    komentar: "Komentar",
-    uredjeno: "Ažuriranje naloga",
-  };
-
-  const handleStatusChange = useCallback(
-    async (task, nextStatus) => {
-      if (!task || !task.id || !nextStatus) {
-        return;
-      }
-
-      const taskId = task.id;
-      const previousStatus = task.status;
-      const previousUpdatedAt = task.azuriran || null;
-      const previousCompletedAt = task.zavrseno_na || null;
-      const nowIso = new Date().toISOString();
-      const isCompleted = ["zavrseno", "arhivirano"].includes(nextStatus);
-
-      const optimisticTask = {
-        ...task,
-        status: nextStatus,
-        azuriran: nowIso,
-        zavrseno_na: isCompleted ? nowIso : null,
-      };
-
-      setStatusUpdating(taskId);
-      syncMaintenanceTask?.(optimisticTask);
-
-      if (enableDetails && selectedTaskId === taskId) {
-        setSelectedTask((current) => {
-          if (!current || current.id !== taskId) {
-            return current;
-          }
-          return { ...current, ...optimisticTask };
-        });
-      }
-
-      try {
-        const response = await api.updateMaintenanceTask(taskId, {
-          status: nextStatus,
-        });
-        const updatedTask = response.data;
-        syncMaintenanceTask?.(updatedTask);
-        toast.success("Status radnog naloga je ažuriran");
-
-        if (enableDetails && selectedTaskId === taskId) {
-          setSelectedTask(updatedTask);
-        }
-      } catch (error) {
-        console.error("Greška pri promjeni statusa naloga:", error);
-        const message =
-          error.response?.data?.detail || "Ažuriranje statusa nije uspjelo";
-        toast.error(message);
-
-        const revertTask = {
-          ...task,
-          status: previousStatus,
-          azuriran: previousUpdatedAt,
-          zavrseno_na: previousCompletedAt,
-        };
-        syncMaintenanceTask?.(revertTask);
-
-        if (enableDetails && selectedTaskId === taskId) {
-          setSelectedTask((current) => {
-            if (!current || current.id !== taskId) {
-              return current;
-            }
-            return { ...current, ...revertTask };
-          });
-        }
-
-        if (refreshMaintenanceTasks) {
-          refreshMaintenanceTasks().catch((err) => {
-            console.error("Greška pri vraćanju liste naloga:", err);
-          });
-        }
-      } finally {
-        setStatusUpdating(null);
-      }
-    },
-    [
-      enableDetails,
-      refreshMaintenanceTasks,
-      selectedTaskId,
-      syncMaintenanceTask,
-    ],
-  );
-
-  const today = useMemo(() => {
-    const base = new Date();
-    base.setHours(0, 0, 0, 0);
-    return base;
-  }, []);
-
-  const isLoading = storeLoading && maintenanceTasks.length === 0;
-
-  const hasActiveFilters = useMemo(() => {
-    return Boolean(
-      filters.search.trim() ||
-        filters.oznaka.trim() ||
-        filters.prioritet !== "all" ||
-        filters.status !== "all" ||
-        filters.nekretnina !== "all" ||
-        filters.dueFrom ||
-        filters.dueTo,
-    );
-  }, [filters]);
-
-  const renderTaskCard = useCallback(
-    (task, columnStatus = null) => {
-      const statusMeta = MAINTENANCE_STATUS_META[task.status] || {};
-      const priorityMeta =
-        MAINTENANCE_PRIORITY_CONFIG[task.prioritet] ||
-        MAINTENANCE_PRIORITY_CONFIG.srednje;
-      const property = propertyMap[task.nekretnina_id];
-      const unit = propertyUnitsById?.[task.property_unit_id];
-      const dueDate = task.rok ? new Date(task.rok) : null;
-      const validDueDate =
-        dueDate && !Number.isNaN(dueDate.getTime()) ? dueDate : null;
-      const overdue =
-        validDueDate &&
-        validDueDate < today &&
-        !["zavrseno", "arhivirano"].includes(task.status);
-      const statusLabel = statusMeta.title || task.status;
-      const hideStatusBadge = columnStatus === task.status;
-      const dueLabel = task.rok ? formatDate(task.rok) : "Bez roka";
-      const isCompleted =
-        task.status === "zavrseno" || task.status === "arhivirano";
-
-      const cardClasses = [
-        "border border-border/60 shadow-sm",
-        "w-full max-w-full min-w-0 overflow-hidden",
-        statusMeta.cardBorderClass || "",
-        enableDetails
-          ? "cursor-pointer transition hover:border-primary/60"
-          : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      return (
-        <Card
-          key={task.id}
-          className={cardClasses}
-          onClick={() => {
-            if (enableDetails) {
-              handleCardClick(task);
-            }
-          }}
-          role={enableDetails ? "button" : undefined}
-        >
-          <CardHeader className="space-y-1 pb-2">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <CardTitle className="text-base font-semibold text-foreground">
-                  {task.naziv}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground/80">
-                  {property ? property.naziv : "Nepovezana nekretnina"}
-                  {unit ? ` • ${unit.naziv || unit.oznaka || unit.id}` : ""}
-                </p>
-              </div>
-              {!hideStatusBadge && (
-                <Badge
-                  variant="outline"
-                  className={
-                    statusMeta.badgeClass ||
-                    "border border-border bg-muted text-muted-foreground"
-                  }
-                >
-                  {statusLabel}
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0">
-            {task.opis && (
-              <p className="text-sm text-muted-foreground">{task.opis}</p>
-            )}
-
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/90">
-              <Badge variant="outline" className={priorityMeta.className}>
-                {priorityMeta.label}
-              </Badge>
-              <div
-                className={`flex items-center gap-1 ${overdue ? "font-semibold text-red-600" : ""}`}
-              >
-                <Calendar className="h-3.5 w-3.5" />
-                <span>{dueLabel}</span>
-              </div>
-              {task.prijavio && (
-                <span>
-                  Prijavio:{" "}
-                  <span className="font-medium text-foreground">
-                    {task.prijavio}
-                  </span>
-                </span>
-              )}
-              {task.dodijeljeno && (
-                <span>
-                  Dodijeljeno:{" "}
-                  <span className="font-medium text-foreground">
-                    {task.dodijeljeno}
-                  </span>
-                </span>
-              )}
-            </div>
-
-            {task.oznake && task.oznake.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {task.oznake.map((label) => (
-                  <Badge
-                    key={label}
-                    variant="outline"
-                    className="border-dashed border-border/50 text-muted-foreground"
-                  >
-                    #{label}
-                  </Badge>
-                ))}
-              </div>
-            )}
-
-            {(task.procijenjeni_trosak != null ||
-              task.stvarni_trosak != null) && (
-              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/90">
-                {task.procijenjeni_trosak != null && (
-                  <span>
-                    Procjena:{" "}
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(task.procijenjeni_trosak)}
-                    </span>
-                  </span>
-                )}
-                {task.stvarni_trosak != null && (
-                  <span>
-                    Trošak:{" "}
-                    <span className="font-medium text-foreground">
-                      {formatCurrency(task.stvarni_trosak)}
-                    </span>
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center gap-2 pt-2">
-              <div className="min-w-[140px] flex-1">
-                <Select
-                  value={task.status}
-                  onValueChange={(value) => handleStatusChange(task, value)}
-                  disabled={statusUpdating === task.id}
-                >
-                  <SelectTrigger
-                    className="h-8 w-full"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ALL_MAINTENANCE_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {MAINTENANCE_STATUS_META[status]?.title || status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
-                {task.status !== "arhivirano" && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleStatusChange(task, "arhivirano");
-                    }}
-                    disabled={statusUpdating === task.id}
-                    title="Arhiviraj nalog"
-                  >
-                    <Archive className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    },
-    [
-      enableDetails,
-      handleCardClick,
-      handleStatusChange,
-      propertyMap,
-      propertyUnitsById,
-      statusUpdating,
-      today,
-    ],
-  );
-
-  return (
-    <section className="space-y-4" id="maintenance-board">
-      <div className="flex flex-wrap items-start justify-between gap-3 md:items-center">
-        {(title ||
-          description ||
-          (enableFilters && maintenanceTasks.length > 0)) && (
-          <div className="space-y-1">
-            {title && (
-              <h2 className="text-2xl font-semibold text-foreground">
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
-            )}
-            {enableFilters && (
-              <p className="text-xs text-muted-foreground">
-                Prikazano {filteredTasks.length} od {maintenanceTasks.length}{" "}
-                naloga
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="ml-2 text-primary underline-offset-2 hover:underline"
-                  >
-                    Poništi filtre
-                  </button>
-                )}
-              </p>
-            )}
-          </div>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          {enableFilters && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsFiltersDialogOpen(true)}
-            >
-              Filteri
-            </Button>
-          )}
-          <Button
-            type="button"
-            onClick={handleOpenDialog}
-            className="md:w-auto"
-            data-testid="add-maintenance-task"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Dodaj radni nalog
-          </Button>
-        </div>
-      </div>
-
-      {enableFilters && (
-        <Dialog
-          open={isFiltersDialogOpen}
-          onOpenChange={setIsFiltersDialogOpen}
-        >
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Filtriraj radne naloge</DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                Suzi prikaz prema prioritetu, statusu, oznakama ili rokovima.
-              </p>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <Label htmlFor="maintenance-search">Pretraži naloge</Label>
-                  <Input
-                    id="maintenance-search"
-                    value={filters.search}
-                    onChange={(event) =>
-                      handleFilterChange("search", event.target.value)
-                    }
-                    placeholder="npr. klima, lift, hitno"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-prioritet-filter">
-                    Prioritet
-                  </Label>
-                  <Select
-                    value={filters.prioritet}
-                    onValueChange={(value) =>
-                      handleFilterChange("prioritet", value)
-                    }
-                  >
-                    <SelectTrigger id="maintenance-prioritet-filter">
-                      <SelectValue placeholder="Svi prioriteti" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Svi prioriteti</SelectItem>
-                      {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(
-                        ([value, config]) => (
-                          <SelectItem key={value} value={value}>
-                            {config.label}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-status-filter">Status</Label>
-                  <Select
-                    value={filters.status}
-                    onValueChange={(value) =>
-                      handleFilterChange("status", value)
-                    }
-                  >
-                    <SelectTrigger id="maintenance-status-filter">
-                      <SelectValue placeholder="Svi statusi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Svi statusi</SelectItem>
-                      {ALL_MAINTENANCE_STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {MAINTENANCE_STATUS_META[status]?.title || status}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-property-filter">
-                    Nekretnina
-                  </Label>
-                  <Select
-                    value={filters.nekretnina}
-                    onValueChange={(value) =>
-                      handleFilterChange("nekretnina", value)
-                    }
-                  >
-                    <SelectTrigger id="maintenance-property-filter">
-                      <SelectValue placeholder="Sve nekretnine" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Sve nekretnine</SelectItem>
-                      {nekretnine.map((property) => (
-                        <SelectItem key={property.id} value={property.id}>
-                          {property.naziv}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-label-filter">Oznake</Label>
-                  <Input
-                    id="maintenance-label-filter"
-                    value={filters.oznaka}
-                    onChange={(event) =>
-                      handleFilterChange("oznaka", event.target.value)
-                    }
-                    placeholder="npr. elektrika, servis"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-due-from">Rok od</Label>
-                  <Input
-                    id="maintenance-due-from"
-                    type="date"
-                    value={filters.dueFrom}
-                    onChange={(event) =>
-                      handleFilterChange("dueFrom", event.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="maintenance-due-to">Rok do</Label>
-                  <Input
-                    id="maintenance-due-to"
-                    type="date"
-                    value={filters.dueTo}
-                    onChange={(event) =>
-                      handleFilterChange("dueTo", event.target.value)
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-6">
-              <div className="flex w-full justify-between">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    handleResetFilters();
-                    setIsFiltersDialogOpen(false);
-                  }}
-                >
-                  Poništi sve
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setIsFiltersDialogOpen(false)}
-                >
-                  Zatvori
-                </Button>
-              </div>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      <div className="overflow-x-auto pb-2">
-        <div className="flex min-w-max gap-4">
-          {columns.map(({ status, meta, tasks }) => (
-            <div key={status} className="w-72 flex-shrink-0">
-              <div className="flex h-[calc(100vh-320px)] min-h-[24rem] flex-col rounded-xl border border-border/60 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-border/50 px-4 pt-4 pb-2">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {meta?.title || status}
-                    </h3>
-                    <p className="text-xs text-muted-foreground/80">
-                      {meta?.description}
-                    </p>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      meta?.badgeClass ||
-                      "border border-border text-muted-foreground"
-                    }
-                  >
-                    {tasks.length}
-                  </Badge>
-                </div>
-                <ScrollArea className="flex-1 px-4 pb-4">
-                  <div className="space-y-3 pt-3 pr-2">
-                    {isLoading ? (
-                      <p className="text-xs text-muted-foreground/70">
-                        Učitavam radne naloge…
-                      </p>
-                    ) : tasks.length === 0 ? (
-                      <p className="text-xs text-muted-foreground/60">
-                        Nema naloga u ovoj fazi.
-                      </p>
-                    ) : (
-                      tasks.map((task) => renderTaskCard(task, status))
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {archivedTasks.length > 0 && (
-        <details className="rounded-lg border border-border/60 bg-white/80 p-4">
-          <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
-            Arhivirani nalozi ({archivedTasks.length})
-          </summary>
-          <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {archivedTasks.map((task) => renderTaskCard(task, "arhivirano"))}
-          </div>
-        </details>
-      )}
-
-      {enableList && null}
-
-      <Dialog open={detailOpen} onOpenChange={handleDetailOpenChange}>
-        <DialogContent className="max-w-4xl overflow-hidden p-0">
-          <div className="flex flex-col">
-            <DialogHeader className="border-b border-border/60 px-6 py-4">
-              <DialogTitle>
-                {selectedTask?.naziv || "Detalji radnog naloga"}
-              </DialogTitle>
-              {selectedTask && (
-                <p className="text-sm text-muted-foreground">
-                  {MAINTENANCE_STATUS_META[selectedTask.status]?.title ||
-                    selectedTask.status}{" "}
-                  •{" "}
-                  {MAINTENANCE_PRIORITY_CONFIG[selectedTask.prioritet]?.label ||
-                    "Prioritet"}
-                </p>
-              )}
-            </DialogHeader>
-
-            {detailLoading ? (
-              <div className="px-6 py-10">
-                <p className="text-sm text-muted-foreground">
-                  Učitavam detalje naloga…
-                </p>
-              </div>
-            ) : selectedTask ? (
-              <div className="flex flex-col-reverse lg:flex-row-reverse">
-                <aside className="border-t border-border/60 bg-muted/30 px-6 py-6 text-sm lg:w-80 lg:border-l lg:border-t-0">
-                  <div className="space-y-4">
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-foreground">
-                        Sažetak naloga
-                      </h4>
-                      <dl className="space-y-3">
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Nekretnina
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {propertyMap[selectedTask.nekretnina_id]?.naziv ||
-                              "Nije povezano"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Podprostor
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {propertyUnitsById?.[selectedTask.property_unit_id]
-                              ?.naziv ||
-                              propertyUnitsById?.[selectedTask.property_unit_id]
-                                ?.oznaka ||
-                              "Nije odabrano"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Prijavio
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.prijavio || "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Dodijeljeno
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.dodijeljeno || "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Rok
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.rok
-                              ? formatDate(selectedTask.rok)
-                              : "Bez roka"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Status
-                          </dt>
-                          <dd className="pt-1">
-                            <Select
-                              value={selectedTask.status}
-                              onValueChange={(value) =>
-                                handleStatusChange(selectedTask, value)
-                              }
-                              disabled={statusUpdating === selectedTask.id}
-                            >
-                              <SelectTrigger className="h-9">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {ALL_MAINTENANCE_STATUSES.map((status) => (
-                                  <SelectItem key={status} value={status}>
-                                    {MAINTENANCE_STATUS_META[status]?.title ||
-                                      status}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Prioritet
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTaskPriority ? (
-                              <Badge
-                                variant="outline"
-                                className={selectedTaskPriority.className}
-                              >
-                                {selectedTaskPriority.label}
-                              </Badge>
-                            ) : (
-                              "—"
-                            )}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Procijenjeni trošak
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.procijenjeni_trosak != null
-                              ? formatCurrency(selectedTask.procijenjeni_trosak)
-                              : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Stvarni trošak
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.stvarni_trosak != null
-                              ? formatCurrency(selectedTask.stvarni_trosak)
-                              : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Završeno
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {selectedTask.zavrseno_na
-                              ? formatDateTime(selectedTask.zavrseno_na)
-                              : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-xs font-semibold uppercase text-muted-foreground">
-                            Vrijeme rješavanja
-                          </dt>
-                          <dd className="font-medium text-foreground">
-                            {resolutionHours != null
-                              ? `${resolutionHours.toFixed(1)} h`
-                              : "—"}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                    {selectedTask.oznake && selectedTask.oznake.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase text-muted-foreground">
-                          Oznake
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedTask.oznake.map((label) => (
-                            <Badge
-                              key={label}
-                              variant="outline"
-                              className="border-dashed border-border/50 text-muted-foreground"
-                            >
-                              #{label}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </aside>
-                <ScrollArea className="max-h-[75vh] flex-1">
-                  <div className="space-y-6 px-6 py-6">
-                    {selectedTask.opis && (
-                      <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-2">
-                        <h4 className="text-sm font-semibold text-foreground">
-                          Opis naloga
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedTask.opis}
-                        </p>
-                      </section>
-                    )}
-
-                    <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-sm font-semibold text-foreground">
-                          Timeline aktivnosti
-                        </h4>
-                        {activityItems.length > 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            {activityItems.length} zapisa
-                          </span>
-                        )}
-                      </div>
-                      {activityItems.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          Još nema zabilježenih aktivnosti za ovaj nalog.
-                        </p>
-                      ) : (
-                        <ul className="space-y-3">
-                          {activityItems.map((activity, index) => {
-                            const label =
-                              activityLabels[activity.tip] || activity.tip;
-                            const statusLabel = activity.status
-                              ? MAINTENANCE_STATUS_META[activity.status]
-                                  ?.title || activity.status
-                              : null;
-                            const timestamp = formatDateTime(
-                              activity.timestamp ||
-                                activity.vrijeme ||
-                                activity.created_at,
-                            );
-                            const key =
-                              activity.id ||
-                              `${activity.tip}-${timestamp || index}`;
-                            return (
-                              <li key={key} className="relative flex gap-3">
-                                <div
-                                  className="mt-1 h-full w-px bg-border"
-                                  aria-hidden
-                                />
-                                <div className="flex-1 rounded-lg border border-border/60 bg-white/80 p-3 shadow-sm">
-                                  <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <Badge
-                                        variant="outline"
-                                        className="border-border text-muted-foreground"
-                                      >
-                                        {label}
-                                      </Badge>
-                                      {statusLabel && (
-                                        <Badge
-                                          variant="outline"
-                                          className="border-primary/40 bg-primary/10 text-primary"
-                                        >
-                                          {statusLabel}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">
-                                      {timestamp}
-                                    </span>
-                                  </div>
-                                  {activity.autor && (
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      Autor:{" "}
-                                      <span className="font-medium text-foreground">
-                                        {activity.autor}
-                                      </span>
-                                    </p>
-                                  )}
-                                  {activity.opis && (
-                                    <p className="mt-2 text-sm text-foreground">
-                                      {activity.opis}
-                                    </p>
-                                  )}
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </section>
-
-                    <section className="rounded-lg border border-border/60 bg-background/60 p-4 space-y-3">
-                      <h4 className="text-sm font-semibold text-foreground">
-                        Dodaj komentar
-                      </h4>
-                      <form
-                        onSubmit={handleCommentSubmit}
-                        className="space-y-3"
-                      >
-                        <div className="grid gap-3 md:grid-cols-2">
-                          <div>
-                            <Label htmlFor="comment-author">
-                              Autor komentara
-                            </Label>
-                            <Input
-                              id="comment-author"
-                              value={commentForm.author}
-                              onChange={(event) =>
-                                setCommentForm((prev) => ({
-                                  ...prev,
-                                  author: event.target.value,
-                                }))
-                              }
-                              placeholder="npr. Voditelj održavanja"
-                            />
-                          </div>
-                          <div className="md:col-span-2">
-                            <Label htmlFor="comment-message">Komentar *</Label>
-                            <Textarea
-                              id="comment-message"
-                              rows={3}
-                              value={commentForm.message}
-                              onChange={(event) =>
-                                setCommentForm((prev) => ({
-                                  ...prev,
-                                  message: event.target.value,
-                                }))
-                              }
-                              placeholder="Zapišite ažuriranje, dogovoreni termin ili povratnu informaciju izvođača"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setCommentForm({ author: "", message: "" })
-                            }
-                            disabled={commentSubmitting}
-                          >
-                            Poništi
-                          </Button>
-                          <Button
-                            type="submit"
-                            size="sm"
-                            disabled={commentSubmitting}
-                          >
-                            {commentSubmitting ? "Spremam…" : "Dodaj komentar"}
-                          </Button>
-                        </div>
-                      </form>
-                    </section>
-                  </div>
-                </ScrollArea>
-              </div>
-            ) : (
-              <div className="px-6 py-10">
-                <p className="text-sm text-muted-foreground">
-                  Detalji naloga nisu dostupni.
-                </p>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Dodaj radni nalog</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Zabilježite sve potrebne aktivnosti kako bi tim mogao reagirati na
-              vrijeme.
-            </p>
-          </DialogHeader>
-          <form onSubmit={handleCreateTask} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="task-naziv">Naziv naloga *</Label>
-                <Input
-                  id="task-naziv"
-                  value={formData.naziv}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      naziv: event.target.value,
-                    }))
-                  }
-                  placeholder="npr. Servis klima uređaja"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="task-prioritet">Prioritet</Label>
-                <Select
-                  value={formData.prioritet}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, prioritet: value }))
-                  }
-                >
-                  <SelectTrigger id="task-prioritet">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(MAINTENANCE_PRIORITY_CONFIG).map(
-                      ([value, config]) => (
-                        <SelectItem key={value} value={value}>
-                          {config.label}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="task-status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, status: value }))
-                  }
-                >
-                  <SelectTrigger id="task-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ALL_MAINTENANCE_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {MAINTENANCE_STATUS_META[status]?.title || status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="task-rok">Rok izvedbe</Label>
-                <Input
-                  id="task-rok"
-                  type="date"
-                  value={formData.rok}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      rok: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="task-nekretnina">Nekretnina</Label>
-                <Select
-                  value={formData.nekretnina_id || "none"}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      nekretnina_id: value === "none" ? "" : value,
-                      property_unit_id: "",
-                    }))
-                  }
-                >
-                  <SelectTrigger id="task-nekretnina">
-                    <SelectValue placeholder="Odaberite nekretninu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez povezivanja</SelectItem>
-                    {nekretnine.map((property) => (
-                      <SelectItem key={property.id} value={property.id}>
-                        {property.naziv}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="task-unit">Podprostor</Label>
-                <Select
-                  value={formData.property_unit_id || "none"}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      property_unit_id: value === "none" ? "" : value,
-                    }))
-                  }
-                  disabled={
-                    !formData.nekretnina_id ||
-                    unitsForSelectedProperty.length === 0
-                  }
-                >
-                  <SelectTrigger id="task-unit">
-                    <SelectValue
-                      placeholder={
-                        formData.nekretnina_id
-                          ? "Odaberite podprostor"
-                          : "Prvo odaberite nekretninu"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Bez podprostora</SelectItem>
-                    {unitsForSelectedProperty.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.id}>
-                        {unit.oznaka || unit.naziv || unit.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="task-prijavio">Prijavio</Label>
-                <Input
-                  id="task-prijavio"
-                  value={formData.prijavio}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      prijavio: event.target.value,
-                    }))
-                  }
-                  placeholder="npr. Ana Perić"
-                />
-              </div>
-              <div>
-                <Label htmlFor="task-dodijeljeno">Voditelj naloga</Label>
-                <Input
-                  id="task-dodijeljeno"
-                  value={formData.dodijeljeno}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      dodijeljeno: event.target.value,
-                    }))
-                  }
-                  placeholder="npr. Voditelj održavanja"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="task-procjena">Procijenjeni trošak (€)</Label>
-                <Input
-                  id="task-procjena"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.procijenjeni_trosak}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      procijenjeni_trosak: event.target.value,
-                    }))
-                  }
-                  placeholder="npr. 250"
-                />
-              </div>
-              <div>
-                <Label htmlFor="task-trosak">Stvarni trošak (€)</Label>
-                <Input
-                  id="task-trosak"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.stvarni_trosak}
-                  onChange={(event) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      stvarni_trosak: event.target.value,
-                    }))
-                  }
-                  placeholder="npr. 220"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="task-opis">Opis naloga</Label>
-              <Textarea
-                id="task-opis"
-                value={formData.opis}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, opis: event.target.value }))
-                }
-                rows={4}
-                placeholder="Detaljan opis problema, potrebni materijali ili upute za izvođača"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="task-oznake">Oznake</Label>
-              <Input
-                id="task-oznake"
-                value={formData.oznake}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    oznake: event.target.value,
-                  }))
-                }
-                placeholder="npr. elektrika, hitno"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Razdvojite oznake zarezom kako biste brže filtrirali zadatke.
-              </p>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleDialogOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Odustani
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Spremam…" : "Spremi nalog"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </section>
-  );
-};
+// MaintenanceBoard component moved to features/maintenance/MaintenanceBoard.jsx
 
 const MaintenanceWorkspace = () => {
   return (
@@ -1873,19 +219,8 @@ const Dashboard = () => {
   const [showAllReminders, setShowAllReminders] = useState(false);
   const [remindersFilter, setRemindersFilter] = useState("svi");
   const [reminderSearch, setReminderSearch] = useState("");
-  const { dokumenti, nekretnine, ugovori, zakupnici } = useEntityStore();
-
-  const maintenanceKpi = dashboard?.maintenance_kpi || null;
-  const formatHours = useCallback((value) => {
-    if (value === null || value === undefined) {
-      return "—";
-    }
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) {
-      return "—";
-    }
-    return `${parsed.toFixed(1)} h`;
-  }, []);
+  const { dokumenti, nekretnine, ugovori, zakupnici, maintenanceTasks } =
+    useEntityStore();
 
   useEffect(() => {
     fetchDashboard();
@@ -2135,8 +470,16 @@ const Dashboard = () => {
 
   if (!dashboard) {
     return (
-      <div className="p-8 text-sm text-muted-foreground">
-        Učitavam kontrolni centar…
+      <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 md:px-6">
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -2235,7 +578,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map(
           ({ id, label, icon: Icon, value, sublabel, suffix }) => (
             <Card key={id} data-testid={id} className="card-hover shadow-shell">
@@ -2484,7 +827,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       )}
-      <MaintenanceBoard />
 
       {portfolioBreakdown.length > 0 && (
         <Card className="shadow-shell" data-testid="portfolio-breakdown">
@@ -2553,77 +895,6 @@ const Dashboard = () => {
                   })}
                 </tbody>
               </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {maintenanceKpi && (
-        <Card className="shadow-shell" data-testid="maintenance-kpi-card">
-          <CardHeader className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold">
-                KPI održavanja
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Praćenje radnih naloga, SLA i troškova.
-              </p>
-            </div>
-            <Badge
-              variant="outline"
-              className="border-primary/40 bg-primary/5 text-primary"
-            >
-              {maintenanceKpi.open_workorders} otvorenih naloga
-            </Badge>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                Otvoreni nalozi
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {maintenanceKpi.open_workorders}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                Nalozi u kašnjenju
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {maintenanceKpi.overdue_workorders}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                Prosječno vrijeme rješavanja
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {formatHours(maintenanceKpi.avg_resolution_hours)}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                Procijenjeni trošak
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {formatCurrency(maintenanceKpi.estimated_cost_total)}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                Stvarni trošak
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {formatCurrency(maintenanceKpi.actual_cost_total)}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-white/70 p-3">
-              <p className="text-xs text-muted-foreground uppercase">
-                SLA prekoračenja
-              </p>
-              <p className="text-lg font-semibold text-foreground">
-                {maintenanceKpi.sla_breaches}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -3838,6 +2109,8 @@ const Nekretnine = () => {
     ugovori,
     zakupnici,
     propertyUnitsByProperty,
+    propertyUnitsById,
+    maintenanceTasks,
     refresh: refreshEntities,
   } = useEntityStore();
   const navigate = useNavigate();
@@ -3862,6 +2135,47 @@ const Nekretnine = () => {
       return acc;
     }, {});
   }, [dokumenti]);
+
+  const [editingDocument, setEditingDocument] = useState(null);
+  const [showDocumentDialog, setShowDocumentDialog] = useState(false);
+
+  const handleDeleteDokument = async (docId) => {
+    if (!window.confirm("Jeste li sigurni da želite obrisati ovaj dokument?")) {
+      return;
+    }
+    try {
+      await api.deleteDokument(docId);
+      toast.success("Dokument uspješno obrisan");
+      refreshEntities();
+    } catch (error) {
+      console.error("Greška pri brisanju dokumenta:", error);
+      toast.error("Neuspješno brisanje dokumenta");
+    }
+  };
+
+  const handleEditDokument = (doc) => {
+    setEditingDocument(doc);
+    setShowDocumentDialog(true);
+  };
+
+  const handleCreateDokument = async (formData) => {
+    const toastId = toast.loading("Spremam dokument…");
+    try {
+      if (editingDocument) {
+        await api.updateDokument(editingDocument.id, formData);
+        toast.success("Dokument uspješno ažuriran", { id: toastId });
+      } else {
+        await api.createDokument(formData);
+        toast.success("Dokument uspješno dodan", { id: toastId });
+      }
+      setShowDocumentDialog(false);
+      setEditingDocument(null);
+      refreshEntities();
+    } catch (error) {
+      console.error("Greška pri spremanju dokumenta:", error);
+      toast.error("Neuspješno spremanje dokumenta", { id: toastId });
+    }
+  };
 
   const contractsByProperty = useMemo(() => {
     return ugovori.reduce((acc, ugovor) => {
@@ -4479,12 +2793,14 @@ const Nekretnine = () => {
     const netIncomeRaw = parseNumericValue(
       selectedNekretnina.proslogodisnji_neto_prihod,
     );
-    const netIncome =
-      netIncomeRaw !== null ? netIncomeRaw : grossIncome - operatingExpense;
-    const maintenanceCost =
-      parseNumericValue(selectedNekretnina.troskovi_odrzavanja) || 0;
     const amortization =
       parseNumericValue(selectedNekretnina.amortizacija) || 0;
+    const netIncome =
+      netIncomeRaw !== null
+        ? netIncomeRaw
+        : grossIncome - operatingExpense + amortization;
+    const maintenanceCost =
+      parseNumericValue(selectedNekretnina.troskovi_odrzavanja) || 0;
     const investmentBase =
       parseNumericValue(selectedNekretnina.nabavna_cijena) ||
       parseNumericValue(selectedNekretnina.trzisna_vrijednost) ||
@@ -4710,10 +3026,11 @@ const Nekretnine = () => {
           const netIncomeRaw = parseNumericValue(
             nekretnina.proslogodisnji_neto_prihod,
           );
+          const amortization = parseNumericValue(nekretnina.amortizacija) || 0;
           const resolvedNetIncome =
             netIncomeRaw !== null
               ? netIncomeRaw
-              : grossIncome - operatingExpense;
+              : grossIncome - operatingExpense + amortization;
           const margin = grossIncome
             ? (resolvedNetIncome / Math.abs(grossIncome)) * 100
             : null;
@@ -5347,6 +3664,22 @@ const Nekretnine = () => {
                                   <Download className="w-4 h-4 mr-1" />
                                   Otvori
                                 </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleEditDokument(doc)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={() => handleDeleteDokument(doc.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
                           ),
@@ -5451,6 +3784,101 @@ const Nekretnine = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Radni nalozi</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const tasks = (maintenanceTasks || []).filter(
+                        (t) => t.nekretnina_id === selectedNekretnina.id,
+                      );
+
+                      if (tasks.length === 0) {
+                        return (
+                          <p className="text-sm text-muted-foreground">
+                            Nema zabilježenih radnih naloga za ovu nekretninu.
+                          </p>
+                        );
+                      }
+
+                      const activeTasks = tasks.filter(
+                        (t) => t.status !== "arhivirano",
+                      );
+                      const archivedTasks = tasks.filter(
+                        (t) => t.status === "arhivirano",
+                      );
+
+                      const renderTaskItem = (task) => (
+                        <div
+                          key={task.id}
+                          className="flex flex-col gap-2 rounded-md border border-border/60 p-3 text-sm"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-medium text-foreground">
+                                {task.naziv}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(task.kreiran)} • {task.prijavio}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={
+                                  MAINTENANCE_STATUS_META[task.status]
+                                    ?.badgeClass
+                                }
+                              >
+                                {MAINTENANCE_STATUS_META[task.status]?.title ||
+                                  task.status}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  MAINTENANCE_PRIORITY_CONFIG[task.prioritet]
+                                    ?.className
+                                }
+                              >
+                                {MAINTENANCE_PRIORITY_CONFIG[task.prioritet]
+                                  ?.label || task.prioritet}
+                              </Badge>
+                            </div>
+                          </div>
+                          {task.opis && (
+                            <p className="text-muted-foreground">{task.opis}</p>
+                          )}
+                        </div>
+                      );
+
+                      return (
+                        <div className="space-y-6">
+                          {activeTasks.length > 0 && (
+                            <div className="space-y-2">
+                              {activeTasks.map(renderTaskItem)}
+                            </div>
+                          )}
+
+                          {archivedTasks.length > 0 && (
+                            <details className="group">
+                              <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                                <span>
+                                  Arhivirani nalozi ({archivedTasks.length})
+                                </span>
+                                <div className="h-px flex-1 bg-border/60" />
+                              </summary>
+                              <div className="mt-3 space-y-2 pl-2 border-l-2 border-border/40">
+                                {archivedTasks.map(renderTaskItem)}
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="rizici" className="space-y-4">
@@ -5536,6 +3964,34 @@ const Nekretnine = () => {
             onSubmit={handleUpdateNekretnina}
             onCancel={() => setEditingNekretnina(null)}
             submitting={formSubmitting}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDocumentDialog} onOpenChange={setShowDocumentDialog}>
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          aria-describedby="dokument-form-description"
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {editingDocument ? "Uredi dokument" : "Dodaj novi dokument"}
+            </DialogTitle>
+          </DialogHeader>
+          <div id="dokument-form-description" className="sr-only">
+            Forma za {editingDocument ? "uređivanje" : "dodavanje"} dokumenta
+          </div>
+          <DocumentWizard
+            nekretnine={nekretnine}
+            zakupnici={zakupnici}
+            ugovori={ugovori}
+            propertyUnitsByProperty={propertyUnitsByProperty}
+            propertyUnitsById={propertyUnitsById}
+            onSubmit={handleCreateDokument}
+            onCancel={() => setShowDocumentDialog(false)}
+            refreshEntities={refreshEntities}
+            loading={loading}
+            initialData={editingDocument}
           />
         </DialogContent>
       </Dialog>
@@ -5780,6 +4236,43 @@ const Zakupnici = () => {
       hitnost_odziva_sati: normaliseInt(tenant.hitnost_odziva_sati),
       kontakt_osobe: contacts,
     };
+  };
+
+  const handleCreateDocument = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingDocument) {
+        await api.updateDokument(editingDocument.id, {
+          naziv: newDocument.naziv,
+          tip: newDocument.tip,
+          opis: newDocument.opis,
+        });
+        toast.success("Dokument uspješno ažuriran");
+      } else {
+        const payload = { ...newDocument };
+        if (payload.nekretnina_id === "none") delete payload.nekretnina_id;
+        if (payload.zakupnik_id === "none") delete payload.zakupnik_id;
+        if (payload.ugovor_id === "none") delete payload.ugovor_id;
+
+        await api.createDokument(payload);
+        toast.success("Dokument uspješno dodan");
+      }
+      setShowDocumentDialog(false);
+      setEditingDocument(null);
+      setNewDocument({
+        naziv: "",
+        tip: "ostalo",
+        opis: "",
+        nekretnina_id: "none",
+        zakupnik_id: "none",
+        ugovor_id: "none",
+        file: null,
+      });
+      refreshEntities();
+    } catch (error) {
+      console.error("Greška pri spremanju dokumenta:", error);
+      toast.error("Neuspješno spremanje dokumenta");
+    }
   };
 
   const handleToggleArchive = async (tenant, nextStatus) => {
@@ -6383,6 +4876,35 @@ const Ugovori = () => {
     }, {});
   }, [dokumenti]);
 
+  const [editingDocument, setEditingDocument] = useState(null);
+
+  const handleDeleteDokument = async (docId) => {
+    if (!window.confirm("Jeste li sigurni da želite obrisati ovaj dokument?")) {
+      return;
+    }
+    try {
+      await api.deleteDokument(docId);
+      toast.success("Dokument uspješno obrisan");
+      refreshEntities();
+    } catch (error) {
+      console.error("Greška pri brisanju dokumenta:", error);
+      toast.error("Neuspješno brisanje dokumenta");
+    }
+  };
+
+  const handleEditDokument = (doc) => {
+    setEditingDocument(doc);
+    setNewDocument({
+      naziv: doc.naziv,
+      tip: doc.tip,
+      opis: doc.opis || "",
+      nekretnina_id: doc.nekretnina_id || "none",
+      zakupnik_id: doc.zakupnik_id || "none",
+      ugovor_id: doc.ugovor_id || "none",
+      file: null,
+    });
+    setShowDocumentDialog(true);
+  };
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewDocument, setPreviewDocument] = useState(null);
   const [editingContract, setEditingContract] = useState(null);
@@ -8066,29 +6588,60 @@ const AppContent = () => {
     <EntityStoreProvider>
       <div className="App">
         <Navigation />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/nekretnine" element={<Nekretnine />} />
-          <Route path="/zakupnici" element={<Zakupnici />} />
-          <Route path="/ugovori" element={<Ugovori />} />
-          <Route path="/odrzavanje" element={<MaintenanceWorkspace />} />
-          <Route
-            path="/dokumenti"
-            element={
-              <Suspense
-                fallback={
-                  <div className="p-6 text-sm text-muted-foreground">
-                    Učitavanje dokumenata…
-                  </div>
-                }
-              >
-                <DocumentsPageLazy />
-              </Suspense>
-            }
-          />
-          <Route path="/profili" element={<TenantProfiles />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route
+              path="/"
+              element={
+                <PageTransition>
+                  <Dashboard />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/nekretnine"
+              element={
+                <PageTransition>
+                  <NekretninePage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/zakupnici"
+              element={
+                <PageTransition>
+                  <ZakupniciPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/ugovori"
+              element={
+                <PageTransition>
+                  <UgovoriPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/ugovori/report"
+              element={
+                <PageTransition>
+                  <ContractReport />
+                </PageTransition>
+              }
+            />
+            <Route path="/profili" element={<TenantProfiles />} />
+            <Route
+              path="/odrzavanje"
+              element={
+                <PageTransition>
+                  <MaintenancePage />
+                </PageTransition>
+              }
+            />
+            <Route path="/login" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
       </div>
       <Toaster />
     </EntityStoreProvider>

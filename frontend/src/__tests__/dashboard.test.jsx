@@ -31,6 +31,7 @@ jest.mock(
   "@/lib/utils",
   () => ({
     cn: (...classes) => classes.filter(Boolean).join(" "),
+    dedupeRemindersById: (reminders) => reminders,
   }),
   { virtual: true },
 );

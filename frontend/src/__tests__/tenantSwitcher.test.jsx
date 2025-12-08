@@ -64,23 +64,20 @@ jest.mock("../components/ui/sonner", () => ({
 
 const { toast } = require("../components/ui/sonner");
 
-import { TenantSwitcher } from "../App";
+import { TenantSwitcher } from "../components/TenantSwitcher";
 
 let originalLocation;
 
 beforeAll(() => {
   window.HTMLElement.prototype.scrollIntoView = jest.fn();
-  originalLocation = window.location;
-  delete window.location;
-  const mockedLocation = Object.create(originalLocation);
-  Object.defineProperty(mockedLocation, "reload", {
-    configurable: true,
-    value: jest.fn(),
-  });
-  window.location = mockedLocation;
 });
 
 beforeEach(() => {
+  delete window.location;
+  window.location = {
+    ...window.location,
+    reload: jest.fn(),
+  };
   api.getTenants.mockResolvedValue({
     data: [
       { id: "tenant-default", naziv: "Primarni profil", role: "owner" },
@@ -97,8 +94,9 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  delete window.location;
-  window.location = originalLocation;
+  // window.location is reset by jsdom environment usually, but if we modified it on the window object directly
+  // we might want to restore it. However, since we used defineProperty on window, we can just leave it or restore if needed.
+  // For now, let's just remove the complex restore logic that might fail.
 });
 
 it("loads tenants and triggers change handler", async () => {

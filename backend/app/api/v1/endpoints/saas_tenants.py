@@ -23,18 +23,33 @@ class TenantCreate(BaseModel):
 async def get_my_tenants(
     current_user: Dict[str, Any] = Depends(deps.get_current_user),
 ):
-    # In a real app, we'd filter by user membership.
-    # For now, we return all tenants.
-    cursor = db.tenants.find()
-    items = await cursor.to_list(100)
-    results = []
-    for item in items:
-        data = parse_from_mongo(item)
-        # Inject the user's global role as their role in this tenant
-        # This is a simplification. In a real SaaS, we'd look up the user's membership for this tenant.
-        data["role"] = current_user.get("role", "member")
-        results.append(data)
-    return results
+    try:
+        with open("debug_tenants.txt", "a") as f:
+            f.write(f"GET /tenants called by {current_user.get('email')}\n")
+
+        # In a real app, we'd filter by user membership.
+        # For now, we return all tenants.
+        cursor = db.tenants.find()
+        items = await cursor.to_list(100)
+
+        with open("debug_tenants.txt", "a") as f:
+            f.write(f"Fetched {len(items)} tenants from DB\n")
+
+        results = []
+        for item in items:
+            data = parse_from_mongo(item)
+            # Inject the user's global role as their role in this tenant
+            # This is a simplification. In a real SaaS, we'd look up the user's membership for this tenant.
+            data["role"] = current_user.get("role", "member")
+            results.append(data)
+        return results
+    except Exception as e:
+        import traceback
+
+        error_msg = traceback.format_exc()
+        with open("debug_tenants.txt", "a") as f:
+            f.write(f"ERROR in get_my_tenants: {str(e)}\n{error_msg}\n")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

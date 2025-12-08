@@ -1,5 +1,6 @@
 import shutil
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -34,7 +35,18 @@ async def get_documents(
 ):
     cursor = db.dokumenti.find().sort("created_at", -1)
     items = await cursor.to_list(limit)
-    return [parse_from_mongo(item) for item in items]
+
+    parsed_items = [parse_from_mongo(item) for item in items]
+    for item in parsed_items:
+        if "putanja_datoteke" not in item and item.get("file_path"):
+            fp = item["file_path"]
+            if "uploads/" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+            elif "uploads\\" in fp:  # Windows support just in case
+                item["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace(
+                    "\\", "/"
+                )
+    return parsed_items
 
 
 @router.post(
@@ -97,6 +109,7 @@ async def create_document(
         "original_filename": file.filename if file else None,
         "content_type": file.content_type if file else None,
         "created_by": current_user["id"],
+        "putanja_datoteke": f"uploads/{filename}" if file_path else None,
     }
 
     doc_data = prepare_for_mongo(doc_data)
@@ -107,6 +120,94 @@ async def create_document(
     return parse_from_mongo(new_doc)
 
 
+@router.get(
+    "/nekretnina/{id}", dependencies=[Depends(deps.require_scopes("documents:read"))]
+)
+async def get_documents_by_property(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    cursor = db.dokumenti.find({"nekretnina_id": id}).sort("created_at", -1)
+    items = await cursor.to_list(None)
+    parsed_items = [parse_from_mongo(item) for item in items]
+    for item in parsed_items:
+        if "putanja_datoteke" not in item and item.get("file_path"):
+            fp = item["file_path"]
+            if "uploads/" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+            elif "uploads\\" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace(
+                    "\\", "/"
+                )
+    return parsed_items
+
+
+@router.get(
+    "/zakupnik/{id}", dependencies=[Depends(deps.require_scopes("documents:read"))]
+)
+async def get_documents_by_tenant(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    cursor = db.dokumenti.find({"zakupnik_id": id}).sort("created_at", -1)
+    items = await cursor.to_list(None)
+    parsed_items = [parse_from_mongo(item) for item in items]
+    for item in parsed_items:
+        if "putanja_datoteke" not in item and item.get("file_path"):
+            fp = item["file_path"]
+            if "uploads/" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+            elif "uploads\\" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace(
+                    "\\", "/"
+                )
+    return parsed_items
+
+
+@router.get(
+    "/ugovor/{id}", dependencies=[Depends(deps.require_scopes("documents:read"))]
+)
+async def get_documents_by_contract(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    cursor = db.dokumenti.find({"ugovor_id": id}).sort("created_at", -1)
+    items = await cursor.to_list(None)
+    parsed_items = [parse_from_mongo(item) for item in items]
+    for item in parsed_items:
+        if "putanja_datoteke" not in item and item.get("file_path"):
+            fp = item["file_path"]
+            if "uploads/" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+            elif "uploads\\" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace(
+                    "\\", "/"
+                )
+    return parsed_items
+
+
+@router.get(
+    "/property-unit/{id}", dependencies=[Depends(deps.require_scopes("documents:read"))]
+)
+async def get_documents_by_unit(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    cursor = db.dokumenti.find({"property_unit_id": id}).sort("created_at", -1)
+    items = await cursor.to_list(None)
+    parsed_items = [parse_from_mongo(item) for item in items]
+    for item in parsed_items:
+        if "putanja_datoteke" not in item and item.get("file_path"):
+            fp = item["file_path"]
+            if "uploads/" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+            elif "uploads\\" in fp:
+                item["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace(
+                    "\\", "/"
+                )
+    return parsed_items
+
+
 @router.get("/{id}", dependencies=[Depends(deps.require_scopes("documents:read"))])
 async def get_document(
     id: str,
@@ -115,7 +216,14 @@ async def get_document(
     item = await db.dokumenti.find_one({"id": id})
     if not item:
         raise HTTPException(status_code=404, detail="Dokument nije pronađen")
-    return parse_from_mongo(item)
+    parsed = parse_from_mongo(item)
+    if "putanja_datoteke" not in parsed and parsed.get("file_path"):
+        fp = parsed["file_path"]
+        if "uploads/" in fp:
+            parsed["putanja_datoteke"] = fp[fp.rfind("uploads/") :]
+        elif "uploads\\" in fp:
+            parsed["putanja_datoteke"] = fp[fp.rfind("uploads\\") :].replace("\\", "/")
+    return parsed
 
 
 @router.get(
@@ -125,19 +233,58 @@ async def download_document(
     id: str,
     current_user: Dict[str, Any] = Depends(deps.get_current_user),
 ):
+    try:
+        item = await db.dokumenti.find_one({"id": id})
+        if not item:
+            print(f"DEBUG: Document {id} not found in DB")
+            raise HTTPException(status_code=404, detail="Dokument nije pronađen")
+
+        file_path = item.get("file_path")
+        print(f"DEBUG: Document {id} file_path: {file_path}")
+
+        if not file_path or not Path(file_path).exists():
+            print(f"DEBUG: File path does not exist: {file_path}")
+            raise HTTPException(status_code=404, detail="Datoteka nije pronađena")
+
+        return FileResponse(
+            path=file_path,
+            filename=item.get("original_filename", "document"),
+            media_type=item.get("content_type", "application/octet-stream"),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ERROR: Download failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+class DocumentUpdate(BaseModel):
+    naziv: Optional[str] = None
+    tip: Optional[TipDokumenta] = None
+    opis: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+@router.put("/{id}", dependencies=[Depends(deps.require_scopes("documents:create"))])
+async def update_document(
+    id: str,
+    update_data: DocumentUpdate,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
     item = await db.dokumenti.find_one({"id": id})
     if not item:
         raise HTTPException(status_code=404, detail="Dokument nije pronađen")
 
-    file_path = item.get("file_path")
-    if not file_path or not Path(file_path).exists():
-        raise HTTPException(status_code=404, detail="Datoteka nije pronađena")
+    update_dict = update_data.model_dump(exclude_unset=True)
+    if "tip" in update_dict:
+        update_dict["tip"] = update_dict["tip"].value
 
-    return FileResponse(
-        path=file_path,
-        filename=item.get("original_filename", "document"),
-        media_type=item.get("content_type", "application/octet-stream"),
-    )
+    if update_dict:
+        update_dict["updated_at"] = datetime.utcnow()
+        await db.dokumenti.update_one({"id": id}, {"$set": update_dict})
+
+    updated_item = await db.dokumenti.find_one({"id": id})
+    return parse_from_mongo(updated_item)
 
 
 @router.delete("/{id}", dependencies=[Depends(deps.require_scopes("documents:delete"))])

@@ -1,9 +1,11 @@
 import asyncio
 import os
-from typing import Dict, Iterable
+from typing import AsyncGenerator, Dict, Iterable
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 
 os.environ.setdefault("AUTH_SECRET", "test-secret")
 os.environ.setdefault("USE_IN_MEMORY_DB", "true")
@@ -225,3 +227,11 @@ def pm_headers(app_context: Dict[str, Dict[str, str]]) -> Dict[str, str]:
 @pytest.fixture()
 def pm_user_id(app_context: Dict[str, Dict[str, str]]) -> str:
     return app_context["pm_user"]["id"]
+
+
+@pytest_asyncio.fixture
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        yield ac

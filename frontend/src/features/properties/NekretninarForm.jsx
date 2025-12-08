@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Label } from "../../components/ui/label";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import {
@@ -17,7 +19,22 @@ import {
 } from "../../components/ui/tabs";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
-import { Trash2, Plus } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Loader2,
+  MoreVertical,
+  FileText,
+  User,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
 import {
   UNIT_STATUS_CONFIG,
   sortUnitsByPosition,
@@ -26,6 +43,7 @@ import {
   formatUnitStatus,
 } from "../../shared/units";
 import { parseNumericValue } from "../../shared/formatters";
+import { api } from "../../shared/api";
 
 const NekretninarForm = ({
   nekretnina,
@@ -49,7 +67,7 @@ const NekretninarForm = ({
     prosllogodisnji_prihodi: nekretnina?.prosllogodisnji_prihodi || "",
     prosllogodisnji_rashodi: nekretnina?.prosllogodisnji_rashodi || "",
     amortizacija: nekretnina?.amortizacija || "",
-    proslogodisnji_neto_prihod: nekretnina?.proslogodisnji_neto_prihod || "",
+    proslogodisnji_neto_prihod: nekretnina?.neto_prihod || "",
     zadnja_obnova: nekretnina?.zadnja_obnova || "",
     potrebna_ulaganja: nekretnina?.potrebna_ulaganja || "",
     troskovi_odrzavanja: nekretnina?.troskovi_odrzavanja || "",
@@ -57,8 +75,88 @@ const NekretninarForm = ({
     sudski_sporovi: nekretnina?.sudski_sporovi || "",
     hipoteke: nekretnina?.hipoteke || "",
     napomene: nekretnina?.napomene || "",
+    financijska_povijest: nekretnina?.financijska_povijest || [],
   });
-  const [unitsDraft, setUnitsDraft] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [deletedUnitIds, setDeletedUnitIds] = useState([]);
+  const [activeContracts, setActiveContracts] = useState([]);
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const fetchContracts = async () => {
+      if (nekretnina?.id) {
+        try {
+          const res = await api.getUgovori({ nekretnina_id: nekretnina.id });
+          setActiveContracts(
+            res.data?.filter((c) => c.status === "aktivno") || [],
+          );
+        } catch (error) {
+          console.error("Failed to fetch contracts for unit mapping", error);
+        }
+      }
+    };
+    fetchContracts();
+  }, [nekretnina?.id]);
+
+  // Initialize units from existingUnits when they load
+  React.useEffect(() => {
+    if (existingUnits && existingUnits.length > 0 && units.length === 0) {
+      setUnits(
+        existingUnits.map((u) => ({
+          ...u,
+          localId: u.id, // Use real ID as local ID for existing
+          isExisting: true,
+          // Ensure numeric values are strings for inputs
+          povrsina_m2: u.povrsina_m2?.toString() || "",
+          osnovna_zakupnina: u.osnovna_zakupnina?.toString() || "",
+        })),
+      );
+    }
+  }, [existingUnits]);
+  // Calculate total area from units
+  React.useEffect(() => {
+    if (units.length > 0) {
+      const totalArea = units.reduce((sum, unit) => {
+        const area = parseFloat(unit.povrsina_m2) || 0;
+        return sum + area;
+      }, 0);
+
+      // Only update if different to avoid loops, and format to 2 decimals
+      const formattedArea = totalArea.toFixed(2);
+      // Check if we need to update (compare as numbers to avoid string format diffs)
+      if (Math.abs(parseFloat(formData.povrsina || 0) - totalArea) > 0.01) {
+        setFormData((prev) => ({ ...prev, povrsina: formattedArea }));
+      }
+    }
+  }, [units, formData.povrsina]);
+
+  // Auto-calculate Net Income (Prihod - Rashod + Amortizacija)
+  React.useEffect(() => {
+    const prihodi = parseFloat(formData.prosllogodisnji_prihodi) || 0;
+    const rashodi = parseFloat(formData.prosllogodisnji_rashodi) || 0;
+    const amortizacija = parseFloat(formData.amortizacija) || 0;
+
+    // Only update if at least one value is set to avoid overwriting existing data with 0s unnecessarily
+    // or if the user is actively editing.
+    // Formula: Income - Expenses + Amortization
+    const calculatedNet = (prihodi - rashodi + amortizacija).toFixed(2);
+
+    // Update if changed
+    if (formData.proslogodisnji_neto_prihod !== calculatedNet) {
+      // Only update if strictly driven by inputs.
+      // Issue: if we load existing data, this might overwrite it if the formula wasn't used before.
+      // But the user WANTS this formula.
+      setFormData((prev) => ({
+        ...prev,
+        proslogodisnji_neto_prihod: calculatedNet,
+      }));
+    }
+  }, [
+    formData.prosllogodisnji_prihodi,
+    formData.prosllogodisnji_rashodi,
+    formData.amortizacija,
+  ]);
+
   const isEditing = Boolean(nekretnina);
   const unitStatusOptions = useMemo(
     () =>
@@ -74,10 +172,7 @@ const NekretninarForm = ({
   );
 
   const createDraftUnit = () => ({
-    localId:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `unit-${Date.now()}-${Math.random()}`,
+    localId: `new-${Date.now()}-${Math.random()}`,
     oznaka: "",
     naziv: "",
     kat: "",
@@ -85,20 +180,24 @@ const NekretninarForm = ({
     status: "dostupno",
     osnovna_zakupnina: "",
     napomena: "",
+    isExisting: false,
   });
 
-  const handleAddUnitDraft = () => {
-    setUnitsDraft((prev) => [...prev, createDraftUnit()]);
+  const handleAddUnit = () => {
+    setUnits((prev) => [...prev, createDraftUnit()]);
   };
 
-  const handleRemoveUnitDraft = (unitId) => {
-    setUnitsDraft((prev) => prev.filter((unit) => unit.localId !== unitId));
+  const handleRemoveUnit = (localId, isExisting) => {
+    if (isExisting) {
+      setDeletedUnitIds((prev) => [...prev, localId]);
+    }
+    setUnits((prev) => prev.filter((unit) => unit.localId !== localId));
   };
 
-  const handleUpdateUnitDraft = (unitId, field, value) => {
-    setUnitsDraft((prev) =>
+  const handleUpdateUnit = (localId, field, value) => {
+    setUnits((prev) =>
       prev.map((unit) =>
-        unit.localId === unitId ? { ...unit, [field]: value } : unit,
+        unit.localId === localId ? { ...unit, [field]: value } : unit,
       ),
     );
   };
@@ -129,7 +228,10 @@ const NekretninarForm = ({
       amortizacija: formData.amortizacija
         ? parseFloat(formData.amortizacija)
         : null,
-      proslogodisnji_neto_prihod: formData.proslogodisnji_neto_prihod
+      amortizacija: formData.amortizacija
+        ? parseFloat(formData.amortizacija)
+        : null,
+      neto_prihod: formData.proslogodisnji_neto_prihod
         ? parseFloat(formData.proslogodisnji_neto_prihod)
         : null,
       troskovi_odrzavanja: formData.troskovi_odrzavanja
@@ -137,27 +239,43 @@ const NekretninarForm = ({
         : null,
       zadnja_obnova: formData.zadnja_obnova || null,
     };
-    const preparedUnits = unitsDraft
-      .filter(
-        (unit) =>
-          (unit.oznaka && unit.oznaka.trim()) ||
-          (unit.naziv && unit.naziv.trim()),
-      )
-      .map((unit) => ({
-        oznaka: unit.oznaka.trim(),
-        naziv: unit.naziv?.trim() || null,
-        kat: unit.kat?.trim() || null,
-        povrsina_m2: unit.povrsina_m2
-          ? parseNumericValue(unit.povrsina_m2)
-          : null,
-        status: unit.status || "dostupno",
-        osnovna_zakupnina: unit.osnovna_zakupnina
-          ? parseNumericValue(unit.osnovna_zakupnina)
-          : null,
-        napomena: unit.napomena?.trim() || null,
-      }));
+    // Validate units
+    const validUnits = units.filter(
+      (unit) =>
+        (unit.oznaka && unit.oznaka.trim()) ||
+        (unit.naziv && unit.naziv.trim()),
+    );
 
-    await onSubmit({ nekretnina: data, units: preparedUnits });
+    const invalidUnits = validUnits.filter(
+      (unit) => !unit.oznaka || !unit.oznaka.trim(),
+    );
+
+    if (invalidUnits.length > 0) {
+      toast.error("Svi podprostori moraju imati oznaku (identifikator).");
+      return;
+    }
+
+    const preparedUnits = validUnits.map((unit) => ({
+      id: unit.isExisting ? unit.localId : undefined, // Include ID for existing units
+      oznaka: unit.oznaka.trim(),
+      naziv: unit.naziv?.trim() || null,
+      kat: unit.kat?.trim() || null,
+      povrsina_m2: unit.povrsina_m2
+        ? parseNumericValue(unit.povrsina_m2)
+        : null,
+      status: unit.status || "dostupno",
+      osnovna_zakupnina: unit.osnovna_zakupnina
+        ? parseNumericValue(unit.osnovna_zakupnina)
+        : null,
+      napomena: unit.napomena?.trim() || null,
+    }));
+
+    await onSubmit({
+      nekretnina: data,
+      units: preparedUnits,
+      deletedUnitIds,
+      imageFile: formData.selectedImage,
+    });
   };
 
   return (
@@ -210,6 +328,24 @@ const NekretninarForm = ({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="slika">Slika nekretnine</Label>
+            <Input
+              id="slika"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setFormData({ ...formData, selectedImage: file });
+                }
+              }}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Preporučena veličina: 800x600px. Max 5MB.
+            </p>
           </div>
 
           <div>
@@ -418,6 +554,139 @@ const NekretninarForm = ({
               />
             </div>
           </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <h4 className="font-medium">Povijest financija</h4>
+            <p className="text-sm text-muted-foreground">
+              Unesite podatke za prethodne godine.
+            </p>
+
+            {formData.financijska_povijest?.map((historyItem, index) => {
+              const prihodi = parseFloat(historyItem.prihodi) || 0;
+              const rashodi = parseFloat(historyItem.rashodi) || 0;
+              const amortizacija = parseFloat(historyItem.amortizacija) || 0;
+              const neto = (prihodi - rashodi + amortizacija).toFixed(2);
+
+              return (
+                <div
+                  key={index}
+                  className="grid grid-cols-5 gap-4 items-end border-b pb-4 last:border-0"
+                >
+                  <div>
+                    <Label>Godina</Label>
+                    <Input
+                      type="number"
+                      value={historyItem.godina}
+                      onChange={(e) => {
+                        const newYear = parseInt(e.target.value) || 0;
+                        const newHistory = [
+                          ...(formData.financijska_povijest || []),
+                        ];
+                        newHistory[index] = {
+                          ...newHistory[index],
+                          godina: newYear,
+                        };
+                        setFormData({
+                          ...formData,
+                          financijska_povijest: newHistory,
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label>Prihodi (€)</Label>
+                    <Input
+                      type="number"
+                      value={historyItem.prihodi}
+                      onChange={(e) => {
+                        const newHistory = [
+                          ...(formData.financijska_povijest || []),
+                        ];
+                        newHistory[index] = {
+                          ...newHistory[index],
+                          prihodi: e.target.value,
+                        };
+                        setFormData({
+                          ...formData,
+                          financijska_povijest: newHistory,
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label>Rashodi (€)</Label>
+                    <Input
+                      type="number"
+                      value={historyItem.rashodi}
+                      onChange={(e) => {
+                        const newHistory = [
+                          ...(formData.financijska_povijest || []),
+                        ];
+                        newHistory[index] = {
+                          ...newHistory[index],
+                          rashodi: e.target.value,
+                        };
+                        setFormData({
+                          ...formData,
+                          financijska_povijest: newHistory,
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label>Amortizacija (€)</Label>
+                    <Input
+                      type="number"
+                      value={historyItem.amortizacija || ""}
+                      onChange={(e) => {
+                        const newHistory = [
+                          ...(formData.financijska_povijest || []),
+                        ];
+                        newHistory[index] = {
+                          ...newHistory[index],
+                          amortizacija: e.target.value,
+                        };
+                        setFormData({
+                          ...formData,
+                          financijska_povijest: newHistory,
+                        });
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label>Neto dobit (€)</Label>
+                    <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm ring-offset-background text-muted-foreground font-mono">
+                      {neto}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const currentYear = new Date().getFullYear();
+                const newHistory = [...(formData.financijska_povijest || [])];
+                // Add next previous year
+                const lastYear =
+                  newHistory.length > 0
+                    ? Math.min(...newHistory.map((h) => h.godina))
+                    : currentYear;
+                newHistory.push({
+                  godina: lastYear - 1,
+                  prihodi: "",
+                  rashodi: "",
+                  amortizacija: "",
+                });
+                setFormData({ ...formData, financijska_povijest: newHistory });
+              }}
+            >
+              + Dodaj godinu
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="odrzavanje" className="space-y-4">
@@ -542,214 +811,224 @@ const NekretninarForm = ({
                 Plan podprostora
               </h4>
               <p className="text-xs text-muted-foreground">
-                {isEditing
-                  ? "Dodajte nove podprostore koje želite kreirati odmah. Postojeće jedinice ostaju nepromijenjene dok ih ne uredite u kartici detalja."
-                  : "Dodajte podprostore koje želite kreirati odmah. Ovaj korak je opcionalan – jedinice se mogu dodati i kasnije u detalju nekretnine."}
+                Upravljajte podprostorima (jedinicama) unutar ove nekretnine.
               </p>
             </div>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={handleAddUnitDraft}
+              onClick={handleAddUnit}
             >
               <Plus className="w-4 h-4 mr-2" /> Dodaj podprostor
             </Button>
           </div>
 
-          {isEditing && (
-            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">
-                  Postojeći podprostori
-                </p>
-                <Badge variant="outline">{existingUnitsList.length}</Badge>
-              </div>
-              {existingUnitsList.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Trenutno nema podprostora kreiranih za ovu nekretninu.
-                </p>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {existingUnitsList.map((unit) => (
-                    <div
-                      key={unit.id}
-                      className="rounded-lg border border-border/50 bg-white/80 p-3"
-                    >
-                      <div className="flex items-center justify-between text-sm font-medium text-foreground">
-                        <span>{getUnitDisplayName(unit)}</span>
-                        <Badge
-                          className={`rounded-full text-[11px] ${getUnitStatusBadgeClass(unit.status)}`}
-                        >
-                          {formatUnitStatus(unit.status)}
-                        </Badge>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        {unit.oznaka && (
-                          <span className="rounded-full bg-muted px-2 py-1">
-                            {unit.oznaka}
-                          </span>
-                        )}
-                        {unit.kat && (
-                          <span className="rounded-full bg-muted px-2 py-1">
-                            {unit.kat}
-                          </span>
-                        )}
-                        {unit.povrsina_m2 != null && (
-                          <span className="rounded-full bg-muted px-2 py-1">{`${unit.povrsina_m2} m²`}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Za uređivanje postojećih podprostora otvorite detalj nekretnine
-                i koristite karticu "Podprostori".
-              </p>
-            </div>
-          )}
-
-          {unitsDraft.length === 0 ? (
+          {units.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-              {isEditing
-                ? "Dodajte podprostor pomoću gumba iznad. Novi podprostori bit će kreirani nakon spremanja promjena."
-                : "Još niste dodali nijednu jedinicu. Nakon spremanja nekretnine podprostori se mogu uređivati u zasebnoj kartici."}
+              Još niste dodali nijednu jedinicu. Kliknite na gumb iznad za
+              dodavanje.
             </div>
           ) : (
             <div className="space-y-3">
-              {unitsDraft.map((unit, index) => (
-                <div
-                  key={unit.localId}
-                  className="space-y-3 rounded-xl border border-border/60 bg-white/80 p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">
-                      Novi podprostor {index + 1}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveUnitDraft(unit.localId)}
-                      aria-label="Ukloni podprostor"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              {units.map((unit, index) => {
+                const activeContract = activeContracts.find(
+                  (c) =>
+                    c.property_unit_id === unit.localId ||
+                    c.property_unit_id === unit.id,
+                );
+                const tenantName = activeContract
+                  ? activeContract.zakupnik_naziv || "Nepoznat zakupnik"
+                  : null;
+
+                return (
+                  <div
+                    key={unit.localId}
+                    className="space-y-3 rounded-xl border border-border/60 bg-white/80 p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {getUnitDisplayName(unit)}
+                        </p>
+                        {tenantName && (
+                          <p className="text-xs font-medium text-blue-600 mt-0.5">
+                            Zakupnik: {tenantName}
+                          </p>
+                        )}
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Izbornik</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Opcije jedinice</DropdownMenuLabel>
+                          {activeContract && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(
+                                    `/ugovori?contractId=${activeContract.id}`,
+                                  )
+                                }
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Vidi Ugovor
+                              </DropdownMenuItem>
+                              {/* Future: <DropdownMenuItem onClick={() => navigate(...) }><User .../> Vidi Zakupnika</DropdownMenuItem> */}
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleRemoveUnit(unit.localId, unit.isExisting)
+                            }
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Ukloni podprostor
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div>
+                        <Label>Oznaka *</Label>
+                        <Input
+                          value={unit.oznaka}
+                          onChange={(e) =>
+                            handleUpdateUnit(
+                              unit.localId,
+                              "oznaka",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="npr. A2"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label>Naziv</Label>
+                        <Input
+                          value={unit.naziv}
+                          onChange={(e) =>
+                            handleUpdateUnit(
+                              unit.localId,
+                              "naziv",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="npr. Ured A2"
+                        />
+                      </div>
+                      <div>
+                        <Label>Kat / zona</Label>
+                        <Input
+                          value={unit.kat}
+                          onChange={(e) =>
+                            handleUpdateUnit(
+                              unit.localId,
+                              "kat",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="npr. Kat 3"
+                        />
+                      </div>
+                      <div>
+                        <Label>Površina (m²)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={unit.povrsina_m2}
+                          onChange={(e) =>
+                            handleUpdateUnit(
+                              unit.localId,
+                              "povrsina_m2",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="npr. 120"
+                        />
+                      </div>
+                      <div>
+                        <Label>Status</Label>
+                        <Select
+                          value={unit.status}
+                          onValueChange={(value) =>
+                            handleUpdateUnit(unit.localId, "status", value)
+                          }
+                          disabled={!!activeContract}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Odaberite status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {unitStatusOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                disabled={option.value === "iznajmljeno"}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {activeContract ? (
+                          <p className="text-[10px] text-blue-600 mt-1">
+                            Statusom upravlja ugovor{" "}
+                            {activeContract.interna_oznaka}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            Status "Iznajmljeno" postavlja se isključivo
+                            aktivacijom ugovora.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Label>Osnovna zakupnina (€)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={unit.osnovna_zakupnina}
+                          onChange={(e) =>
+                            handleUpdateUnit(
+                              unit.localId,
+                              "osnovna_zakupnina",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="npr. 1500"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Napomena</Label>
+                      <Textarea
+                        value={unit.napomena}
+                        onChange={(e) =>
+                          handleUpdateUnit(
+                            unit.localId,
+                            "napomena",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="npr. open space ured, pogled na park"
+                      />
+                    </div>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <div>
-                      <Label>Oznaka *</Label>
-                      <Input
-                        value={unit.oznaka}
-                        onChange={(e) =>
-                          handleUpdateUnitDraft(
-                            unit.localId,
-                            "oznaka",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="npr. A2"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Naziv</Label>
-                      <Input
-                        value={unit.naziv}
-                        onChange={(e) =>
-                          handleUpdateUnitDraft(
-                            unit.localId,
-                            "naziv",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="npr. Ured A2"
-                      />
-                    </div>
-                    <div>
-                      <Label>Kat / zona</Label>
-                      <Input
-                        value={unit.kat}
-                        onChange={(e) =>
-                          handleUpdateUnitDraft(
-                            unit.localId,
-                            "kat",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="npr. Kat 3"
-                      />
-                    </div>
-                    <div>
-                      <Label>Površina (m²)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={unit.povrsina_m2}
-                        onChange={(e) =>
-                          handleUpdateUnitDraft(
-                            unit.localId,
-                            "povrsina_m2",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="npr. 120"
-                      />
-                    </div>
-                    <div>
-                      <Label>Status</Label>
-                      <Select
-                        value={unit.status}
-                        onValueChange={(value) =>
-                          handleUpdateUnitDraft(unit.localId, "status", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Odaberite status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {unitStatusOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Osnovna zakupnina (€)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={unit.osnovna_zakupnina}
-                        onChange={(e) =>
-                          handleUpdateUnitDraft(
-                            unit.localId,
-                            "osnovna_zakupnina",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="npr. 1500"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Napomena</Label>
-                    <Textarea
-                      value={unit.napomena}
-                      onChange={(e) =>
-                        handleUpdateUnitDraft(
-                          unit.localId,
-                          "napomena",
-                          e.target.value,
-                        )
-                      }
-                      placeholder="npr. open space ured, pogled na park"
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -761,7 +1040,8 @@ const NekretninarForm = ({
           data-testid="potvrdi-nekretninu-form"
           disabled={submitting}
         >
-          {submitting ? "Spremam..." : nekretnina ? "Ažuriraj" : "Kreiraj"}
+          {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {nekretnina ? "Ažuriraj" : "Kreiraj"}
         </Button>
         <Button
           type="button"

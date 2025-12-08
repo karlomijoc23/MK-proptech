@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { Switch } from "../../../components/ui/switch";
@@ -10,8 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "../../../components/ui/command";
 import { useDocumentWizard } from "../DocumentWizard";
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, Trash2, Check } from "lucide-react";
 import { getUnitDisplayName } from "../../../shared/units";
 
 const UploadStep = () => {
@@ -98,6 +106,8 @@ const UploadStep = () => {
       formData.zakupnik_id &&
       (allowsPropertyUnit ? formData.property_unit_id : true),
   );
+
+  const [showPropertySelect, setShowPropertySelect] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -189,6 +199,18 @@ const UploadStep = () => {
           Podržani format: PDF
         </p>
       </div>
+
+      {formData.id && !uploadedFile && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>
+              Trenutno postoji datoteka. Učitajte novu samo ako je želite
+              zamijeniti.
+            </span>
+          </div>
+        </div>
+      )}
 
       {aiLoading && (
         <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
@@ -307,6 +329,12 @@ const UploadStep = () => {
                   handleCreatePropertyFromAI();
                 }
               }}
+              secondaryActionLabel={
+                !propertySelected && !matchedProperty
+                  ? "Odaberi postojeću"
+                  : null
+              }
+              onSecondaryAction={() => setShowPropertySelect(true)}
             />
             {allowsTenant && (
               <SuggestionCard
@@ -360,7 +388,6 @@ const UploadStep = () => {
                 }}
               />
             )}
-            />
             {allowsPropertyUnit && (
               <SuggestionCard
                 title="Podprostor"
@@ -498,6 +525,41 @@ const UploadStep = () => {
           )}
         </div>
       )}
+
+      <CommandDialog
+        open={showPropertySelect}
+        onOpenChange={setShowPropertySelect}
+      >
+        <CommandInput placeholder="Pretraži nekretnine..." />
+        <CommandList>
+          <CommandEmpty>Nema rezultata.</CommandEmpty>
+          <CommandGroup heading="Nekretnine">
+            {nekretnine.map((property) => (
+              <CommandItem
+                key={property.id}
+                value={`${property.naziv} ${property.adresa}`}
+                onSelect={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    nekretnina_id: property.id,
+                  }));
+                  setShowPropertySelect(false);
+                }}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">{property.naziv}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {property.adresa}
+                  </span>
+                </div>
+                {formData.nekretnina_id === property.id && (
+                  <Check className="ml-auto h-4 w-4" />
+                )}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 };
