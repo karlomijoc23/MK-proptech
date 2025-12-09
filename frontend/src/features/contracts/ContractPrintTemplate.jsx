@@ -18,7 +18,7 @@ const ContractPrintTemplate = forwardRef(
                     body {
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
-                        font-family: sans-serif;
+                        font-family: 'Inter', sans-serif;
                     }
                     th { font-size: 11px; }
                     td { font-size: 10px; }
@@ -30,7 +30,9 @@ const ContractPrintTemplate = forwardRef(
               <h1 className="text-xl font-bold uppercase tracking-tight">
                 Izvještaj o ugovorima
               </h1>
-              <p className="text-xs text-gray-500">MK Proptech Management</p>
+              <p className="text-xs text-gray-500 font-medium tracking-wide">
+                Riforma Real Estate Management
+              </p>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500">
@@ -41,24 +43,28 @@ const ContractPrintTemplate = forwardRef(
 
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b-2 border-black bg-gray-50/50">
-                <th className="text-left py-2 px-1 w-[10%]">Broj Ugovora</th>
-                <th className="text-left py-2 px-1 w-[15%]">
+              <tr className="border-b border-gray-200 bg-gray-100">
+                <th className="text-left p-3 font-semibold text-gray-600 w-[12%] uppercase tracking-wider">
+                  Broj Ugovora
+                </th>
+                <th className="text-left p-3 font-semibold text-gray-600 w-[20%] uppercase tracking-wider">
                   Zakupnik / Kontakt
                 </th>
-                <th className="text-left py-2 px-1 w-[15%]">Nekretnina</th>
-                <th className="text-left py-2 px-1 w-[15%]">Period</th>
-                <th className="text-right py-2 px-1 w-[10%]">
-                  Mjesečna
-                  <br />
-                  Zakupnina
+                <th className="text-left p-3 font-semibold text-gray-600 w-[18%] uppercase tracking-wider">
+                  Nekretnina
                 </th>
-                <th className="text-right py-2 px-1 w-[10%]">
+                <th className="text-left p-3 font-semibold text-gray-600 w-[15%] uppercase tracking-wider">
+                  Period
+                </th>
+                <th className="text-right p-3 font-semibold text-gray-600 w-[12%] uppercase tracking-wider">
+                  Mj. Zakupnina
+                </th>
+                <th className="text-right p-3 font-semibold text-gray-600 w-[12%] uppercase tracking-wider">
                   Jamčevina
-                  <br />
-                  Depozit
                 </th>
-                <th className="text-center py-2 px-1 w-[10%]">Indeksacija</th>
+                <th className="text-center p-3 font-semibold text-gray-600 w-[11%] uppercase tracking-wider">
+                  Indeksacija
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -79,50 +85,55 @@ const ContractPrintTemplate = forwardRef(
                     key={c.id}
                     className="border-b border-gray-100 break-inside-avoid hover:bg-gray-50/30"
                   >
-                    <td className="py-2 px-1 font-mono font-medium align-top">
+                    <td className="p-3 font-mono font-medium text-gray-600 align-top">
                       {c.interna_oznaka}
                     </td>
 
-                    <td className="py-2 px-1 align-top">
-                      <div className="font-bold text-gray-900">
+                    <td className="p-3 align-top">
+                      <div className="font-bold text-gray-900 break-words">
                         {c.zakupnik_naziv}
                       </div>
-                      <div className="text-[9px] text-gray-500 mt-0.5 truncate max-w-[150px]">
+                      <div className="text-[10px] text-gray-500 mt-1 truncate max-w-[200px]">
                         {contactInfo}
                       </div>
                     </td>
 
-                    <td className="py-2 px-1 align-top text-gray-700">
+                    <td className="p-3 align-top text-gray-700 font-medium break-words">
                       {propertyName}
                     </td>
 
-                    <td className="py-2 px-1 align-top">
-                      <div className="flex flex-col">
-                        <span>{formatDate(c.datum_pocetka)}</span>
-                        <span className="text-gray-400 text-[9px]">do</span>
-                        <span>{formatDate(c.datum_zavrsetka)}</span>
+                    <td className="p-3 align-top text-gray-600">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="whitespace-nowrap">
+                          Od: {formatDate(c.datum_pocetka)}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          Do: {formatDate(c.datum_zavrsetka)}
+                        </span>
                       </div>
                     </td>
 
-                    <td className="py-2 px-1 text-right align-top font-medium">
+                    <td className="p-3 align-top text-right font-bold text-gray-900 whitespace-nowrap">
                       {formatCurrency(c.osnovna_zakupnina)}
                     </td>
 
-                    <td className="py-2 px-1 text-right align-top text-gray-600">
-                      {c.polog_depozit ? formatCurrency(c.polog_depozit) : "—"}
+                    <td className="p-3 align-top text-right text-gray-600 whitespace-nowrap">
+                      {c.iznos_jamcevine > 0
+                        ? formatCurrency(c.iznos_jamcevine)
+                        : "—"}
                     </td>
 
-                    <td className="py-2 px-1 text-center align-top text-xs">
-                      {c.indeksacija ? (
-                        <Badge
-                          variant="secondary"
-                          className="text-[9px] h-4 px-1"
-                        >
-                          {indexationInfo}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
+                    <td className="p-3 align-top text-center">
+                      {/* Simplified Badge */}
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium border ${
+                          c.indeksacija
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-gray-50 text-gray-500 border-gray-200"
+                        }`}
+                      >
+                        {indexationInfo}
+                      </span>
                     </td>
                   </tr>
                 );

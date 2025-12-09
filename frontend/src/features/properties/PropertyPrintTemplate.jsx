@@ -33,7 +33,12 @@ const PropertyPrintTemplate = forwardRef(
                     body {
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
-                        font-family: sans-serif;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    th, td {
+                        padding: 8px 12px;
+                        text-align: left;
+                        word-break: break-word;
                     }
                 `}
         </style>
@@ -324,13 +329,24 @@ const PropertyPrintTemplate = forwardRef(
                   <h2 className="text-base font-bold mb-2 border-b border-gray-300 pb-1 uppercase tracking-tight text-gray-800">
                     Aktivni Ugovori
                   </h2>
-                  <table className="w-full text-xs border-collapse">
+                  <table className="w-full text-xs border-collapse table-fixed">
                     <thead>
                       <tr className="border-b border-gray-300 bg-gray-50">
-                        <th className="text-left py-1 px-2">Broj Ugovora</th>
-                        <th className="text-left py-1 px-2">Zakupnik</th>
-                        <th className="text-left py-1 px-2">Trajanje</th>
-                        <th className="text-right py-1 px-2">Iznos</th>
+                        <th className="text-left py-3 px-3 w-1/5 font-semibold text-gray-600 uppercase tracking-wider">
+                          Broj Ugovora
+                        </th>
+                        <th className="text-left py-3 px-3 w-1/5 font-semibold text-gray-600 uppercase tracking-wider">
+                          Zakupnik
+                        </th>
+                        <th className="text-left py-3 px-3 w-1/5 font-semibold text-gray-600 uppercase tracking-wider">
+                          Trajanje
+                        </th>
+                        <th className="text-right py-3 px-3 w-1/5 font-semibold text-gray-600 uppercase tracking-wider">
+                          Iznos
+                        </th>
+                        <th className="text-center py-3 px-3 w-1/5 font-semibold text-gray-600 uppercase tracking-wider">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -340,26 +356,37 @@ const PropertyPrintTemplate = forwardRef(
                             c.status === "aktivno" || c.status === "na_isteku",
                         )
                         .map((contract, index) => (
-                          <tr key={index} className="border-b border-gray-100">
-                            <td className="py-2 px-2">
+                          <tr
+                            key={index}
+                            className="border-b border-gray-100 hover:bg-gray-50/50"
+                          >
+                            <td className="py-4 px-3 break-words font-medium text-gray-700">
                               <div className="font-bold">
                                 {contract.interna_oznaka}
                               </div>
                             </td>
-                            <td className="py-2 px-2">
+                            <td className="py-4 px-3 break-words font-medium text-gray-900">
                               <div className="font-bold">
                                 {contract.zakupnik_naziv || "N/A"}
                               </div>
                             </td>
-                            <td className="py-2 px-2">
+                            <td className="py-4 px-3 whitespace-nowrap text-gray-600">
                               {formatDate(contract.datum_pocetka)} -{" "}
                               {formatDate(contract.datum_zavrsetka)}
                             </td>
-                            <td className="py-2 px-2 text-right font-medium">
+                            <td className="py-4 px-3 text-right font-medium whitespace-nowrap text-gray-900">
                               {formatCurrency(contract.osnovna_zakupnina)}
                             </td>
-                            <td className="py-2 px-2 text-center uppercase text-[10px]">
-                              {contract.status}
+                            <td className="py-4 px-3 text-center uppercase text-[10px] break-words">
+                              <span
+                                className={`inline-block px-2 py-1 rounded-sm font-bold tracking-wide ${
+                                  contract.status === "aktivno"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-orange-100 text-orange-700"
+                                }`}
+                              >
+                                {contract.status}
+                              </span>
                             </td>
                           </tr>
                         ))}
@@ -370,7 +397,7 @@ const PropertyPrintTemplate = forwardRef(
           </div>
 
           <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between text-[10px] text-gray-400">
-            <span>MK PropTech Management</span>
+            <span>Riforma Real Estate Management</span>
             <span>Generirano: {new Date().toLocaleDateString("hr-HR")}</span>
           </div>
         </div>

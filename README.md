@@ -1,4 +1,4 @@
-# MK-proptech
+# Riforma
 
 Unified property-operations platform with a FastAPI backend, a React (CRACO) frontend, and AI-assisted contract/billing workflows.
 

@@ -5198,3 +5198,1256 @@ INFO:     Started server process [46793]
 INFO:     Waiting for application startup.
 Error in background scheduler: to_list() got an unexpected keyword argument 'length'
 INFO:     Application startup complete.
+DEBUG: Mounting /uploads to /Users/gs/Documents/MK-proptech/backend/uploads
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60056 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60059 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60056 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60066 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60066 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60066 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60054 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60059 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60066 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60064 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60059 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60066 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60059 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60054 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60064 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60061 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60066 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60064 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60064 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60059 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60061 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60064 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60054 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60056 - "OPTIONS /api/nekretnine/0ecb190b-343c-4318-8570-56cbc613e30c/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60066 - "OPTIONS /api/nekretnine/0ecb190b-343c-4318-8570-56cbc613e30c/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "GET /api/nekretnine/0ecb190b-343c-4318-8570-56cbc613e30c/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60054 - "GET /api/nekretnine/0ecb190b-343c-4318-8570-56cbc613e30c/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60085 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60085 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60087 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60087 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60089 - "GET /uploads/c1cf31c5-20ba-4949-80ed-784e8598d70e_GSV%20-%20DERGEZ%20PROMET%20Ugovor%20skladis%CC%8Ctenje.pdf HTTP/1.1" 304 Not Modified
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60091 - "OPTIONS /api/dokumenti/ugovor/5005e745-c93e-4930-8471-0070d555ad84 HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60091 - "GET /api/dokumenti/ugovor/5005e745-c93e-4930-8471-0070d555ad84 HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60091 - "OPTIONS /api/tenants/a0929db1-80f9-4449-8851-9f3012e7269d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60093 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60096 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60097 - "OPTIONS /api/tenants/a0929db1-80f9-4449-8851-9f3012e7269d HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60093 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60096 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60091 - "GET /api/tenants/a0929db1-80f9-4449-8851-9f3012e7269d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60099 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60101 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60091 - "GET /api/tenants/a0929db1-80f9-4449-8851-9f3012e7269d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60099 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60096 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60107 - "OPTIONS /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60107 - "POST /api/ai/parse-pdf-contract HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60110 - "GET /api/nekretnine/0ecb190b-343c-4318-8570-56cbc613e30c/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60123 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60126 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60123 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60125 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60128 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60130 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60125 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60130 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60126 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60126 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60126 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60130 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60125 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60128 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60123 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60126 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60130 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60125 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60128 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60123 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60132 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60126 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60130 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60132 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60135 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60138 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60140 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60142 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60144 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60145 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60135 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60138 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60140 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60142 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60144 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60145 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60135 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60138 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60138 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60135 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60145 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60144 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60142 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60140 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60138 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60145 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60135 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60144 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60142 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60140 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60138 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60145 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60158 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60158 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60157 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60165 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60164 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60167 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60158 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60161 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60157 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60165 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60164 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60167 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60158 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60165 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60164 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60165 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60161 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60167 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60158 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60165 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60164 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60158 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60161 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60164 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60167 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60165 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60161 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60158 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60164 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60167 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60165 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60161 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60157 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60158 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60164 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60167 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60161 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60165 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60173 - "GET /uploads/577c2dc6-34be-468a-94ab-50809b09d196_Screenshot%202025-12-02%20at%2019.13.06.png HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60175 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60175 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60177 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60177 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60234 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60242 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60236 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60238 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60243 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60240 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60234 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60236 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60240 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60243 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60236 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60234 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60240 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60242 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60240 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60234 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60238 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60238 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60250 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60254 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60254 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60250 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60252 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60258 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60250 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60252 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60257 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60257 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60274 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60272 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60273 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60272 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60274 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60277 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60280 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60274 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60278 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60278 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60329 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60328 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60329 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60328 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60484 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60484 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60491 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60493 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60491 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60493 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60491 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60493 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60494 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60491 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60494 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60491 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60486 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60484 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60494 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60491 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60486 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60484 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60491 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60488 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60486 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60484 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60494 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60491 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60488 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60484 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60494 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60491 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60486 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60491 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60486 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60491 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60486 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60493 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60488 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60494 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60491 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60486 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60493 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60484 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60488 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60500 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60500 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60502 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60502 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60516 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60516 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60525 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60516 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60522 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60516 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60520 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60518 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60522 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60516 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60520 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60518 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60516 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60520 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60518 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60525 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60522 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60526 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60516 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60520 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60525 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60516 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60520 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60522 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60522 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60522 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60518 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60522 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60516 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60520 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60522 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60525 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60516 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60518 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60532 - "GET /uploads/754d3fa0-5688-4836-a11e-30c4ac2584fc_najam-skladisne-hale-200m-zagreb-sesvete-slika-233096665.jpg HTTP/1.1" 304 Not Modified
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60526 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60518 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60518 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60555 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60555 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60550 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60555 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60550 - "OPTIONS /api/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60555 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60557 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60558 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60550 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60553 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60557 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60555 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60550 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60553 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60557 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60555 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60550 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60557 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60548 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60550 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60557 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60553 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60557 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60553 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60558 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60548 - "GET /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60553 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60558 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60553 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60548 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60550 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60557 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60555 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60558 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60555 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60668 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60668 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60674 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60677 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60678 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60666 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60668 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60670 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60678 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60666 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60674 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60668 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60678 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60666 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60668 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60678 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60666 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60668 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60670 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60674 - "GET /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60678 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60677 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60668 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60670 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60674 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60678 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60677 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60666 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60682 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60682 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60684 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60684 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60945 - "POST /api/auth/login HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60945 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60955 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "OPTIONS /api/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60955 - "OPTIONS /api/tenants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/dashboard HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "OPTIONS /api/podsjetnici HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/nekretnine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60955 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/ugovori HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/dokumenti HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "OPTIONS /api/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/maintenance-tasks HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60955 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60956 - "OPTIONS /api/zakupnici HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60955 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60956 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60945 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60955 - "GET /api/tenants HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60945 - "GET /api/dashboard HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/podsjetnici HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60956 - "GET /api/ugovori HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60945 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "OPTIONS /api/nekretnine/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60955 - "GET /api/nekretnine HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60945 - "GET /api/units HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60943 - "GET /api/maintenance-tasks HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60948 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60955 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "GET /api/podsjetnici/aktivni HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60953 - "GET /api/zakupnici HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:60945 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "OPTIONS /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "OPTIONS /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/ugovori/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60953 - "OPTIONS /api/units/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "OPTIONS /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "OPTIONS /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/tenants/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "GET /api/podsjetnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60943 - "GET /api/ugovori/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60955 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60956 - "GET /api/nekretnine/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60945 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60948 - "GET /api/units/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60953 - "GET /api/maintenance-tasks/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60943 - "GET /api/zakupnici/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60955 - "GET /api/dashboard/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60964 - "OPTIONS /api/nekretnine/2abfbc7a-e492-4a4b-97e1-bbc98a4c966e/units HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60963 - "OPTIONS /api/nekretnine/2abfbc7a-e492-4a4b-97e1-bbc98a4c966e/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60964 - "GET /api/nekretnine/2abfbc7a-e492-4a4b-97e1-bbc98a4c966e/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60964 - "GET /api/nekretnine/2abfbc7a-e492-4a4b-97e1-bbc98a4c966e/units HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60981 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60981 - "GET /api/dokumenti HTTP/1.1" 307 Temporary Redirect
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60983 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:60983 - "GET /api/dokumenti/ HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:62186 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62187 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:62186 - "GET /api/auth/me HTTP/1.1" 404 Not Found
+DEBUG: insert_one collection=activity_logs tenant_id=None
+INFO:     127.0.0.1:62187 - "GET /api/auth/me HTTP/1.1" 404 Not Found

@@ -26,7 +26,7 @@ const HandoverProtocolPrintTemplate = React.forwardRef(
             minHeight: "297mm",
             padding: "20mm",
             fontSize: "12pt",
-            fontFamily: "Times New Roman, serif",
+            fontFamily: "'Inter', sans-serif",
             boxSizing: "border-box",
           }}
         >
@@ -85,14 +85,16 @@ const HandoverProtocolPrintTemplate = React.forwardRef(
             <table className="w-full border-collapse border border-black text-sm">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-black p-2 text-left">
+                  <th className="border border-black p-3 text-left font-semibold w-[30%]">
                     Energent / Brojilo
                   </th>
-                  <th className="border border-black p-2 text-left">
+                  <th className="border border-black p-3 text-left font-semibold w-[30%]">
                     Broj brojila
                   </th>
-                  <th className="border border-black p-2 text-right">Stanje</th>
-                  <th className="border border-black p-2 text-left">
+                  <th className="border border-black p-3 text-right font-semibold w-[20%]">
+                    Stanje
+                  </th>
+                  <th className="border border-black p-3 text-left font-semibold w-[20%]">
                     Jedinica
                   </th>
                 </tr>
@@ -101,14 +103,16 @@ const HandoverProtocolPrintTemplate = React.forwardRef(
                 {Object.entries(protocol.meter_readings || {}).map(
                   ([key, value]) => (
                     <tr key={key}>
-                      <td className="border border-black p-2 capitalize">
+                      <td className="border border-black p-3 capitalize font-medium">
                         {key}
                       </td>
-                      <td className="border border-black p-2">—</td>
-                      <td className="border border-black p-2 text-right">
+                      <td className="border border-black p-3 text-gray-600">
+                        —
+                      </td>
+                      <td className="border border-black p-3 text-right font-mono font-bold whitespace-nowrap">
                         {value}
                       </td>
-                      <td className="border border-black p-2">
+                      <td className="border border-black p-3 text-gray-600">
                         {key.toLowerCase().includes("struja")
                           ? "kWh"
                           : key.toLowerCase().includes("plin")
@@ -124,7 +128,7 @@ const HandoverProtocolPrintTemplate = React.forwardRef(
                   <tr>
                     <td
                       colSpan="4"
-                      className="border border-black p-4 text-center italic"
+                      className="border border-black p-6 text-center italic text-gray-500"
                     >
                       Nema unesenih stanja brojila.
                     </td>
@@ -177,7 +181,7 @@ const HandoverProtocolPrintTemplate = React.forwardRef(
           </div>
 
           <div className="text-center mt-12 text-xs text-gray-400">
-            Dokument generiran sustavom MK Proptech •{" "}
+            Dokument generiran sustavom Riforma •{" "}
             {new Date().toLocaleString("hr-HR")}
           </div>
         </div>

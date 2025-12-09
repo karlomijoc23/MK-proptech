@@ -2,7 +2,7 @@
 source .venv/bin/activate
 
 # Explicitly set all critical environment variables
-export PROJECT_NAME="MK Proptech API"
+export PROJECT_NAME="Riforma API"
 export API_V1_STR="/api"
 export SECRET_KEY="dev-secret-key-change-in-prod"
 export AUTH_SECRET="dev-secret-key-change-in-prod"

@@ -278,3 +278,48 @@ Password (first/last): B...3
 User found: True
 Stored hash: $2b$12$K/K/a.sDGdan34V5C/jb2epWvTypQ5CcGUWx.boyR8IN4IM6muNrS
 Password valid: True
+[2025-12-08 18:26:02.160920] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 18:28:38.031651] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 18:55:04.301384] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 18:55:23.101624] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=4
+Password (first/last): B...b
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: False
+[2025-12-08 18:55:27.308242] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: False
+[2025-12-08 18:55:32.027001] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 18:56:07.468580] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 19:02:46.379533] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
+[2025-12-08 19:33:35.581622] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$3/d3DgMK9Nb51fMxEc1/MOz9HVuzjm6ltM5qnVqzNWmoOTEF.7gsa
+Password valid: True
