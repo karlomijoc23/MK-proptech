@@ -62,6 +62,20 @@ export const formatDate = (value) => {
   return date.toLocaleDateString("hr-HR");
 };
 
+export const formatContractDate = (value) => {
+  if (!value) {
+    return "—";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear().toString().slice(-2);
+  return `${day}/${month}/${year}`;
+};
+
 export const formatDateTime = (value) => {
   if (!value) {
     return "—";

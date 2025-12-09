@@ -5,7 +5,7 @@ from app.core.roles import resolve_membership_role, resolve_role_scopes, scope_m
 from app.core.security import hash_password
 from app.db.instance import db
 from app.db.utils import parse_from_mongo, prepare_for_mongo
-from app.models.domain import User, UserPublic
+from app.models.domain import User, UserMembershipDisplay, UserPublic
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 
@@ -78,8 +78,43 @@ async def get_users(
 ):
     cursor = db.users.find().sort("created_at", -1)
     items = await cursor.to_list(limit)
-    # Convert to UserPublic to hide password hash
-    return [UserPublic(**parse_from_mongo(item)) for item in items]
+
+    # Convert to Public and enrich with memberships
+    results = []
+
+    # 1. Collect all user IDs
+    user_ids = [item["id"] for item in items]
+
+    # 2. Fetch all memberships for these users
+    memberships_cursor = db.tenant_memberships.find({"user_id": {"$in": user_ids}})
+    all_memberships = await memberships_cursor.to_list(None)
+
+    # 3. Collect tenant IDs and fetch Tenant Names
+    tenant_ids = list(set([m["tenant_id"] for m in all_memberships]))
+    tenants_cursor = db.tenants.find({"id": {"$in": tenant_ids}})
+    all_tenants = await tenants_cursor.to_list(None)
+    tenant_map = {t["id"]: t["naziv"] for t in all_tenants}
+
+    # 4. Group memberships by user
+    memberships_by_user = {}
+    for m in all_memberships:
+        uid = m["user_id"]
+        if uid not in memberships_by_user:
+            memberships_by_user[uid] = []
+
+        t_name = tenant_map.get(m["tenant_id"], "Unknown Tenant")
+        memberships_by_user[uid].append(
+            UserMembershipDisplay(
+                tenant_id=m["tenant_id"], tenant_name=t_name, role=m["role"]
+            )
+        )
+
+    for item in items:
+        user_public = UserPublic(**parse_from_mongo(item))
+        user_public.memberships = memberships_by_user.get(item["id"], [])
+        results.append(user_public)
+
+    return results
 
 
 @router.get("/me", response_model=UserPublic)
@@ -132,3 +167,28 @@ async def assign_user_to_tenant(
         )
 
     return {"message": "Korisnik dodijeljen"}
+
+
+@router.delete("/{id}", response_model=Dict[str, Any])
+async def delete_user(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    # Check permissions
+    if current_user["role"] not in ["admin", "owner"]:
+        raise HTTPException(
+            status_code=403, detail="Nemate ovlasti za brisanje korisnika"
+        )
+
+    # Check if user exists
+    user = await db.users.find_one({"id": id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Korisnik nije pronađen")
+
+    # Delete memberships first
+    await db.tenant_memberships.delete_many({"user_id": id})
+
+    # Delete user
+    await db.users.delete_one({"id": id})
+
+    return {"message": "Korisnik uspješno obrisan"}

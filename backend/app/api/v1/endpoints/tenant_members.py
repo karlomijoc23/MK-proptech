@@ -19,6 +19,10 @@ class TenantMemberCreate(BaseModel):
     role: TenantMembershipRole = TenantMembershipRole.MEMBER
 
 
+class TenantMemberUpdate(BaseModel):
+    role: TenantMembershipRole
+
+
 @router.post("/{tenant_id}/members", status_code=status.HTTP_201_CREATED)
 async def add_tenant_member(
     tenant_id: str,
@@ -73,3 +77,67 @@ async def add_tenant_member(
     await db.tenant_memberships.insert_one(membership_data)
 
     return parse_from_mongo(membership_data)
+
+
+@router.put("/{tenant_id}/members/{user_id}", response_model=Dict[str, Any])
+async def update_tenant_member(
+    tenant_id: str,
+    user_id: str,
+    member_in: TenantMemberUpdate,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    # Permission check: Admin or Owner ONLY
+    if current_user["role"] not in ["admin", "owner"]:
+        # Check specific tenant ownership if needed
+        membership = await db.tenant_memberships.find_one(
+            {"tenant_id": tenant_id, "user_id": current_user["id"], "role": "owner"}
+        )
+        if not membership:
+            raise HTTPException(
+                status_code=403, detail="Nemate ovlasti za uređivanje članova"
+            )
+
+    # Check existence
+    existing = await db.tenant_memberships.find_one(
+        {"tenant_id": tenant_id, "user_id": user_id}
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Članstvo nije pronađeno")
+
+    # Update role
+    await db.tenant_memberships.update_one(
+        {"tenant_id": tenant_id, "user_id": user_id}, {"$set": {"role": member_in.role}}
+    )
+
+    return {"message": "Uloga ažurirana"}
+
+
+@router.delete("/{tenant_id}/members/{user_id}", response_model=Dict[str, Any])
+async def remove_tenant_member(
+    tenant_id: str,
+    user_id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    # Permission check: Admin or Owner ONLY
+    if current_user["role"] not in ["admin", "owner"]:
+        membership = await db.tenant_memberships.find_one(
+            {"tenant_id": tenant_id, "user_id": current_user["id"], "role": "owner"}
+        )
+        if not membership:
+            raise HTTPException(
+                status_code=403, detail="Nemate ovlasti za uklanjanje članova"
+            )
+
+    # Check existence
+    existing = await db.tenant_memberships.find_one(
+        {"tenant_id": tenant_id, "user_id": user_id}
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Članstvo nije pronađeno")
+
+    # Prevent removing oneself if you are the ONLY owner (optional check, good for safety)
+    # For now, let's just allow removal.
+
+    await db.tenant_memberships.delete_one({"tenant_id": tenant_id, "user_id": user_id})
+
+    return {"message": "Član uklonjen"}

@@ -103,3 +103,45 @@ async def update_tenant(
     await db.tenants.update_one({"id": id}, {"$set": update_data})
     updated = await db.tenants.find_one({"id": id})
     return parse_from_mongo(updated)
+
+
+@router.delete("/{id}")
+async def delete_tenant(
+    id: str,
+    current_user: Dict[str, Any] = Depends(deps.get_current_user),
+):
+    # Only admin or owner can delete tenants
+    # In a real SAAS, usually only System Admin can ignore tenant context.
+    # Or the owner of the tenant.
+
+    # Check if tenant exists
+    tenant = await db.tenants.find_one({"id": id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Profil nije pronađen")
+
+    # Permission check:
+    # 1. System Admin (role=admin/owner on User level?)
+    # OR
+    # 2. Owner of this specific tenant.
+
+    # For now, let's use the current_user role check as a simple gatekeeper
+    # assuming 'owner' means they own the platform or are high privilege.
+    if current_user["role"] not in ["admin", "owner"]:
+        # Fallback: check if they are an owner member of THIS tenant
+        # We need to query tenant_memberships
+        membership = await db.tenant_memberships.find_one(
+            {"tenant_id": id, "user_id": current_user["id"], "role": "owner"}
+        )
+        if not membership:
+            raise HTTPException(
+                status_code=403, detail="Nemate ovlasti za brisanje ovog profila"
+            )
+
+    # Proceed with deletion
+    # 1. Delete associated memberships
+    await db.tenant_memberships.delete_many({"tenant_id": id})
+
+    # 2. Delete the tenant
+    await db.tenants.delete_one({"id": id})
+
+    return {"message": "Profil uspješno obrisan"}

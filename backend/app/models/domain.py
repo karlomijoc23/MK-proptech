@@ -139,6 +139,12 @@ class User(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class UserMembershipDisplay(BaseModel):
+    tenant_id: str
+    tenant_name: str
+    role: str
+
+
 class UserPublic(BaseModel):
     id: str
     email: EmailStr
@@ -148,6 +154,7 @@ class UserPublic(BaseModel):
     active: bool
     created_at: datetime
     updated_at: datetime
+    memberships: Optional[List[UserMembershipDisplay]] = []
 
 
 class ActivityLog(BaseModel):

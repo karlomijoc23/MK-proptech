@@ -49,7 +49,11 @@ import {
   FileSignature,
   ArrowRight,
 } from "lucide-react";
-import { formatDate, formatCurrency } from "../../shared/formatters";
+import {
+  formatDate,
+  formatCurrency,
+  formatContractDate,
+} from "../../shared/formatters";
 import { getUnitDisplayName } from "../../shared/units";
 import UgovorForm from "./UgovorForm";
 import {
@@ -467,13 +471,13 @@ const UgovoriPage = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col text-xs text-muted-foreground">
-                        <span>{formatDate(ugovor.datum_pocetka)}</span>
+                        <span>{formatContractDate(ugovor.datum_pocetka)}</span>
                         <span
                           className={
                             expired ? "text-destructive font-medium" : ""
                           }
                         >
-                          {formatDate(ugovor.datum_zavrsetka)}
+                          {formatContractDate(ugovor.datum_zavrsetka)}
                         </span>
                       </div>
                     </TableCell>
@@ -669,13 +673,13 @@ const UgovoriPage = () => {
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t">
                     <div className="text-xs text-muted-foreground">
-                      {formatDate(ugovor.datum_pocetka)} -{" "}
+                      {formatContractDate(ugovor.datum_pocetka)} -{" "}
                       <span
                         className={
                           expired ? "text-destructive font-medium" : ""
                         }
                       >
-                        {formatDate(ugovor.datum_zavrsetka)}
+                        {formatContractDate(ugovor.datum_zavrsetka)}
                       </span>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8">
@@ -809,7 +813,7 @@ const UgovoriPage = () => {
                             Početak
                           </span>
                           <span className="font-medium">
-                            {formatDate(viewContract.datum_pocetka)}
+                            {formatContractDate(viewContract.datum_pocetka)}
                           </span>
                         </div>
                         <div>
@@ -817,7 +821,7 @@ const UgovoriPage = () => {
                             Završetak
                           </span>
                           <span className="font-medium">
-                            {formatDate(viewContract.datum_zavrsetka)}
+                            {formatContractDate(viewContract.datum_zavrsetka)}
                           </span>
                         </div>
                         <div>

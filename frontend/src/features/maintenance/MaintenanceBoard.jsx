@@ -26,7 +26,7 @@ import {
 } from "../../components/ui/dialog";
 import { ScrollArea } from "../../components/ui/scroll-area";
 import { toast } from "../../components/ui/sonner";
-import { Plus, Calendar, Archive } from "lucide-react";
+import { Plus, Calendar, Archive, Pencil } from "lucide-react";
 import { api } from "../../shared/api";
 import { useEntityStore } from "../../shared/entityStore";
 import {
@@ -143,6 +143,7 @@ const MaintenanceBoard = ({
     tasks: maintenanceTasks,
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
   const [formData, setFormData] = useState(EMPTY_MAINTENANCE_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(null);
@@ -311,17 +312,36 @@ const MaintenanceBoard = ({
       setIsDialogOpen(open);
       if (!open) {
         resetForm();
+        setEditingTaskId(null);
       }
     },
     [resetForm],
   );
 
   const handleOpenDialog = useCallback(() => {
-    resetForm();
     setIsDialogOpen(true);
   }, [resetForm]);
 
-  const handleCreateTask = async (event) => {
+  const handleEditClick = useCallback((task) => {
+    setEditingTaskId(task.id);
+    setFormData({
+      naziv: task.naziv || "",
+      opis: task.opis || "",
+      prioritet: task.prioritet || "srednje",
+      status: task.status || "novi",
+      nekretnina_id: task.nekretnina_id || "none",
+      property_unit_id: task.property_unit_id || "none",
+      prijavio: task.prijavio || "",
+      dodijeljeno: task.dodijeljeno || "",
+      rok: task.rok || "",
+      oznake: (task.oznake || []).join(", "),
+      procijenjeni_trosak: task.procijenjeni_trosak || "",
+      stvarni_trosak: task.stvarni_trosak || "",
+    });
+    setIsDialogOpen(true);
+  }, []);
+
+  const handleSubmitTask = async (event) => {
     event.preventDefault();
     if (!formData.naziv.trim()) {
       toast.error("Naziv radnog naloga je obavezan");
@@ -366,15 +386,23 @@ const MaintenanceBoard = ({
         procijenjeni_trosak: parseCost(formData.procijenjeni_trosak),
         stvarni_trosak: parseCost(formData.stvarni_trosak),
       };
-      const response = await api.createMaintenanceTask(payload);
-      toast.success("Radni nalog je dodan");
+
+      let response;
+      if (editingTaskId) {
+        response = await api.updateMaintenanceTask(editingTaskId, payload);
+        toast.success("Radni nalog je ažuriran");
+      } else {
+        response = await api.createMaintenanceTask(payload);
+        toast.success("Radni nalog je dodan");
+      }
+
       handleDialogOpenChange(false);
       syncMaintenanceTask?.(response.data);
       await refreshMaintenanceTasks();
     } catch (error) {
-      console.error("Greška pri kreiranju radnog naloga:", error);
+      console.error("Greška pri spremanju radnog naloga:", error);
       const message =
-        error.response?.data?.detail || "Greška pri kreiranju naloga";
+        error.response?.data?.detail || "Greška pri spremanju naloga";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -787,19 +815,33 @@ const MaintenanceBoard = ({
               </div>
               <div className="flex flex-shrink-0 items-center gap-2">
                 {task.status !== "arhivirano" && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleStatusChange(task, "arhivirano");
-                    }}
-                    disabled={statusUpdating === task.id}
-                    title="Arhiviraj nalog"
-                  >
-                    <Archive className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleEditClick(task);
+                      }}
+                      title="Uredi nalog"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleStatusChange(task, "arhivirano");
+                      }}
+                      disabled={statusUpdating === task.id}
+                      title="Arhiviraj nalog"
+                    >
+                      <Archive className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -1458,13 +1500,15 @@ const MaintenanceBoard = ({
       <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Dodaj radni nalog</DialogTitle>
+            <DialogTitle>
+              {editingTaskId ? "Uredi radni nalog" : "Dodaj radni nalog"}
+            </DialogTitle>
             <p className="text-sm text-muted-foreground">
               Zabilježite sve potrebne aktivnosti kako bi tim mogao reagirati na
               vrijeme.
             </p>
           </DialogHeader>
-          <form onSubmit={handleCreateTask} className="space-y-4">
+          <form onSubmit={handleSubmitTask} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label htmlFor="task-naziv">Naziv naloga *</Label>
@@ -1710,7 +1754,11 @@ const MaintenanceBoard = ({
                 Odustani
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Spremam…" : "Spremi nalog"}
+                {isSubmitting
+                  ? "Spremam…"
+                  : editingTaskId
+                    ? "Spremi promjene"
+                    : "Kreiraj nalog"}
               </Button>
             </DialogFooter>
           </form>

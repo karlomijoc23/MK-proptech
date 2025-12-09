@@ -467,10 +467,19 @@ const NekretninaDetails = ({ nekretnina }) => {
                               variant={
                                 unit.status === "slobodno"
                                   ? "success"
-                                  : "secondary"
+                                  : unit.status === "na_isteku"
+                                    ? "warning"
+                                    : "secondary"
+                              }
+                              className={
+                                unit.status === "na_isteku"
+                                  ? "bg-amber-500 hover:bg-amber-600 border-transparent text-white"
+                                  : ""
                               }
                             >
-                              {unit.status}
+                              {unit.status === "na_isteku"
+                                ? "Na isteku"
+                                : unit.status}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm">

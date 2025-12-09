@@ -116,11 +116,13 @@ export const api = {
   registerUser: (payload) =>
     apiClient.post(`${API_ROOT}/auth/register`, payload),
   getUsers: () => apiClient.get(`${API_ROOT}/users`),
+  deleteUser: (id) => apiClient.delete(`${API_ROOT}/users/${id}`),
   getTenants: () => apiClient.get(`${API_ROOT}/tenants`),
   createTenant: (data) => apiClient.post(`${API_ROOT}/tenants`, data),
   getCurrentTenant: () => apiClient.get(`${API_ROOT}/tenants/current`),
   getTenant: (id) => apiClient.get(`${API_ROOT}/tenants/${id}`),
   updateTenant: (id, data) => apiClient.put(`${API_ROOT}/tenants/${id}`, data),
+  deleteTenant: (id) => apiClient.delete(`${API_ROOT}/tenants/${id}`),
 
   getNekretnine: () => apiClient.get(`${API_ROOT}/nekretnine`),
   createNekretnina: (data) => apiClient.post(`${API_ROOT}/nekretnine`, data),
@@ -242,7 +244,11 @@ export const api = {
 
   // Tenant Members
   addTenantMember: (tenantId, data) =>
-    api.post(`/tenants/${tenantId}/members`, data),
+    apiClient.post(`${API_ROOT}/tenants/${tenantId}/members`, data),
+  updateTenantMember: (tenantId, userId, data) =>
+    apiClient.put(`${API_ROOT}/tenants/${tenantId}/members/${userId}`, data),
+  removeTenantMember: (tenantId, userId) =>
+    apiClient.delete(`${API_ROOT}/tenants/${tenantId}/members/${userId}`),
 };
 
 export const buildDocumentUrl = (dokument) => {

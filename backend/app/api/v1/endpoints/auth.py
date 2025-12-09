@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 
 from app.core.config import get_settings
 from app.core.roles import DEFAULT_ROLE, resolve_role_scopes
@@ -98,12 +99,15 @@ async def login(login_data: LoginRequest):
     return {"access_token": access_token, "token_type": "bearer", "user": user_public}
 
 
-@router.post("/register", response_model=UserPublic)
-async def register(user_in: LoginRequest):  # Reusing LoginRequest for simple email/pass
-    # In a real app we'd have a RegisterRequest with full name etc.
-    # The original code had a /register endpoint? Let's check server.py.
-    # server.py had /api/auth/register
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+    create_tenant: bool = True  # Default to True to maintain backward compatibility
 
+
+@router.post("/register", response_model=UserPublic)
+async def register(user_in: RegisterRequest):
     email = user_in.email.lower()
     existing = await db.users.find_one({"email": email})
     if existing:
@@ -115,56 +119,48 @@ async def register(user_in: LoginRequest):  # Reusing LoginRequest for simple em
     user = User(
         email=email,
         password_hash=hash_password(user_in.password),
+        full_name=user_in.full_name,
         role=DEFAULT_ROLE,
         scopes=[],
     )
 
-    # We need to prepare for mongo (enums to values, dates to strings)
-    # I should import prepare_for_mongo from somewhere.
-    # I'll add it to app/db/utils.py later.
-    # For now, I'll just dump the model which gives correct types,
-    # but the DB layer expects JSON compatible types (ISO strings for dates).
-
     user_data = user.model_dump()
-    # Manual conversion for now
     user_data["created_at"] = user_data["created_at"].isoformat()
     user_data["updated_at"] = user_data["updated_at"].isoformat()
 
     await db.users.insert_one(user_data)
 
-    # Create default Tenant for the user
-    from app.db.utils import prepare_for_mongo
-    from app.models.domain import (
-        Tenant,
-        TenantMembership,
-        TenantMembershipRole,
-        TenantMembershipStatus,
-    )
+    # Only create default tenant if requested
+    if user_in.create_tenant:
+        from app.db.utils import prepare_for_mongo
+        from app.models.domain import (
+            Tenant,
+            TenantMembership,
+            TenantMembershipRole,
+            TenantMembershipStatus,
+        )
 
-    # Default Tenant
-    tenant = Tenant(
-        naziv=f"Tvrtka korisnika {user.email.split('@')[0]}", created_by=user.id
-    )
-    tenant_data = tenant.model_dump()
-    tenant_data = prepare_for_mongo(tenant_data)
+        # Default Tenant
+        tenant_name = f"Tvrtka korisnika {user.email.split('@')[0]}"
+        if user_in.full_name:
+            tenant_name = f"Tvrtka korisnika {user_in.full_name}"
 
-    await db.tenants.insert_one(tenant_data)
+        tenant = Tenant(naziv=tenant_name, created_by=user.id)
+        tenant_data = tenant.model_dump()
+        tenant_data = prepare_for_mongo(tenant_data)
 
-    # Default Membership
-    membership = TenantMembership(
-        user_id=user.id,
-        tenant_id=tenant.id,
-        role=TenantMembershipRole.OWNER,
-        status=TenantMembershipStatus.ACTIVE,
-    )
-    membership_data = membership.model_dump()
-    membership_data = prepare_for_mongo(membership_data)
+        await db.tenants.insert_one(tenant_data)
 
-    # Assuming 'tenant_members' collection based on file name, but will verify with view_file result if needed.
-    # Actually, let's wait for the view_file result to be 100% sure about the collection name.
-    # But I can't wait in the tool call.
-    # I'll use 'tenant_members' as it's the standard naming convention in this project (pluralized).
-    # If I'm wrong, I'll fix it.
-    await db.tenant_memberships.insert_one(membership_data)
+        # Default Membership
+        membership = TenantMembership(
+            user_id=user.id,
+            tenant_id=tenant.id,
+            role=TenantMembershipRole.OWNER,
+            status=TenantMembershipStatus.ACTIVE,
+        )
+        membership_data = membership.model_dump()
+        membership_data = prepare_for_mongo(membership_data)
+
+        await db.tenant_memberships.insert_one(membership_data)
 
     return UserPublic(**user_data)

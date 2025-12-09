@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { api, buildDocumentUrl } from "../../shared/api";
-import { formatDate, formatCurrency } from "../../shared/formatters";
+import {
+  formatDate,
+  formatCurrency,
+  formatContractDate,
+} from "../../shared/formatters";
 import {
   Loader2,
   Printer,
@@ -247,7 +251,8 @@ const ContractReport = () => {
               <td className="py-2 font-medium">{c.zakupnik_naziv}</td>
               <td className="py-2">{c.nekretnina_naziv}</td>
               <td className="py-2">
-                {formatDate(c.datum_pocetka)} - {formatDate(c.datum_zavrsetka)}
+                {formatContractDate(c.datum_pocetka)} -{" "}
+                {formatContractDate(c.datum_zavrsetka)}
               </td>
               <td className="py-2 text-right">
                 {formatCurrency(c.osnovna_zakupnina)}

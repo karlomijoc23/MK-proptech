@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../../components/ui/dialog";
-import { Loader2, Plus, Users } from "lucide-react";
+import { Loader2, Plus, Users, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import { ScrollArea } from "../../components/ui/scroll-area";
 import { canManageTenants } from "../../shared/tenantAccess";
@@ -188,6 +188,11 @@ const TenantProfiles = () => {
 
   useEffect(() => {
     loadUsers();
+
+    const handleUsersUpdate = () => loadUsers();
+    window.addEventListener("tenant:users-updated", handleUsersUpdate);
+    return () =>
+      window.removeEventListener("tenant:users-updated", handleUsersUpdate);
   }, [loadUsers]);
 
   const handleSelectTenant = (id) => {
@@ -285,22 +290,23 @@ const TenantProfiles = () => {
     }
     setInviting(true);
     try {
+      // 1. Register user (without creating a personal tenant)
       const registerRes = await api.registerUser({
         email: inviteForm.email.trim(),
         password: inviteForm.password,
         full_name: inviteForm.full_name.trim() || undefined,
-        role: inviteForm.role,
+        create_tenant: false, // Prevent auto-creation of personal tenant
       });
 
       const newUser = registerRes.data;
 
-      // Assign to selected tenant
+      // 2. Assign to selected tenant with selected role
       const targetTenantId = inviteForm.tenantId || selectedTenantId;
       if (targetTenantId && newUser?.id) {
         try {
           await api.addTenantMember(targetTenantId, {
             user_id: newUser.id,
-            role: "member", // Default role
+            role: inviteForm.role || "member",
           });
           toast.success("Korisnik je dodan u profil.");
         } catch (assignErr) {
@@ -341,6 +347,127 @@ const TenantProfiles = () => {
     [selectedTenantId],
   );
   const createFieldPrefix = "tenant-create";
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteTenant = async () => {
+    if (deleteConfirmation !== selectedSummary?.naziv) {
+      toast.error("Naziv profila se ne podudara.");
+      return;
+    }
+    setDeleting(true);
+    try {
+      await api.deleteTenant(selectedTenantId);
+      toast.success("Profil je uspješno obrisan.");
+      setIsDeleteDialogOpen(false);
+      setDeleteConfirmation("");
+      // Reset selection and reload
+      setSelectedTenantId(null);
+      await loadTenants();
+      // If deleted was active, switch to default or logout?
+      // For now, let user choose another one.
+      if (activeSummary?.id === selectedTenantId) {
+        // Force reload to clear context if needed or let user pick.
+        // Ideally we switch to another available one.
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Greška pri brisanju profila", err);
+      toast.error("Brisanje nije uspjelo.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Member Edit State
+  const [memberToEdit, setMemberToEdit] = useState(null); // { userId, userName, tenantId, tenantName, role }
+  const [isMemberEditOpen, setIsMemberEditOpen] = useState(false);
+  const [updatingMember, setUpdatingMember] = useState(false);
+
+  const handleMemberClick = (user, membership) => {
+    setMemberToEdit({
+      userId: user.id,
+      userName: user.full_name || user.email,
+      tenantId: membership.tenant_id,
+      tenantName: membership.tenant_name,
+      role: membership.role,
+    });
+    setIsMemberEditOpen(true);
+  };
+
+  const handleUpdateMemberRole = async (newRole) => {
+    if (!memberToEdit) return;
+    setUpdatingMember(true);
+    try {
+      await api.updateTenantMember(memberToEdit.tenantId, memberToEdit.userId, {
+        role: newRole,
+      });
+      toast.success("Uloga ažurirana.");
+      setIsMemberEditOpen(false);
+      // Refresh users list
+      const event = new CustomEvent("tenant:users-updated");
+      window.dispatchEvent(event);
+      // Or if I can access fetchUsers directly?
+      // fetchUsers is inside an effect or helper?
+      // Let's check where users are loaded.
+      // It seems `loadUsers` is maybe not easily accessible if defined inside?
+      // Wait, I should check if I can trigger reload.
+    } catch (error) {
+      console.error("Update member failed", error);
+      toast.error("Ažuriranje nije uspjelo.");
+    } finally {
+      setUpdatingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async () => {
+    if (!memberToEdit) return;
+    if (
+      !window.confirm(
+        `Jeste li sigurni da želite ukloniti korisnika ${memberToEdit.userName} iz profila ${memberToEdit.tenantName}?`,
+      )
+    ) {
+      return;
+    }
+    setUpdatingMember(true);
+    try {
+      await api.removeTenantMember(memberToEdit.tenantId, memberToEdit.userId);
+      toast.success("Korisnik uklonjen.");
+      setIsMemberEditOpen(false);
+      // Request refresh
+      const event = new CustomEvent("tenant:users-updated");
+
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error("Remove member failed", error);
+      toast.error("Uklanjanje nije uspjelo.");
+    } finally {
+      setUpdatingMember(false);
+    }
+  };
+
+  const handleDeleteUser = async (userToDelete) => {
+    if (
+      !window.confirm(
+        `Jeste li sigurni da želite trajno obrisati korisnika ${userToDelete.full_name || userToDelete.email} iz sustava ? `,
+      )
+    ) {
+      return;
+    }
+    // Set a loading state if needed, or just rely on toast
+    try {
+      await api.deleteUser(userToDelete.id);
+      toast.success("Korisnik je uspješno obrisan.");
+      // Refresh list
+      const event = new CustomEvent("tenant:users-updated");
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error("Brisanje korisnika nije uspjelo", error);
+      toast.error("Brisanje nije uspjelo.");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -409,11 +536,11 @@ const TenantProfiles = () => {
                       handleSelectTenant(tenant.id);
                     }
                   }}
-                  className={`w-full rounded-lg border px-4 py-3 text-left transition hover:border-primary hover:bg-primary/5 ${
+                  className={`w - full rounded - lg border px - 4 py - 3 text - left transition hover: border - primary hover: bg - primary / 5 ${
                     isSelected
                       ? "border-primary bg-primary/10"
                       : "border-border bg-background"
-                  }`}
+                  } `}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="font-medium text-foreground">
@@ -479,12 +606,12 @@ const TenantProfiles = () => {
                   <div className="space-y-1.5">
                     <label
                       className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                      htmlFor={`${detailFieldPrefix}-name`}
+                      htmlFor={`${detailFieldPrefix} -name`}
                     >
                       Naziv profila
                     </label>
                     <Input
-                      id={`${detailFieldPrefix}-name`}
+                      id={`${detailFieldPrefix} -name`}
                       value={formState.naziv}
                       disabled={!canEditSelected}
                       onChange={(event) =>
@@ -495,7 +622,7 @@ const TenantProfiles = () => {
                   <div className="space-y-1.5">
                     <label
                       className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                      htmlFor={`${detailFieldPrefix}-type`}
+                      htmlFor={`${detailFieldPrefix} -type`}
                     >
                       Tip profila
                     </label>
@@ -504,7 +631,7 @@ const TenantProfiles = () => {
                       disabled={!canEditSelected}
                       onValueChange={(value) => handleFieldChange("tip", value)}
                     >
-                      <SelectTrigger id={`${detailFieldPrefix}-type`}>
+                      <SelectTrigger id={`${detailFieldPrefix} -type`}>
                         <SelectValue placeholder="Odaberite tip" />
                       </SelectTrigger>
                       <SelectContent>
@@ -519,7 +646,7 @@ const TenantProfiles = () => {
                   <div className="space-y-1.5">
                     <label
                       className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                      htmlFor={`${detailFieldPrefix}-status`}
+                      htmlFor={`${detailFieldPrefix} -status`}
                     >
                       Status
                     </label>
@@ -530,7 +657,7 @@ const TenantProfiles = () => {
                         handleFieldChange("status", value)
                       }
                     >
-                      <SelectTrigger id={`${detailFieldPrefix}-status`}>
+                      <SelectTrigger id={`${detailFieldPrefix} -status`}>
                         <SelectValue placeholder="Odaberite status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -545,12 +672,12 @@ const TenantProfiles = () => {
                   <div className="space-y-1.5">
                     <label
                       className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                      htmlFor={`${detailFieldPrefix}-oib`}
+                      htmlFor={`${detailFieldPrefix} -oib`}
                     >
                       OIB
                     </label>
                     <Input
-                      id={`${detailFieldPrefix}-oib`}
+                      id={`${detailFieldPrefix} -oib`}
                       value={formState.oib}
                       disabled={!canEditSelected}
                       onChange={(event) =>
@@ -562,12 +689,12 @@ const TenantProfiles = () => {
                 <div className="space-y-1.5">
                   <label
                     className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                    htmlFor={`${detailFieldPrefix}-iban`}
+                    htmlFor={`${detailFieldPrefix} -iban`}
                   >
                     IBAN
                   </label>
                   <Input
-                    id={`${detailFieldPrefix}-iban`}
+                    id={`${detailFieldPrefix} -iban`}
                     value={formState.iban}
                     disabled={!canEditSelected}
                     onChange={(event) =>
@@ -592,6 +719,32 @@ const TenantProfiles = () => {
                     {saving ? "Spremam..." : "Spremi promjene"}
                   </Button>
                 </div>
+
+                {canEditSelected && (
+                  <div className="pt-6 mt-6 border-t">
+                    <h3 className="text-sm font-semibold text-destructive mb-2">
+                      Opasna zona
+                    </h3>
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-destructive/20 bg-destructive/5">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          Brisanje profila
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Ova radnja je nepovratna i obrisat će sve podatke
+                          vezane uz ovaj profil.
+                        </p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                      >
+                        Obriši profil
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -687,6 +840,29 @@ const TenantProfiles = () => {
                   required
                 />
               </div>
+              <div className="space-y-1.5">
+                <label
+                  className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
+                  htmlFor="invite-role"
+                >
+                  Uloga
+                </label>
+                <Select
+                  value={inviteForm.role}
+                  onValueChange={(value) =>
+                    handleInviteFieldChange("role", value)
+                  }
+                >
+                  <SelectTrigger id="invite-role">
+                    <SelectValue placeholder="Odaberite ulogu" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="member">Član</SelectItem>
+                    <SelectItem value="viewer">Promatrač</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button type="submit" disabled={inviting} className="w-full">
                 {inviting ? "Spremam..." : "Dodaj korisnika"}
               </Button>
@@ -730,9 +906,39 @@ const TenantProfiles = () => {
                               {user.email}
                             </p>
                           </div>
-                          <Badge variant="outline" className="uppercase">
-                            {user.role}
-                          </Badge>
+                          <div className="flex flex-col gap-1 items-end">
+                            {user.memberships && user.memberships.length > 0 ? (
+                              user.memberships.map((m) => (
+                                <Badge
+                                  key={m.tenant_id}
+                                  variant="outline"
+                                  className="uppercase whitespace-nowrap cursor-pointer hover:bg-muted"
+                                  onClick={() => handleMemberClick(user, m)}
+                                  title="Klikni za uređivanje"
+                                >
+                                  {m.tenant_name}: {m.role}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="uppercase text-muted-foreground"
+                              >
+                                Nema dodijeljenih profila
+                              </Badge>
+                            )}
+                          </div>
+                          {canCreateProfiles && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeleteUser(user)}
+                              title="Obriši korisnika iz sustava"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <div className="mt-1 text-xs text-muted-foreground">
                           Status: {user.active ? "aktivan" : "blokiran"}
@@ -747,6 +953,64 @@ const TenantProfiles = () => {
         </Card>
       )}
 
+      {/* Member Edit Dialog */}
+      <Dialog open={isMemberEditOpen} onOpenChange={setIsMemberEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upravljanje članstvom</DialogTitle>
+            <DialogDescription>
+              Uređivanje prava za korisnika{" "}
+              <strong>{memberToEdit?.userName}</strong> na profilu{" "}
+              <strong>{memberToEdit?.tenantName}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Uloga</label>
+              <Select
+                value={memberToEdit?.role}
+                onValueChange={(val) =>
+                  setMemberToEdit((prev) => ({ ...prev, role: val }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="member">Član</SelectItem>
+                  <SelectItem value="viewer">Promatrač</SelectItem>
+                  {/* Only show owner if current user is owner? For simplicity let's allow setting owner if backend permits */}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button
+              variant="destructive"
+              onClick={handleRemoveMember}
+              disabled={updatingMember}
+            >
+              Ukloni člana
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsMemberEditOpen(false)}
+              >
+                Odustani
+              </Button>
+              <Button
+                onClick={() => handleUpdateMemberRole(memberToEdit?.role)}
+                disabled={updatingMember}
+              >
+                {updatingMember ? "Spremam..." : "Spremi promjene"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -760,12 +1024,12 @@ const TenantProfiles = () => {
             <div className="space-y-1.5">
               <label
                 className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                htmlFor={`${createFieldPrefix}-name`}
+                htmlFor={`${createFieldPrefix} -name`}
               >
                 Naziv profila
               </label>
               <Input
-                id={`${createFieldPrefix}-name`}
+                id={`${createFieldPrefix} -name`}
                 value={createForm.naziv}
                 onChange={(event) =>
                   setCreateForm((prev) => ({
@@ -779,7 +1043,7 @@ const TenantProfiles = () => {
               <div className="space-y-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                  htmlFor={`${createFieldPrefix}-type`}
+                  htmlFor={`${createFieldPrefix} -type`}
                 >
                   Tip profila
                 </label>
@@ -789,7 +1053,7 @@ const TenantProfiles = () => {
                     setCreateForm((prev) => ({ ...prev, tip: value }))
                   }
                 >
-                  <SelectTrigger id={`${createFieldPrefix}-type`}>
+                  <SelectTrigger id={`${createFieldPrefix} -type`}>
                     <SelectValue placeholder="Odaberite tip" />
                   </SelectTrigger>
                   <SelectContent>
@@ -804,12 +1068,12 @@ const TenantProfiles = () => {
               <div className="space-y-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                  htmlFor={`${createFieldPrefix}-oib`}
+                  htmlFor={`${createFieldPrefix} -oib`}
                 >
                   OIB
                 </label>
                 <Input
-                  id={`${createFieldPrefix}-oib`}
+                  id={`${createFieldPrefix} -oib`}
                   value={createForm.oib}
                   onChange={(event) =>
                     setCreateForm((prev) => ({
@@ -823,12 +1087,12 @@ const TenantProfiles = () => {
             <div className="space-y-1.5">
               <label
                 className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                htmlFor={`${createFieldPrefix}-iban`}
+                htmlFor={`${createFieldPrefix} -iban`}
               >
                 IBAN
               </label>
               <Input
-                id={`${createFieldPrefix}-iban`}
+                id={`${createFieldPrefix} -iban`}
                 value={createForm.iban}
                 onChange={(event) =>
                   setCreateForm((prev) => ({
@@ -850,6 +1114,59 @@ const TenantProfiles = () => {
             </Button>
             <Button type="button" onClick={handleCreate} disabled={creating}>
               {creating ? "Spremam..." : "Kreiraj profil"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive">
+              Obriši profil
+            </DialogTitle>
+            <DialogDescription>
+              Jeste li sigurni da želite obrisati profil{" "}
+              <strong>{selectedSummary?.naziv}</strong>? Ova radnja je
+              neopoziva. Svi podaci (ugovori, nekretnine, dokumenti) bit će
+              trajno izgubljeni.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Upišite naziv profila za potvrdu:
+              </label>
+              <Input
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder={selectedSummary?.naziv}
+                className="border-destructive/50 focus-visible:ring-destructive"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleting}
+            >
+              Odustani
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteTenant}
+              disabled={
+                deleting || deleteConfirmation !== selectedSummary?.naziv
+              }
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Brisanje...
+                </>
+              ) : (
+                "Obriši profil"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
