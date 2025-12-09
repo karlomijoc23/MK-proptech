@@ -408,3 +408,8 @@ Password (first/last): B...3
 User found: True
 Stored hash: $2b$12$yMfZafcOidZ11IBDaDRvxuCm5ekYKwVDuPSbAZ0fJI6Z6GcL8ta8K
 Password valid: True
+[2025-12-09 12:27:58.097613] LOGIN ATTEMPT: email='karlo.mijoc@pm.me', password_len=9
+Password (first/last): B...3
+User found: True
+Stored hash: $2b$12$yMfZafcOidZ11IBDaDRvxuCm5ekYKwVDuPSbAZ0fJI6Z6GcL8ta8K
+Password valid: True
