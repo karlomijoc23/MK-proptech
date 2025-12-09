@@ -13,6 +13,31 @@ export const parseNumericValue = (value) => {
   return null;
 };
 
+export const parseSmartNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return value;
+
+  // Handle string input
+  let strVal = String(value).trim();
+
+  // Handle localized format "1.234,56" -> remove dots, replace comma with dot
+  if (strVal.includes(",") && strVal.includes(".")) {
+    if (strVal.indexOf(".") < strVal.indexOf(",")) {
+      // "1.234,56" format
+      strVal = strVal.replace(/\./g, "").replace(",", ".");
+    } else {
+      // "1,234.56" format (US) - just remove commas
+      strVal = strVal.replace(/,/g, "");
+    }
+  } else if (strVal.includes(",")) {
+    // "1234,56" -> replace comma with dot
+    strVal = strVal.replace(",", ".");
+  }
+
+  const parsed = parseFloat(strVal);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
 export const formatCurrency = (value) => {
   const numeric = parseNumericValue(value);
   if (numeric === null) {

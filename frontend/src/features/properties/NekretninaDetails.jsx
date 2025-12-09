@@ -29,6 +29,7 @@ import {
   formatCurrency,
   formatArea,
   formatDate,
+  parseSmartNumber,
 } from "../../shared/formatters";
 import { api } from "../../shared/api";
 import { useState, useEffect } from "react";
@@ -88,12 +89,18 @@ const NekretninaDetails = ({ nekretnina }) => {
   ) {
     financialHistory = nekretnina.financijska_povijest
       .sort((a, b) => b.godina - a.godina)
-      .map((item) => ({
-        year: item.godina,
-        prihodi: parseFloat(item.prihodi) || 0,
-        rashodi: parseFloat(item.rashodi) || 0,
-        neto: (parseFloat(item.prihodi) || 0) - (parseFloat(item.rashodi) || 0),
-      }));
+      .map((item) => {
+        const prihodi = parseSmartNumber(item.prihodi);
+        const rashodi = parseSmartNumber(item.rashodi);
+        const amortizacija = parseSmartNumber(item.amortizacija);
+        return {
+          year: item.godina,
+          prihodi,
+          rashodi,
+          amortizacija, // Include so we can display if needed or debug
+          neto: prihodi - rashodi + amortizacija,
+        };
+      });
   } else {
     // Mock data fallback
     financialHistory = [

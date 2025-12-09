@@ -27,22 +27,47 @@ async def get_my_tenants(
         with open("debug_tenants.txt", "a") as f:
             f.write(f"GET /tenants called by {current_user.get('email')}\n")
 
-        # In a real app, we'd filter by user membership.
-        # For now, we return all tenants.
-        cursor = db.tenants.find()
-        items = await cursor.to_list(100)
+        if current_user["role"] in ["admin", "owner"]:
+            # Admins see all tenants
+            cursor = db.tenants.find()
+            items = await cursor.to_list(100)
 
-        with open("debug_tenants.txt", "a") as f:
-            f.write(f"Fetched {len(items)} tenants from DB\n")
+            with open("debug_tenants.txt", "a") as f:
+                f.write(f"Fetched {len(items)} tenants from DB (Admin Access)\n")
 
-        results = []
-        for item in items:
-            data = parse_from_mongo(item)
-            # Inject the user's global role as their role in this tenant
-            # This is a simplification. In a real SaaS, we'd look up the user's membership for this tenant.
-            data["role"] = current_user.get("role", "member")
-            results.append(data)
-        return results
+            results = []
+            for item in items:
+                data = parse_from_mongo(item)
+                data["role"] = current_user.get("role", "member")
+                results.append(data)
+            return results
+        else:
+            # Regular users see only their assigned tenants
+            memberships_cursor = db.tenant_memberships.find(
+                {"user_id": current_user["id"]}
+            )
+            memberships = await memberships_cursor.to_list(None)
+
+            if not memberships:
+                return []
+
+            tenant_ids = [m["tenant_id"] for m in memberships]
+            # Create a map of tenant_id -> role for easy lookup
+            role_map = {m["tenant_id"]: m["role"] for m in memberships}
+
+            tenants_cursor = db.tenants.find({"id": {"$in": tenant_ids}})
+            items = await tenants_cursor.to_list(None)
+
+            with open("debug_tenants.txt", "a") as f:
+                f.write(f"Fetched {len(items)} tenants for user {current_user['id']}\n")
+
+            results = []
+            for item in items:
+                data = parse_from_mongo(item)
+                # Inject the specific membership role
+                data["role"] = role_map.get(data["id"], "member")
+                results.append(data)
+            return results
     except Exception as e:
         import traceback
 

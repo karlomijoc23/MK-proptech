@@ -42,7 +42,7 @@ import {
   getUnitStatusBadgeClass,
   formatUnitStatus,
 } from "../../shared/units";
-import { parseNumericValue } from "../../shared/formatters";
+import { parseNumericValue, parseSmartNumber } from "../../shared/formatters";
 import { api } from "../../shared/api";
 
 const NekretninarForm = ({
@@ -132,9 +132,9 @@ const NekretninarForm = ({
 
   // Auto-calculate Net Income (Prihod - Rashod + Amortizacija)
   React.useEffect(() => {
-    const prihodi = parseFloat(formData.prosllogodisnji_prihodi) || 0;
-    const rashodi = parseFloat(formData.prosllogodisnji_rashodi) || 0;
-    const amortizacija = parseFloat(formData.amortizacija) || 0;
+    const prihodi = parseSmartNumber(formData.prosllogodisnji_prihodi);
+    const rashodi = parseSmartNumber(formData.prosllogodisnji_rashodi);
+    const amortizacija = parseSmartNumber(formData.amortizacija);
 
     // Only update if at least one value is set to avoid overwriting existing data with 0s unnecessarily
     // or if the user is actively editing.
@@ -562,9 +562,9 @@ const NekretninarForm = ({
             </p>
 
             {formData.financijska_povijest?.map((historyItem, index) => {
-              const prihodi = parseFloat(historyItem.prihodi) || 0;
-              const rashodi = parseFloat(historyItem.rashodi) || 0;
-              const amortizacija = parseFloat(historyItem.amortizacija) || 0;
+              const prihodi = parseSmartNumber(historyItem.prihodi);
+              const rashodi = parseSmartNumber(historyItem.rashodi);
+              const amortizacija = parseSmartNumber(historyItem.amortizacija);
               const neto = (prihodi - rashodi + amortizacija).toFixed(2);
 
               return (

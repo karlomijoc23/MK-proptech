@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from app.api import deps
 from app.core.roles import resolve_membership_role, resolve_role_scopes, scope_matches
@@ -17,13 +17,6 @@ class UserCreate(BaseModel):
     full_name: str
     role: str = "viewer"
     scopes: List[str] = []
-
-
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    role: Optional[str] = None
-    scopes: Optional[List[str]] = None
-    active: Optional[bool] = None
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserPublic)

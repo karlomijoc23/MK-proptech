@@ -3,6 +3,7 @@ import {
   formatDate,
   formatCurrency,
   formatArea,
+  parseSmartNumber,
 } from "../../shared/formatters";
 import { api } from "../../shared/api";
 
@@ -289,9 +290,11 @@ const PropertyPrintTemplate = forwardRef(
                     </thead>
                     <tbody>
                       {property.financijska_povijest.map((item, index) => {
-                        const prihodi = parseFloat(item.prihodi) || 0;
-                        const rashodi = parseFloat(item.rashodi) || 0;
-                        const amortizacija = parseFloat(item.amortizacija) || 0;
+                        const prihodi = parseSmartNumber(item.prihodi);
+                        const rashodi = parseSmartNumber(item.rashodi);
+                        const amortizacija = parseSmartNumber(
+                          item.amortizacija,
+                        );
                         const neto = prihodi - rashodi + amortizacija;
 
                         return (
