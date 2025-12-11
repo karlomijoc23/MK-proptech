@@ -48,7 +48,19 @@ import {
   Edit,
   FileSignature,
   ArrowRight,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
+
 import {
   formatDate,
   formatCurrency,
@@ -100,6 +112,29 @@ const UgovoriPage = () => {
   const [selectedUgovor, setSelectedUgovor] = useState(null);
   const [filterProperty, setFilterProperty] = useState("all");
 
+  // Delete Dialog State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contractToDelete, setContractToDelete] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!contractToDelete) return;
+    try {
+      await api.deleteUgovor(contractToDelete.id);
+      toast.success("Ugovor je obrisan");
+      refreshUgovori();
+    } catch (error) {
+      console.error("Greška pri brisanju:", error);
+      toast.error("Brisanje nije uspjelo");
+    } finally {
+      setDeleteDialogOpen(false);
+      setContractToDelete(null);
+    }
+  };
+
+  const handleDeleteCallback = (ugovor) => {
+    setContractToDelete(ugovor);
+    setDeleteDialogOpen(true);
+  };
   // New state for details and archive
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [viewContract, setViewContract] = useState(null);
@@ -147,7 +182,15 @@ const UgovoriPage = () => {
         if (doc.tip === "ugovor") {
           docs[doc.ugovor_id].contract = doc;
         } else if (doc.tip === "primopredajni_zapisnik") {
-          docs[doc.ugovor_id].protocol = doc;
+          const lowerName = doc.naziv.toLowerCase();
+          if (lowerName.includes("ulazni")) {
+            docs[doc.ugovor_id].entryProtocol = doc;
+          } else if (lowerName.includes("izlazni")) {
+            docs[doc.ugovor_id].exitProtocol = doc;
+          } else {
+            // Fallback for older protocols without specific naming
+            docs[doc.ugovor_id].protocol = doc;
+          }
         }
       }
     });
@@ -384,21 +427,22 @@ const UgovoriPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Broj ugovora</TableHead>
+              <TableHead className="w-[140px]">Broj ugovora</TableHead>
               <TableHead>Zakupnik</TableHead>
               <TableHead>Nekretnina</TableHead>
               <TableHead>Trajanje</TableHead>
               <TableHead className="text-right">Iznos</TableHead>
               <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-center">Dokument</TableHead>
-              <TableHead className="text-center">Primopredaja</TableHead>
+              <TableHead className="text-center">Ulazni</TableHead>
+              <TableHead className="text-center">Izlazni</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUgovori.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-96 text-center">
+                <TableCell colSpan={10} className="h-96 text-center">
                   <EmptyState
                     icon={FileText}
                     title="Nema ugovora"
@@ -453,11 +497,18 @@ const UgovoriPage = () => {
                       setDetailsOpen(true);
                     }}
                   >
-                    <TableCell className="font-mono font-medium">
-                      {ugovor.interna_oznaka}
+                    <TableCell
+                      className="font-mono font-medium whitespace-nowrap text-xs"
+                      title={ugovor.interna_oznaka}
+                    >
+                      {ugovor.interna_oznaka?.length > 15
+                        ? `${ugovor.interna_oznaka.substring(0, 15)}...`
+                        : ugovor.interna_oznaka}
                     </TableCell>
-                    <TableCell>
-                      {ugovor.zakupnik_naziv || "Nepoznat zakupnik"}
+                    <TableCell className="max-w-[150px]">
+                      <div className="truncate" title={ugovor.zakupnik_naziv}>
+                        {ugovor.zakupnik_naziv || "Nepoznat zakupnik"}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
@@ -481,7 +532,7 @@ const UgovoriPage = () => {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-medium whitespace-nowrap">
                       {formatCurrency(ugovor.osnovna_zakupnina)}
                     </TableCell>
                     <TableCell className="text-center">
@@ -518,14 +569,39 @@ const UgovoriPage = () => {
                       className="text-center"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {docsByContract[ugovor.id]?.protocol && (
+                      {(docsByContract[ugovor.id]?.entryProtocol ||
+                        docsByContract[ugovor.id]?.protocol) && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                           onClick={() =>
                             window.open(
                               buildDocumentUrl(
-                                docsByContract[ugovor.id].protocol,
+                                docsByContract[ugovor.id]?.entryProtocol ||
+                                  docsByContract[ugovor.id]?.protocol,
+                              ),
+                              "_blank",
+                            )
+                          }
+                        >
+                          <FileSignature className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell
+                      className="text-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {docsByContract[ugovor.id]?.exitProtocol && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() =>
+                            window.open(
+                              buildDocumentUrl(
+                                docsByContract[ugovor.id]?.exitProtocol,
                               ),
                               "_blank",
                             )
@@ -574,6 +650,13 @@ const UgovoriPage = () => {
                             }
                           >
                             <Archive className="mr-2 h-4 w-4" /> Arhivirano
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteCallback(ugovor)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Obriši
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

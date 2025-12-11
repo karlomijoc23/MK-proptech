@@ -2,9 +2,12 @@ import axios from "axios";
 
 export const getBackendUrl = () => {
   if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost") {
+      return "http://127.0.0.1:8000";
+    }
     return `http://${window.location.hostname}:8000`;
   }
-  return "http://localhost:8000";
+  return "http://127.0.0.1:8000";
 };
 
 export const BACKEND_URL = getBackendUrl();
@@ -92,7 +95,42 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Automatic UI Update Trigger
+    // Detect mutation methods and dispatch global event
+    const { method, url } = response.config;
+    if (["post", "put", "patch", "delete"].includes(method?.toLowerCase())) {
+      // Extract resource type from URL (e.g., /api/nekretnine -> nekretnine)
+      // Remove API_ROOT prefix first if present, though config.url might be full or partial
+      // Let's rely on simple matching for now
+      let resource = "";
+      if (
+        url.includes("/nekretnine") ||
+        url.includes("/units") ||
+        url.includes("/parking")
+      ) {
+        resource = "nekretnine";
+      } else if (url.includes("/zakupnici")) {
+        resource = "zakupnici";
+      } else if (url.includes("/ugovori")) {
+        resource = "ugovori";
+      } else if (url.includes("/dokumenti")) {
+        resource = "dokumenti";
+      } else if (url.includes("/maintenance")) {
+        resource = "maintenance";
+      } else if (url.includes("/tenants")) {
+        resource = "tenants"; // For profiles
+      }
+
+      if (resource) {
+        window.dispatchEvent(
+          new CustomEvent("entity:mutation", { detail: { resource } }),
+        );
+        console.log(`[AutoRefresh] Event dispatched for: ${resource}`);
+      }
+    }
+    return response;
+  },
   (error) => {
     // Only trigger logout for 401s on critical endpoints or if repeated
     // For now, let's just ensure we don't loop.
@@ -112,11 +150,24 @@ apiClient.interceptors.response.use(
 
 export const api = {
   login: (payload) => apiClient.post(`${API_ROOT}/auth/login`, payload),
-  getCurrentUser: () => apiClient.get(`${API_ROOT}/auth/me`),
+  getCurrentUser: () => apiClient.get(`${API_ROOT}/users/me`),
   registerUser: (payload) =>
     apiClient.post(`${API_ROOT}/auth/register`, payload),
   getUsers: () => apiClient.get(`${API_ROOT}/users`),
   deleteUser: (id) => apiClient.delete(`${API_ROOT}/users/${id}`),
+  getProjects: () => apiClient.get(`${API_ROOT}/projekti`),
+  getProject: (id) => apiClient.get(`${API_ROOT}/projekti/${id}`),
+  createProject: (data) => apiClient.post(`${API_ROOT}/projekti/`, data),
+  updateProject: (id, data) =>
+    apiClient.put(`${API_ROOT}/projekti/${id}`, data),
+  addProjectPhase: (id, data) =>
+    apiClient.post(`${API_ROOT}/projekti/${id}/phases`, data),
+  addProjectTransaction: (id, data) =>
+    apiClient.post(`${API_ROOT}/projekti/${id}/transactions`, data),
+  addProjectStakeholder: (id, data) =>
+    apiClient.post(`${API_ROOT}/projekti/${id}/stakeholders`, data),
+  addProjectDocument: (id, data) =>
+    apiClient.post(`${API_ROOT}/projekti/${id}/documents`, data),
   getTenants: () => apiClient.get(`${API_ROOT}/tenants`),
   createTenant: (data) => apiClient.post(`${API_ROOT}/tenants`, data),
   getCurrentTenant: () => apiClient.get(`${API_ROOT}/tenants/current`),
@@ -125,6 +176,7 @@ export const api = {
   deleteTenant: (id) => apiClient.delete(`${API_ROOT}/tenants/${id}`),
 
   getNekretnine: () => apiClient.get(`${API_ROOT}/nekretnine`),
+  getNekretnina: (id) => apiClient.get(`${API_ROOT}/nekretnine/${id}`),
   createNekretnina: (data) => apiClient.post(`${API_ROOT}/nekretnine`, data),
   updateNekretnina: (id, data) =>
     apiClient.put(`${API_ROOT}/nekretnine/${id}`, data),
@@ -213,17 +265,24 @@ export const api = {
   },
 
   getMaintenanceTasks: (params = {}) =>
-    apiClient.get(`${API_ROOT}/maintenance-tasks`, { params }),
-  getMaintenanceTask: (id) =>
-    apiClient.get(`${API_ROOT}/maintenance-tasks/${id}`),
+    apiClient.get(`${API_ROOT}/maintenance`, { params }),
+  getMaintenanceTask: (id) => apiClient.get(`${API_ROOT}/maintenance/${id}`),
   createMaintenanceTask: (payload) =>
-    apiClient.post(`${API_ROOT}/maintenance-tasks`, payload),
+    apiClient.post(`${API_ROOT}/maintenance`, payload),
   updateMaintenanceTask: (id, payload) =>
-    apiClient.patch(`${API_ROOT}/maintenance-tasks/${id}`, payload),
+    apiClient.patch(`${API_ROOT}/maintenance/${id}`, payload),
   deleteMaintenanceTask: (id) =>
-    apiClient.delete(`${API_ROOT}/maintenance-tasks/${id}`),
+    apiClient.delete(`${API_ROOT}/maintenance/${id}`),
+
+  // Parking
+  getParking: (propertyId) =>
+    apiClient.get(`${API_ROOT}/parking?nekretnina_id=${propertyId}`),
+  createParking: (data) => apiClient.post(`${API_ROOT}/parking`, data),
+  updateParking: (id, data) => apiClient.put(`${API_ROOT}/parking/${id}`, data),
+  deleteParking: (id) => apiClient.delete(`${API_ROOT}/parking/${id}`),
+
   addMaintenanceComment: (id, payload) =>
-    apiClient.post(`${API_ROOT}/maintenance-tasks/${id}/comments`, payload),
+    apiClient.post(`${API_ROOT}/maintenance/${id}/comments`, payload),
 
   getAuditLogs: (params = {}) =>
     apiClient.get(`${API_ROOT}/audit/logs`, { params }),

@@ -28,6 +28,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../../components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 import { Loader2, Plus, Users, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import { ScrollArea } from "../../components/ui/scroll-area";
@@ -386,6 +396,11 @@ const TenantProfiles = () => {
   const [isMemberEditOpen, setIsMemberEditOpen] = useState(false);
   const [updatingMember, setUpdatingMember] = useState(false);
 
+  // New Confirmation Dialog State
+  const [confirmRemoveMemberOpen, setConfirmRemoveMemberOpen] = useState(false);
+  const [confirmDeleteUserOpen, setConfirmDeleteUserOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
   const handleMemberClick = (user, membership) => {
     setMemberToEdit({
       userId: user.id,
@@ -409,11 +424,6 @@ const TenantProfiles = () => {
       // Refresh users list
       const event = new CustomEvent("tenant:users-updated");
       window.dispatchEvent(event);
-      // Or if I can access fetchUsers directly?
-      // fetchUsers is inside an effect or helper?
-      // Let's check where users are loaded.
-      // It seems `loadUsers` is maybe not easily accessible if defined inside?
-      // Wait, I should check if I can trigger reload.
     } catch (error) {
       console.error("Update member failed", error);
       toast.error("Ažuriranje nije uspjelo.");
@@ -422,41 +432,40 @@ const TenantProfiles = () => {
     }
   };
 
-  const handleRemoveMember = async () => {
+  const handleRemoveMemberClick = () => {
+    setConfirmRemoveMemberOpen(true);
+  };
+
+  const handleConfirmRemoveMember = async () => {
     if (!memberToEdit) return;
-    if (
-      !window.confirm(
-        `Jeste li sigurni da želite ukloniti korisnika ${memberToEdit.userName} iz profila ${memberToEdit.tenantName}?`,
-      )
-    ) {
-      return;
-    }
     setUpdatingMember(true);
     try {
       await api.removeTenantMember(memberToEdit.tenantId, memberToEdit.userId);
       toast.success("Korisnik uklonjen.");
       setIsMemberEditOpen(false);
-      // Request refresh
-      const event = new CustomEvent("tenant:users-updated");
 
+      const event = new CustomEvent("tenant:users-updated");
       window.dispatchEvent(event);
     } catch (error) {
       console.error("Remove member failed", error);
       toast.error("Uklanjanje nije uspjelo.");
     } finally {
       setUpdatingMember(false);
+      setConfirmRemoveMemberOpen(false);
     }
   };
 
-  const handleDeleteUser = async (userToDelete) => {
-    if (
-      !window.confirm(
-        `Jeste li sigurni da želite trajno obrisati korisnika ${userToDelete.full_name || userToDelete.email} iz sustava ? `,
-      )
-    ) {
-      return;
-    }
-    // Set a loading state if needed, or just rely on toast
+  // Replaces the old direct confirm logic
+  const handleRemoveMember = handleRemoveMemberClick;
+
+  const handleDeleteUserClick = (user) => {
+    setUserToDelete(user);
+    setConfirmDeleteUserOpen(true);
+  };
+
+  const handleConfirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
     try {
       await api.deleteUser(userToDelete.id);
       toast.success("Korisnik je uspješno obrisan.");
@@ -466,8 +475,14 @@ const TenantProfiles = () => {
     } catch (error) {
       console.error("Brisanje korisnika nije uspjelo", error);
       toast.error("Brisanje nije uspjelo.");
+    } finally {
+      setConfirmDeleteUserOpen(false);
+      setUserToDelete(null);
     }
   };
+
+  // Replaces the old direct confirm logic
+  const handleDeleteUser = handleDeleteUserClick;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 md:px-6">
@@ -536,7 +551,7 @@ const TenantProfiles = () => {
                       handleSelectTenant(tenant.id);
                     }
                   }}
-                  className={`w - full rounded - lg border px - 4 py - 3 text - left transition hover: border - primary hover: bg - primary / 5 ${
+                  className={`w-full rounded-lg border px-4 py-3 text-left transition hover:border-primary hover:bg-primary/5 ${
                     isSelected
                       ? "border-primary bg-primary/10"
                       : "border-border bg-background"
@@ -1171,6 +1186,69 @@ const TenantProfiles = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Remove Member Confirmation Dialog */}
+      <AlertDialog
+        open={confirmRemoveMemberOpen}
+        onOpenChange={setConfirmRemoveMemberOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ukloni člana?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Jeste li sigurni da želite ukloniti korisnika{" "}
+              <strong>{memberToEdit?.userName}</strong> iz profila{" "}
+              <strong>{memberToEdit?.tenantName}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setConfirmRemoveMemberOpen(false)}
+            >
+              Odustani
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmRemoveMember}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Ukloni
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete User from System Confirmation Dialog */}
+      <AlertDialog
+        open={confirmDeleteUserOpen}
+        onOpenChange={setConfirmDeleteUserOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Trajno brisanje korisnika</AlertDialogTitle>
+            <AlertDialogDescription>
+              Jeste li sigurni da želite trajno obrisati korisnika{" "}
+              <strong>{userToDelete?.full_name || userToDelete?.email}</strong>{" "}
+              iz cijelog sustava? Ovu radnju nije moguće poništiti.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setConfirmDeleteUserOpen(false);
+                setUserToDelete(null);
+              }}
+            >
+              Odustani
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteUser}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Obriši trajno
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -47,6 +47,17 @@ import {
   Printer,
   ArrowRight,
 } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 import ZakupnikForm from "./ZakupnikForm";
 import ZakupnikDetails from "./ZakupnikDetails";
 import { useReactToPrint } from "react-to-print";
@@ -57,6 +68,31 @@ const ZakupniciPage = () => {
   const [selectedZakupnik, setSelectedZakupnik] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete Dialog State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [tenantToDelete, setTenantToDelete] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!tenantToDelete) return;
+    try {
+      await api.deleteZakupnik(tenantToDelete.id);
+      toast.success("Zakupnik je obrisan");
+      refreshZakupnici();
+    } catch (error) {
+      console.error("Greška pri brisanju:", error);
+      toast.error("Brisanje nije uspjelo");
+    } finally {
+      setDeleteDialogOpen(false);
+      setTenantToDelete(null);
+    }
+  };
+
+  const handleDeleteCallback = (zakupnik, e) => {
+    e.stopPropagation();
+    setTenantToDelete(zakupnik);
+    setDeleteDialogOpen(true);
+  };
 
   // Filtering state
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,18 +116,6 @@ const ZakupniciPage = () => {
     setSelectedZakupnik(zakupnik);
     setIsEditing(false); // Open in view mode
     setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (zakupnik, e) => {
-    e.stopPropagation();
-    if (
-      !window.confirm(
-        `Jeste li sigurni da želite obrisati zakupnika "${zakupnik.naziv_firme || zakupnik.ime_prezime}"?`,
-      )
-    ) {
-      return;
-    }
-    toast.error("Brisanje zakupnika nije trenutno podržano.");
   };
 
   const handleSubmit = async (data) => {
@@ -286,9 +310,8 @@ const ZakupniciPage = () => {
                             <Edit className="mr-2 h-4 w-4" /> Uredi
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={(e) => handleDelete(tenant, e)}
-                            className="text-muted-foreground cursor-not-allowed opacity-50"
-                            disabled
+                            onClick={(e) => handleDeleteCallback(tenant, e)}
+                            className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> Obriši
                           </DropdownMenuItem>
@@ -412,6 +435,29 @@ const ZakupniciPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Jeste li sigurni?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ova radnja se ne može poništiti. Ovo će trajno obrisati zakupnika
+              "{tenantToDelete?.naziv_firme || tenantToDelete?.ime_prezime}" i
+              sve povezane podatke.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Odustani</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Obriši
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

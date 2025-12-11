@@ -115,15 +115,20 @@ export const TenantSwitcher = ({ onLogout }) => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex w-full min-w-[200px] items-center justify-between gap-2 rounded-lg border border-border/70 bg-white/90 text-left text-sm font-medium shadow-sm sm:w-[240px]"
+            className="flex items-center gap-2 rounded-full border border-border/60 bg-white/80 backdrop-blur-md px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
             aria-labelledby={labelId}
           >
-            <span className="flex flex-col">
-              <span className="font-semibold text-foreground">
-                {buttonLabel}
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <span className="text-xs font-bold">
+                  {selectedTenant?.naziv?.charAt(0) || "P"}
+                </span>
+              </div>
+              <span className="hidden sm:inline-block max-w-[100px] truncate">
+                {selectedTenant?.naziv || "Profil"}
               </span>
-            </span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-72">

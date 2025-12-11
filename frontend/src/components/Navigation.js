@@ -7,6 +7,7 @@ import {
   FileText,
   Calendar,
   Wrench,
+  Pickaxe,
 } from "lucide-react";
 import logoMain from "../assets/riforma-logo.png";
 import { useAuth } from "../shared/auth";
@@ -31,6 +32,7 @@ export const Navigation = () => {
     { path: "/zakupnici", icon: Users, label: "Zakupnici" },
     { path: "/ugovori", icon: Calendar, label: "Ugovori" },
     { path: "/odrzavanje", icon: Wrench, label: "Održavanje" },
+    { path: "/projekti", icon: Pickaxe, label: "Projekti" },
   ];
 
   return (

@@ -6,6 +6,8 @@ from app.api.v1.endpoints import (
     documents,
     handover_protocols,
     maintenance,
+    parking,
+    projects,
     properties,
     reminders,
     saas_tenants,
@@ -31,8 +33,9 @@ api_router.include_router(contracts.router, prefix="/ugovori", tags=["contracts"
 api_router.include_router(documents.router, prefix="/dokumenti", tags=["documents"])
 api_router.include_router(reminders.router, prefix="/podsjetnici", tags=["reminders"])
 api_router.include_router(
-    maintenance.router, prefix="/maintenance-tasks", tags=["maintenance"]
+    maintenance.router, prefix="/maintenance", tags=["maintenance"]
 )
+api_router.include_router(parking.router, prefix="/parking", tags=["parking"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(search.router, prefix="/pretraga", tags=["search"])
 api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
@@ -40,3 +43,4 @@ api_router.include_router(units.router, prefix="/units", tags=["units"])
 api_router.include_router(
     handover_protocols.router, prefix="/handover-protocols", tags=["handover_protocols"]
 )
+api_router.include_router(projects.router, prefix="/projekti", tags=["projects"])

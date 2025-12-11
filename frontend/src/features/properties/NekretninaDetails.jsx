@@ -13,6 +13,7 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 import { Badge } from "../../components/ui/badge";
+import ParkingTab from "./ParkingTab";
 import {
   Building,
   MapPin,
@@ -58,7 +59,7 @@ const NekretninaDetails = ({ nekretnina }) => {
   if (!nekretnina) return null;
 
   const navigate = useNavigate();
-  const { ugovori } = useEntityStore();
+  const { ugovori, zakupnici } = useEntityStore();
   const [units, setUnits] = useState([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
 
@@ -165,6 +166,11 @@ const NekretninaDetails = ({ nekretnina }) => {
           <TabsTrigger value="rizici" className="flex-1 min-w-[100px]">
             Napomene
           </TabsTrigger>
+          {nekretnina.has_parking && (
+            <TabsTrigger value="parking" className="flex-1 min-w-[100px]">
+              Parking
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="pregled" className="space-y-4 mt-4">
@@ -607,6 +613,12 @@ const NekretninaDetails = ({ nekretnina }) => {
             </Card>
           </div>
         </TabsContent>
+
+        {nekretnina.has_parking && (
+          <TabsContent value="parking" className="mt-4">
+            <ParkingTab nekretninaId={nekretnina.id} zakupnici={zakupnici} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

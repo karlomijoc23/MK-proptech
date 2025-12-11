@@ -1,511 +1,15 @@
 GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 3 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
-GET /tenants called by None
-Fetched 2 tenants from DB
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
 Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
@@ -519,9 +23,103 @@ Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
 Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 1 tenants for user f8f1b00e-9fd8-41ee-81f5-b0c3129816f2
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
-Fetched 1 tenants for user f8f1b00e-9fd8-41ee-81f5-b0c3129816f2
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
+GET /tenants called by None
+Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None
 Fetched 2 tenants from DB (Admin Access)
 GET /tenants called by None

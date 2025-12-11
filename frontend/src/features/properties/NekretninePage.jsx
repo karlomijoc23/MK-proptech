@@ -63,6 +63,17 @@ import { generatePdf } from "../../shared/pdfGenerator";
 import PropertyPrintTemplate from "./PropertyPrintTemplate";
 import { EmptyState } from "../../components/ui/empty-state";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
+
 const NekretninePage = () => {
   const {
     nekretnine,
@@ -75,6 +86,30 @@ const NekretninePage = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [existingUnits, setExistingUnits] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete Dialog State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!propertyToDelete) return;
+    try {
+      await api.deleteNekretnina(propertyToDelete.id);
+      toast.success("Nekretnina je obrisana");
+      await refreshNekretnine();
+    } catch (error) {
+      console.error("Greška pri brisanju:", error);
+      toast.error("Brisanje nije uspjelo");
+    } finally {
+      setDeleteDialogOpen(false);
+      setPropertyToDelete(null);
+    }
+  };
+
+  const handleDeleteCallback = (property) => {
+    setPropertyToDelete(property);
+    setDeleteDialogOpen(true);
+  };
 
   // Quick View State
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -151,22 +186,9 @@ const NekretninePage = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (property) => {
-    if (
-      !window.confirm(
-        `Jeste li sigurni da želite obrisati nekretninu "${property.naziv}"?`,
-      )
-    ) {
-      return;
-    }
-    try {
-      await api.deleteNekretnina(property.id);
-      toast.success("Nekretnina je obrisana");
-      await refreshNekretnine();
-    } catch (error) {
-      console.error("Greška pri brisanju:", error);
-      toast.error("Brisanje nije uspjelo");
-    }
+  const handleDelete = (property) => {
+    setPropertyToDelete(property);
+    setDeleteDialogOpen(true);
   };
 
   const handleView = (property) => {
@@ -496,7 +518,7 @@ const NekretninePage = () => {
                     <Edit className="mr-2 h-4 w-4" /> Uredi
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleDelete(property)}
+                    onClick={() => handleDeleteCallback(property)}
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" /> Obriši
@@ -580,6 +602,28 @@ const NekretninePage = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Jeste li sigurni?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ova radnja se ne može poništiti. Ovo će trajno obrisati nekretninu
+              "{propertyToDelete?.naziv}" i sve povezane podatke.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Odustani</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Obriši
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

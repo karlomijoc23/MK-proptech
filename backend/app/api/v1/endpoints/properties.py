@@ -36,6 +36,7 @@ class PropertyCreate(BaseModel):
     napomene: Optional[str] = None
     slika: Optional[str] = None
     financijska_povijest: Optional[list[Dict[str, Any]]] = None
+    has_parking: bool = False
 
 
 class PropertyUpdate(BaseModel):
@@ -63,6 +64,7 @@ class PropertyUpdate(BaseModel):
     napomene: Optional[str] = None
     slika: Optional[str] = None
     financijska_povijest: Optional[list[Dict[str, Any]]] = None
+    has_parking: Optional[bool] = None
 
 
 class PropertyUnitCreate(BaseModel):
@@ -75,7 +77,15 @@ class PropertyUnitCreate(BaseModel):
     napomena: Optional[str] = None
 
 
-@router.get("/", dependencies=[Depends(deps.require_scopes("properties:read"))])
+class PropertyOut(PropertyCreate):
+    id: str
+
+
+@router.get(
+    "/",
+    dependencies=[Depends(deps.require_scopes("properties:read"))],
+    response_model=list[PropertyOut],
+)
 async def get_properties(
     skip: int = 0,
     limit: int = 100,
@@ -90,6 +100,7 @@ async def get_properties(
     "/",
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(deps.require_scopes("properties:create"))],
+    response_model=PropertyOut,
 )
 async def create_property(
     item_in: PropertyCreate,
@@ -108,7 +119,11 @@ async def create_property(
     return parse_from_mongo(new_item)
 
 
-@router.get("/{id}", dependencies=[Depends(deps.require_scopes("properties:read"))])
+@router.get(
+    "/{id}",
+    dependencies=[Depends(deps.require_scopes("properties:read"))],
+    response_model=PropertyOut,
+)
 async def get_property(
     id: str,
     current_user: Dict[str, Any] = Depends(deps.get_current_user),
@@ -119,7 +134,11 @@ async def get_property(
     return parse_from_mongo(item)
 
 
-@router.put("/{id}", dependencies=[Depends(deps.require_scopes("properties:update"))])
+@router.put(
+    "/{id}",
+    dependencies=[Depends(deps.require_scopes("properties:update"))],
+    response_model=PropertyOut,
+)
 async def update_property(
     id: str,
     item_in: PropertyUpdate,

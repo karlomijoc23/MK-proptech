@@ -107,7 +107,23 @@ def aggregate_pipeline(
             total = 0
             if sum_field:
                 for doc in results:
-                    total += float(doc.get(sum_field, 0) or 0)
+                    try:
+                        val = doc.get(sum_field, 0)
+                        # Handle strings like "100", "100.50", but maybe not "1.000,00"
+                        if isinstance(val, str):
+                            # Simple cleanup for common formats if needed, or just let float() try
+                            # If it's empty string
+                            if not val.strip():
+                                val = 0
+                            else:
+                                val = (
+                                    val.replace(",", ".")
+                                    if "," in val and "." not in val
+                                    else val
+                                )
+                        total += float(val or 0)
+                    except (ValueError, TypeError):
+                        pass
             results = (
                 [{"_id": group_spec.get("_id"), sum_key: total}] if sum_key else results
             )

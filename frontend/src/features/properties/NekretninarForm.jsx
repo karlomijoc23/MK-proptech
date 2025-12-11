@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import { Checkbox } from "../../components/ui/checkbox";
 import {
   Tabs,
   TabsContent,
@@ -76,6 +77,7 @@ const NekretninarForm = ({
     hipoteke: nekretnina?.hipoteke || "",
     napomene: nekretnina?.napomene || "",
     financijska_povijest: nekretnina?.financijska_povijest || [],
+    has_parking: nekretnina?.has_parking || false,
   });
   const [units, setUnits] = useState([]);
   const [deletedUnitIds, setDeletedUnitIds] = useState([]);
@@ -418,6 +420,19 @@ const NekretninarForm = ({
                 data-testid="nekretnina-godina-input"
               />
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="has_parking"
+              checked={formData.has_parking}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, has_parking: checked })
+              }
+            />
+            <Label htmlFor="has_parking" className="cursor-pointer">
+              Ova nekretnina ima garažu/parking
+            </Label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

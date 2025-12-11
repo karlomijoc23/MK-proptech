@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -216,4 +216,110 @@ class HandoverProtocol(BaseModel):
     keys_handed_over: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = None
+
+
+class ParkingSpace(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nekretnina_id: str
+    tenant_id: Optional[str] = None
+    floor: str  # Etaza (e.g. "-1", "-2", "0", "1")
+    internal_id: str  # Interna oznaka
+    vehicle_plates: List[str] = []  # Max 2 plates
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProjectStatus(str, Enum):
+    PLANNING = "planning"
+    IN_PROGRESS = "in_progress"
+    ON_HOLD = "on_hold"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class ProjectPhaseStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    DELAYED = "delayed"
+
+
+class TransactionCategory(str, Enum):
+    CONSTRUCTION = "construction"
+    PERMITS = "permits"
+    PLANNING = "planning"
+    UTILITIES = "utilities"
+    MARKETING = "marketing"
+    OTHER = "other"
+
+
+class TransactionType(str, Enum):
+    EXPENSE = "expense"
+    INCOME = "income"
+
+
+class ProjectTransaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: date
+    type: TransactionType = TransactionType.EXPENSE
+    category: TransactionCategory
+    amount: float
+    description: Optional[str] = None
+    paid_to: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProjectPhase(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    status: ProjectPhaseStatus = ProjectPhaseStatus.PENDING
+    order: int = 0
+
+
+class ProjectStakeholder(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    role: str  # e.g. "Architect", "Contractor"
+    contact_info: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProjectDocument(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    type: str  # e.g., "Lokacijska dozvola"
+    phase_id: Optional[str] = None
+    status: str = "pending"  # pending, submitted, approved, rejected
+    expiry_date: Optional[date] = None
+    file_url: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Project(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    status: ProjectStatus = ProjectStatus.PLANNING
+    budget: Optional[float] = None
+    spent: float = 0.0
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    phases: List[ProjectPhase] = []
+    documents: List[ProjectDocument] = []
+    transactions: List[ProjectTransaction] = []
+    budget_breakdown: Dict[str, float] = (
+        {}
+    )  # { "construction": 100000, "permits": 5000 }
+    projected_revenue: Optional[float] = None
+    linked_property_id: Optional[str] = None
+    stakeholders: List[ProjectStakeholder] = []
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: Optional[str] = None

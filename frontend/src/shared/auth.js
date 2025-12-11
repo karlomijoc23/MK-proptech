@@ -39,10 +39,14 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data || null);
     } catch (error) {
       console.error("Greška pri dohvaćanju korisnika", error);
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem("authToken");
+      // Only clear token if it's an authentication error (401)
+      if (error.response && error.response.status === 401) {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("authToken");
+        }
+        setUser(null);
       }
-      setUser(null);
+      // For other errors, keep the token and retry later / show error state
     } finally {
       setLoading(false);
     }
@@ -74,13 +78,22 @@ export const AuthProvider = ({ children }) => {
       if (token && typeof window !== "undefined") {
         window.localStorage.setItem("authToken", token);
       }
-      if (response.data?.user) {
-        setUser(response.data.user);
+      const userData = response.data?.user;
+      if (userData) {
+        setUser(userData);
+        // Set active tenant from user's default/assigned tenant
+        if (userData.tenant_id) {
+          // Import setActiveTenantId dynamically or moving import to top if possible
+          // But api.js imports are already there.
+          // We need to import setActiveTenantId from ./api at top.
+          const { setActiveTenantId } = require("./api");
+          setActiveTenantId(userData.tenant_id);
+        }
         setLoading(false);
       } else {
         await syncUser();
       }
-      return response.data?.user;
+      return userData;
     },
     [syncUser],
   );

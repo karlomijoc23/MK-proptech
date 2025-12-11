@@ -1,7 +1,11 @@
+import os
 import sys
 
-from app.core.config import get_settings
-from openai import OpenAI
+# Add path to sys to find app (backend root)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.core.config import get_settings  # noqa: E402
+from openai import OpenAI  # noqa: E402
 
 settings = get_settings()
 api_key = settings.OPENAI_API_KEY

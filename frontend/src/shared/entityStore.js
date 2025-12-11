@@ -35,9 +35,91 @@ export const EntityStoreProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  const fetchNekretnine = useCallback(async () => {
+    try {
+      const res = await api.getNekretnine();
+      setState((prev) => ({ ...prev, nekretnine: res.data || [] }));
+      const unitsRes = await api.getUnits();
+      setState((prev) => ({ ...prev, propertyUnits: unitsRes.data || [] }));
+    } catch (err) {
+      console.error("Error fetching properties:", err);
+    }
+  }, []);
+
+  const fetchZakupnici = useCallback(async () => {
+    try {
+      const res = await api.getZakupnici();
+      setState((prev) => ({ ...prev, zakupnici: res.data || [] }));
+    } catch (err) {
+      console.error("Error fetching tenants:", err);
+    }
+  }, []);
+
+  const fetchUgovori = useCallback(async () => {
+    try {
+      // Contracts need tenant names, so we might need tenants loaded or fetch them too.
+      // For simplicity, let's just fetch contracts. If tenant names are missing,
+      // the UI might show IDs or we rely on tenants being in state.
+      // Actually, the original code mapped tenant names. Let's try to preserve that if possible.
+      // But for background refresh, we might not want to re-fetch everything.
+      // Let's stick to simple fetch for now, and rely on state having tenants.
+      // Wait, if we add a contract for a NEW tenant, we need that tenant.
+      // So fetching contracts might need to ensure tenants are fresh or fetch them.
+      // The original code did Promise.all.
+
+      const res = await api.getUgovori();
+      const ugovoriData = res.data || [];
+
+      // We need to map tenant names. We can use the CURRENT state of zakupnici.
+      // But setState is functional.
+      setState((prev) => {
+        const enhancedUgovori = ugovoriData.map((ugovor) => {
+          const zakupnik = prev.zakupnici.find(
+            (z) => z.id === ugovor.zakupnik_id,
+          );
+          return {
+            ...ugovor,
+            zakupnik_naziv: zakupnik
+              ? zakupnik.naziv_firme || zakupnik.ime_prezime || zakupnik.email
+              : null,
+          };
+        });
+        return { ...prev, ugovori: enhancedUgovori };
+      });
+    } catch (err) {
+      console.error("Error fetching contracts:", err);
+    }
+  }, []);
+
+  const fetchDokumenti = useCallback(async () => {
+    try {
+      const res = await api.getDokumenti();
+      setState((prev) => ({ ...prev, dokumenti: res.data || [] }));
+    } catch (err) {
+      console.error("Error fetching documents:", err);
+    }
+  }, []);
+
+  const fetchMaintenanceTasks = useCallback(async () => {
+    try {
+      const res = await api.getMaintenanceTasks();
+      setState((prev) => ({ ...prev, maintenanceTasks: res.data || [] }));
+    } catch (err) {
+      console.error("Error fetching maintenance tasks:", err);
+    }
+  }, []);
+
   const loadEntities = useCallback(async () => {
     setLoading(true);
     try {
+      // Parallel fetch using the new functions?
+      // Issue: fetchUgovori depends on Zakupnici for mapping.
+      // So we should fetch Zakupnici first or in parallel but handle mapping carefully.
+      // The original code passed zakRes.data to ugovori mapping.
+
+      // Let's reproduce the original singular fetch for the initial load for safety/speed,
+      // OR just chain them.
+
       const [nekRes, zakRes, ugRes, dokRes, unitRes, maintenanceRes] =
         await Promise.all([
           api.getNekretnine(),
@@ -76,25 +158,47 @@ export const EntityStoreProvider = ({ children }) => {
     }
   }, [tenantId]);
 
-  const refreshMaintenanceTasks = useCallback(async () => {
-    try {
-      const response = await api.getMaintenanceTasks();
-      setState((prev) => ({ ...prev, maintenanceTasks: response.data }));
-    } catch (err) {
-      console.error("Greška pri učitavanju radnih naloga:", err);
-    }
-  }, [tenantId]);
-
+  // Listener for auto-refresh events
   useEffect(() => {
-    setState({
-      nekretnine: [],
-      zakupnici: [],
-      ugovori: [],
-      dokumenti: [],
-      propertyUnits: [],
-      maintenanceTasks: [],
-    });
-  }, [tenantId]);
+    const handleMutation = (event) => {
+      const resource = event.detail?.resource;
+      console.log(`[EntityStore] Received mutation event for: ${resource}`);
+
+      if (!resource) return;
+
+      if (resource === "nekretnine") {
+        fetchNekretnine();
+      } else if (resource === "zakupnici") {
+        fetchZakupnici();
+        // If tenants change, contracts might need re-mapping? Maybe.
+        // But usually we just care about the tenant list.
+      } else if (resource === "ugovori") {
+        fetchUgovori();
+      } else if (resource === "dokumenti") {
+        fetchDokumenti();
+      } else if (resource === "maintenance") {
+        fetchMaintenanceTasks();
+      } else if (resource === "tenants") {
+        // Tenant profiles might not affect global lists directly unless it's the current tenant info?
+        // But maybe we should refresh users?
+        // For now, let's refresh tenants just in case.
+        fetchZakupnici();
+      }
+    };
+
+    window.addEventListener("entity:mutation", handleMutation);
+    return () => {
+      window.removeEventListener("entity:mutation", handleMutation);
+    };
+  }, [
+    fetchNekretnine,
+    fetchZakupnici,
+    fetchUgovori,
+    fetchDokumenti,
+    fetchMaintenanceTasks,
+  ]);
+
+  const refreshMaintenanceTasks = fetchMaintenanceTasks;
 
   const syncDocument = useCallback((document) => {
     if (!document || !document.id) {

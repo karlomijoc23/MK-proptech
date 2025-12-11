@@ -16,6 +16,7 @@ ROLE_SCOPE_MAP: Dict[str, List[str]] = {
         "reports:*",
         "users:*",
         "kpi:read",
+        "projects:*",
     ],
     "property_manager": [
         "properties:*",

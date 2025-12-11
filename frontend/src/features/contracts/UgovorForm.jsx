@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
@@ -13,17 +14,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import { Textarea } from "../../components/ui/textarea";
 import { api } from "../../shared/api";
 import { toast } from "sonner";
-import {
-  Loader2,
-  UploadCloud,
-  X,
-  FileText,
-  Trash2,
-  Printer,
-  Plus,
-  FileSignature,
-  Edit,
-} from "lucide-react";
+import { Loader2, UploadCloud, X, FileText, Trash2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -31,21 +22,15 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { useReactToPrint } from "react-to-print";
-import HandoverProtocolForm from "./HandoverProtocolForm";
-import HandoverProtocolPrintTemplate from "./HandoverProtocolPrintTemplate";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 import { formatDate } from "../../shared/formatters";
 import { getUnitDisplayName } from "../../shared/units";
 
@@ -83,44 +68,12 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
   const [zakupnici, setZakupnici] = useState([]);
   const [units, setUnits] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeTenant, setActiveTenant] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchActiveTenant = async () => {
-      try {
-        const tenantId = localStorage.getItem("proptech:currentTenantId");
-        if (tenantId) {
-          const res = await api.getTenant(tenantId);
-          setActiveTenant(res.data);
-        }
-      } catch (error) {
-        console.error("Error fetching active tenant:", error);
-      }
-    };
-    fetchActiveTenant();
-  }, []);
+  // Removed activeTenant since it was only used for the print template which is now gone
+  // If needed for other things, can restore. But looking at the code it was only for companyInfo in template.
 
-  // Protocol State
-  const [protocols, setProtocols] = useState([]);
-  const [protocolDialogOpen, setProtocolDialogOpen] = useState(false);
-  const [editingProtocol, setEditingProtocol] = useState(null);
-  const [protocolSubmitting, setProtocolSubmitting] = useState(false);
-  const [printingProtocol, setPrintingProtocol] = useState(null);
-
-  const printRef = useRef();
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Primopredajni_zapisnik_${printingProtocol?.type}_${formatDate(printingProtocol?.date)}`,
-  });
-
-  // Trigger print when printingProtocol is set
-  useEffect(() => {
-    if (printingProtocol) {
-      handlePrint();
-      // Reset after print dialog opens (timeout to allow render)
-      setTimeout(() => setPrintingProtocol(null), 500);
-    }
-  }, [printingProtocol, handlePrint]);
+  const [protocolDocuments, setProtocolDocuments] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,7 +113,7 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
       if (ugovor.nekretnina_id) {
         fetchUnits(ugovor.nekretnina_id);
       }
-      fetchProtocols(ugovor.id);
+      fetchProtocolDocuments(ugovor.id);
     }
   }, [ugovor]);
 
@@ -184,17 +137,6 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
       console.error("Error fetching units:", error);
     }
   };
-
-  const fetchProtocols = async (contractId) => {
-    try {
-      const res = await api.getHandoverProtocols(contractId);
-      setProtocols(res.data || []);
-    } catch (error) {
-      console.error("Error fetching protocols:", error);
-    }
-  };
-
-  const [protocolDocuments, setProtocolDocuments] = useState([]);
 
   const fetchProtocolDocuments = async (contractId) => {
     try {
@@ -277,20 +219,17 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!ugovor) return;
-    if (
-      !window.confirm(
-        `Jeste li sigurni da želite obrisati ugovor ${ugovor.broj_ugovora}?`,
-      )
-    ) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!ugovor) return;
     setLoading(true);
     try {
       await api.deleteUgovor(ugovor.id);
       toast.success("Ugovor je obrisan.");
+      setDeleteDialogOpen(false);
       onSuccess();
     } catch (error) {
       console.error("Error deleting contract:", error);
@@ -299,6 +238,9 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
       setLoading(false);
     }
   };
+
+  // Keep handleDelete for compatibility if used elsewhere, or just alias it
+  const handleDelete = handleDeleteClick;
 
   const [analyzing, setAnalyzing] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -372,40 +314,25 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
     }
   };
 
-  const handleProtocolSubmit = async (protocolData) => {
-    setProtocolSubmitting(true);
-    try {
-      if (editingProtocol) {
-        await api.updateHandoverProtocol(editingProtocol.id, protocolData);
-        toast.success("Zapisnik ažuriran.");
-      } else {
-        await api.createHandoverProtocol({
-          ...protocolData,
-          contract_id: ugovor.id,
-        });
-        toast.success("Zapisnik kreiran.");
-      }
-      setProtocolDialogOpen(false);
-      setEditingProtocol(null);
-      fetchProtocols(ugovor.id);
-    } catch (error) {
-      console.error("Error saving protocol:", error);
-      toast.error("Spremanje zapisnika nije uspjelo.");
-    } finally {
-      setProtocolSubmitting(false);
-    }
-  };
+  const handleProtocolUpload = async (e, type) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleDeleteProtocol = async (id) => {
-    if (!window.confirm("Jeste li sigurni da želite obrisati ovaj zapisnik?"))
-      return;
     try {
-      await api.deleteHandoverProtocol(id);
-      toast.success("Zapisnik obrisan.");
-      fetchProtocols(ugovor.id);
-    } catch (error) {
-      console.error("Error deleting protocol:", error);
-      toast.error("Brisanje nije uspjelo.");
+      const typeLabel = type === "ulazni" ? "Ulazni" : "Izlazni";
+      await api.createDokument({
+        file: file,
+        naziv: `Primopredajni zapisnik - ${typeLabel} - ${ugovor?.interna_oznaka || "Novi"}`,
+        tip: "primopredajni_zapisnik",
+        ugovor_id: ugovor.id,
+        nekretnina_id: ugovor.nekretnina_id,
+        zakupnik_id: ugovor.zakupnik_id,
+      });
+      toast.success(`${typeLabel} zapisnik uspješno učitan.`);
+      fetchProtocolDocuments(ugovor.id);
+    } catch (err) {
+      console.error("Upload failed", err);
+      toast.error("Učitavanje nije uspjelo.");
     }
   };
 
@@ -802,170 +729,127 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
               {FormContent}
             </TabsContent>
             <TabsContent value="protocols" className="pt-4 space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Primopredajni zapisnici</h3>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <input
-                      type="file"
-                      id="protocol-upload"
-                      className="hidden"
-                      accept=".pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        try {
-                          await api.createDokument({
-                            file: file,
-                            naziv:
-                              "Primopredajni zapisnik - " +
-                              (ugovor?.interna_oznaka || "Novi"),
-                            tip: "primopredajni_zapisnik",
-                            ugovor_id: ugovor.id,
-                            nekretnina_id: ugovor.nekretnina_id,
-                            zakupnik_id: ugovor.zakupnik_id,
-                          });
-                          toast.success("Primopredajni zapisnik učitan.");
-                          fetchProtocolDocuments(ugovor.id);
-                        } catch (err) {
-                          console.error("Upload failed", err);
-                          toast.error("Učitavanje nije uspjelo.");
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Entry Protocol Upload */}
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <h3 className="font-medium flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      Ulazni zapisnik
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Učitajte potpisani primopredajni zapisnik pri ulasku u
+                      posjed.
+                    </p>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="protocol-upload-ulazni"
+                        className="hidden"
+                        accept=".pdf"
+                        onChange={(e) => handleProtocolUpload(e, "ulazni")}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() =>
+                          document
+                            .getElementById("protocol-upload-ulazni")
+                            .click()
                         }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        document.getElementById("protocol-upload").click()
-                      }
-                    >
-                      <UploadCloud className="h-4 w-4 mr-2" />
-                      Učitaj PDF
-                    </Button>
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setEditingProtocol(null);
-                      setProtocolDialogOpen(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novi zapisnik (Digitalni)
-                  </Button>
-                </div>
-              </div>
-
-              {protocols.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                  Nema kreiranih zapisnika.
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {protocols.map((protocol) => (
-                    <Card key={protocol.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">
-                              {protocol.type === "entry"
-                                ? "Ulazni zapisnik"
-                                : "Izlazni zapisnik"}
-                            </CardTitle>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setPrintingProtocol(protocol);
-                              }}
-                            >
-                              <Printer className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditingProtocol(protocol);
-                                setProtocolDialogOpen(true);
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive"
-                              onClick={() => handleDeleteProtocol(protocol.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <CardDescription>
-                          {formatDate(protocol.date)}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-sm text-muted-foreground">
-                          {protocol.notes || "Nema napomene"}
-                        </div>
-                        <div className="mt-2 flex gap-2">
-                          <Badge variant="outline">
-                            {protocol.keys_handed_over
-                              ? "Ključevi predani"
-                              : "Ključevi nisu predani"}
-                          </Badge>
-                          <Badge variant="outline">
-                            {protocol.meter_readings
-                              ? "Brojila očitana"
-                              : "Brojila nisu očitana"}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {/* Uploaded Documents Section */}
-              <div className="mt-8">
-                <h3 className="text-lg font-medium mb-4">Učitani zapisnici</h3>
-                {protocolDocuments.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-lg">
-                    Nema učitanih dokumenata.
-                  </div>
-                ) : (
-                  <div className="grid gap-2">
-                    {protocolDocuments.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center justify-between p-3 border rounded-lg bg-card"
                       >
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <div>
-                            <p className="text-sm font-medium">{doc.naziv}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(doc.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm" asChild>
-                          <a
-                            href={`${process.env.REACT_APP_API_URL || "http://localhost:8000"}/api/v1/dokumenti/${doc.id}/download`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Preuzmi
-                          </a>
-                        </Button>
-                      </div>
-                    ))}
+                        <UploadCloud className="h-4 w-4 mr-2" />
+                        Učitaj Ulazni Zapisnik
+                      </Button>
+                    </div>
                   </div>
-                )}
+
+                  {/* Exit Protocol Upload */}
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <h3 className="font-medium flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      Izlazni zapisnik
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Učitajte potpisani primopredajni zapisnik pri izlasku iz
+                      posjeda.
+                    </p>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="protocol-upload-izlazni"
+                        className="hidden"
+                        accept=".pdf"
+                        onChange={(e) => handleProtocolUpload(e, "izlazni")}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() =>
+                          document
+                            .getElementById("protocol-upload-izlazni")
+                            .click()
+                        }
+                      >
+                        <UploadCloud className="h-4 w-4 mr-2" />
+                        Učitaj Izlazni Zapisnik
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Uploaded Documents List */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium mb-4">
+                    Učitani zapisnici
+                  </h3>
+                  {protocolDocuments.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground text-sm border border-dashed rounded-lg bg-muted/10">
+                      Nema učitanih primopredajnih zapisnika.
+                    </div>
+                  ) : (
+                    <div className="grid gap-2">
+                      {protocolDocuments.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between p-3 border rounded-lg bg-card"
+                        >
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-sm font-medium">{doc.naziv}</p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {doc.naziv.toLowerCase().includes("ulazni")
+                                    ? "Ulazni"
+                                    : doc.naziv
+                                          .toLowerCase()
+                                          .includes("izlazni")
+                                      ? "Izlazni"
+                                      : "Ostalo"}
+                                </Badge>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatDate(doc.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" asChild>
+                            <a
+                              href={`${process.env.REACT_APP_API_URL || "http://localhost:8000"}/api/v1/dokumenti/${doc.id}/download`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Preuzmi
+                            </a>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
@@ -1000,39 +884,29 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
         </div>
       </form>
 
-      <Dialog open={protocolDialogOpen} onOpenChange={setProtocolDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingProtocol
-                ? "Uredi zapisnik"
-                : "Novi primopredajni zapisnik"}
-            </DialogTitle>
-          </DialogHeader>
-          <HandoverProtocolForm
-            initialData={editingProtocol}
-            onSubmit={handleProtocolSubmit}
-            onCancel={() => setProtocolDialogOpen(false)}
-            isSubmitting={protocolSubmitting}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Off-screen print template */}
-      <div className="hidden">
-        <HandoverProtocolPrintTemplate
-          ref={printRef}
-          protocol={printingProtocol}
-          contract={ugovor}
-          property={nekretnine.find((n) => n.id === ugovor?.nekretnina_id)}
-          tenant={zakupnici.find((z) => z.id === ugovor?.zakupnik_id)}
-          companyInfo={{
-            name: activeTenant?.naziv || "Riforma d.o.o.",
-            address: activeTenant?.sjediste || activeTenant?.adresa_grad,
-            oib: activeTenant?.oib,
-          }}
-        />
-      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Jeste li sigurni?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ova radnja se ne može poništiti. Ovo će trajno obrisati ugovor{" "}
+              <span className="font-medium text-foreground">
+                {ugovor?.interna_oznaka}
+              </span>{" "}
+              i sve povezane podatke.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Odustani</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Obriši
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

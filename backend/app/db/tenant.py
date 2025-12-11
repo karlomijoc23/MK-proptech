@@ -19,6 +19,7 @@ TENANT_SCOPED_COLLECTIONS: Set[str] = {
     "racuni",
     "maintenance_tasks",
     "activity_logs",
+    "parking_spaces",
 }
 
 
@@ -73,7 +74,8 @@ class TenantAwareCollection:
     ) -> Optional[Dict[str, Any]]:
         if not self._is_scoped() or not tenant_id:
             return query
-        return _with_tenant_scope(query, tenant_id, allow_global=False)
+        allow_global = self._allow_global(tenant_id)
+        return _with_tenant_scope(query, tenant_id, allow_global=allow_global)
 
     def _ensure_tenant_on_document(
         self, document: Dict[str, Any], tenant_id: Optional[str]
@@ -115,7 +117,6 @@ class TenantAwareCollection:
 
     async def insert_one(self, document: Dict[str, Any], *args, **kwargs):
         tenant_id = self._get_tenant()
-        print(f"DEBUG: insert_one collection={self._name} tenant_id={tenant_id}")
         doc = self._ensure_tenant_on_document(document, tenant_id)
         return await self._collection.insert_one(doc, *args, **kwargs)
 
@@ -148,9 +149,10 @@ class TenantAwareCollection:
 
     def aggregate(self, pipeline: List[Dict[str, Any]], *args, **kwargs):
         tenant_id = self._get_tenant()
-        # Inject match stage for tenant
         if self._is_scoped() and tenant_id:
-            match_stage = {"$match": {"tenant_id": tenant_id}}
+            allow_global = self._allow_global(tenant_id)
+            filter_clause = _tenant_filter_clause(tenant_id, allow_global)
+            match_stage = {"$match": filter_clause}
             pipeline = [match_stage] + pipeline
         return self._collection.aggregate(pipeline, *args, **kwargs)
 

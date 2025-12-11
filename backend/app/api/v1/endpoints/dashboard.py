@@ -40,16 +40,8 @@ async def get_dashboard_stats(
     result_value = await cursor_value.to_list(1)
     portfolio_value = result_value[0]["total"] if result_value else 0.0
 
-    # Calculate actual annual yield (sum of neto_prihod from properties)
-    # If neto_prihod is not set, we could approximate it from monthly_income * 12
-    pipeline_yield = [{"$group": {"_id": None, "total": {"$sum": "$neto_prihod"}}}]
-    cursor_yield = db.nekretnine.aggregate(pipeline_yield)
-    result_yield = await cursor_yield.to_list(1)
-    annual_yield = result_yield[0]["total"] if result_yield else 0.0
-
-    # Fallback for annual yield if properties don't have neto_prihod set
-    if annual_yield == 0 and monthly_income > 0:
-        annual_yield = monthly_income * 12
+    # Calculate actual annual yield (Strictly Monthly Income * 12 as requested)
+    annual_yield = monthly_income * 12
 
     # Calculate ROI percentage
     roi_percentage = 0.0

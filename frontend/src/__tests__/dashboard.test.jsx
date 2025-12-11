@@ -44,7 +44,8 @@ jest.mock("sonner", () => {
   return { toast };
 });
 
-import { Dashboard, EntityStoreContext } from "../App";
+import Dashboard from "../features/dashboard/DashboardPage";
+import { EntityStoreContext } from "../shared/entityStore";
 
 const dashboardResponse = {
   ukupno_nekretnina: 5,

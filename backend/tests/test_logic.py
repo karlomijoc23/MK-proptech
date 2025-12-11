@@ -7,7 +7,7 @@ import pytest
 from fastapi import HTTPException
 
 # Add path to sys to find app
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.api.v1.endpoints import contracts  # noqa: E402
 from app.models.domain import StatusUgovora  # noqa: E402

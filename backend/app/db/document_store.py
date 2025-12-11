@@ -59,7 +59,7 @@ class MariaDBCursor:
         self._sort_fields.append((key, direction))
         return self
 
-    async def to_list(self, limit: Optional[int]) -> List[Dict[str, Any]]:
+    async def to_list(self, length: Optional[int] = None) -> List[Dict[str, Any]]:
         if self._pipeline is not None:
             documents = await self._collection._load_documents(None)
             documents = aggregate_pipeline(documents, self._pipeline)
@@ -70,9 +70,9 @@ class MariaDBCursor:
             documents.sort(
                 key=lambda doc: (doc.get(key) is None, doc.get(key)), reverse=reverse
             )
-        if limit is None or limit == 0:
+        if length is None or length == 0:
             return [deepcopy_document(doc) for doc in documents]
-        return [deepcopy_document(doc) for doc in documents[:limit]]
+        return [deepcopy_document(doc) for doc in documents[:length]]
 
 
 class MariaDBCollection:
