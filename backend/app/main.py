@@ -41,13 +41,14 @@ async def run_scheduler():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic
-    if "sqlite" in settings.DB_SETTINGS.sqlalchemy_url():
-        from app.db.base import Base
-        from app.db.session import get_engine
+    # Startup logic
+    # Always attempt to create tables (safe operation if they exist)
+    from app.db.base import Base
+    from app.db.session import get_engine
 
-        engine = get_engine()
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
     # Seed admin if needed
     if (
@@ -113,8 +114,7 @@ async def root():
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=settings.BACKEND_CORS_ORIGINS, # Wildcard with credentials issue
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

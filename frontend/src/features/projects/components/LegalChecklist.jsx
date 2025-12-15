@@ -32,7 +32,7 @@ const DocStatusBadge = ({ status }) => {
   );
 };
 
-export default function LegalChecklist({ documents = [] }) {
+export default function LegalChecklist({ documents = [], onUpload }) {
   if (documents.length === 0) {
     return (
       <div className="p-8 text-center text-sm text-muted-foreground">
@@ -70,7 +70,11 @@ export default function LegalChecklist({ documents = [] }) {
                 {doc.expiry_date ? formatDate(doc.expiry_date) : "—"}
               </TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onUpload && onUpload(doc)}
+                >
                   <Upload className="mr-2 h-3 w-3" />
                   Upload
                 </Button>

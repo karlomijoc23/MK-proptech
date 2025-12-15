@@ -156,13 +156,13 @@ const ProjectGanttEngine = ({ phases = [] }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "completed":
-        return "bg-emerald-500 border-emerald-600";
+        return "bg-gradient-to-r from-emerald-500 to-emerald-400 border-emerald-600 shadow-emerald-200/50";
       case "in_progress":
-        return "bg-blue-500 border-blue-600";
+        return "bg-gradient-to-r from-blue-500 to-blue-400 border-blue-600 shadow-blue-200/50";
       case "delayed":
-        return "bg-red-500 border-red-600";
+        return "bg-gradient-to-r from-red-500 to-red-400 border-red-600 shadow-red-200/50";
       default:
-        return "bg-slate-400 border-slate-500"; // pending
+        return "bg-gradient-to-r from-slate-400 to-slate-300 border-slate-500 shadow-slate-200/50"; // pending
     }
   };
 
@@ -311,7 +311,7 @@ const ProjectGanttEngine = ({ phases = [] }) => {
                       <Tooltip delayDuration={0}>
                         <TooltipTrigger asChild>
                           <div
-                            className={`absolute top-1/2 -translate-y-1/2 h-5 rounded-full border shadow-sm cursor-pointer transition-all hover:scale-y-110 hover:shadow-md ${getStatusColor(phase.status)}`}
+                            className={`absolute top-1/2 -translate-y-1/2 h-6 rounded-full border shadow-sm cursor-pointer transition-all hover:scale-y-110 hover:shadow-md ${getStatusColor(phase.status)}`}
                             style={getPositionStyle(
                               phase._validStart,
                               phase._validEnd,

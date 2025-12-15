@@ -227,7 +227,7 @@ export default function ProjectDetailsPage() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Pregled</TabsTrigger>
-          <TabsTrigger value="timeline">Vremenski plan</TabsTrigger>
+          <TabsTrigger value="gantt">Vremenski plan (Gantt)</TabsTrigger>
           <TabsTrigger value="finance">Financije</TabsTrigger>
           <TabsTrigger value="team">Tim</TabsTrigger>
           <TabsTrigger value="inventory">Inventar</TabsTrigger>
@@ -247,17 +247,59 @@ export default function ProjectDetailsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="timeline" className="space-y-4">
+        <TabsContent value="gantt" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Faze realizacije</CardTitle>
+              <CardTitle>Vremenski plan projekta</CardTitle>
               <AddPhaseDialog
                 projectId={project.id}
                 onPhaseAdded={handleProjectUpdate}
               />
             </CardHeader>
             <CardContent>
-              <ProjectGanttEngine phases={project.phases} />
+              {(!project.phases || project.phases.length === 0) && (
+                <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                  <div className="font-semibold mb-1">
+                    👋 Dobrodošli u Gantt pregled!
+                  </div>
+                  <p>
+                    Trenutno nemate definiranih faza. Prikazujemo{" "}
+                    <strong>primjer podataka</strong> kako bi grafikon izgledao.
+                    <br />
+                    Kliknite na gumb <strong>"Dodaj Fazu"</strong> iznad da
+                    biste započeli s unosom stvarnih podataka.
+                  </p>
+                </div>
+              )}
+              <ProjectGanttEngine
+                phases={
+                  !project.phases || project.phases.length === 0
+                    ? [
+                        {
+                          id: "d1",
+                          name: "Primjer: Priprema dokumentacije",
+                          start_date: "2025-01-10",
+                          end_date: "2025-01-25",
+                          status: "completed",
+                        },
+                        {
+                          id: "d2",
+                          name: "Primjer: Ishođenje dozvola",
+                          start_date: "2025-01-26",
+                          end_date: "2025-03-15",
+                          status: "in_progress",
+                        },
+                        {
+                          id: "d3",
+                          name: "Primjer: Građevinski radovi",
+                          start_date: "2025-03-16",
+                          end_date: "2025-06-01",
+                          status: "pending",
+                        },
+                      ]
+                    : project.phases
+                }
+              />
             </CardContent>
           </Card>
         </TabsContent>
