@@ -13,7 +13,7 @@ export DATABASE_URL="mariadb+asyncmy://mkproptech:mkproptech@127.0.0.1:3306/mkpr
 export DB_ECHO=false
 
 # Allow both localhost and 127.0.0.1
-export BACKEND_CORS_ORIGINS="*"
+# export BACKEND_CORS_ORIGINS="*"
 
 # Admin Seeding - loaded from .env
 # export SEED_ADMIN_ON_STARTUP=true

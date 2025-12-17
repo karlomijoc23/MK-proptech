@@ -12,3 +12,50 @@ DEBUG: Mounting /uploads to /Users/gs/Documents/MK-proptech/backend/uploads
 INFO:     Started server process [1628]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+Exception closing connection <AdaptedConnection <asyncmy.connection.Connection object at 0x107c61eb0>>
+Traceback (most recent call last):
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/sqlalchemy/pool/base.py", line 376, in _close_connection
+    self._dialect.do_close(connection)
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/sqlalchemy/engine/default.py", line 708, in do_close
+    dbapi_connection.close()
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/sqlalchemy/dialects/mysql/asyncmy.py", line 229, in close
+    self.await_(self._connection.ensure_closed())
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+  File "/Users/gs/Documents/MK-proptech/backend/.venv/lib/python3.9/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+  File "asyncmy/connection.pyx", line 359, in ensure_closed
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/streams.py", line 375, in drain
+    raise exc
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/selector_events.py", line 856, in _read_ready__data_received
+    data = self._sock.recv(self.max_size)
+ConnectionResetError: [Errno 54] Connection reset by peer
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1628]
+DEBUG: Mounting /uploads to /Users/gs/Documents/MK-proptech/backend/uploads
+WARNING:  WatchFiles detected changes in 'app/main.py'. Reloading...
+INFO:     Started server process [19022]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [19022]
+DEBUG: Mounting /uploads to /Users/gs/Documents/MK-proptech/backend/uploads
+INFO:     Started server process [19279]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [19279]
+DEBUG: Allowed CORS Origins: ['*']
+DEBUG: Mounting /uploads to /Users/gs/Documents/MK-proptech/backend/uploads
+INFO:     Started server process [19950]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
