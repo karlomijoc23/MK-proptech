@@ -2,9 +2,8 @@ import axios from "axios";
 
 export const getBackendUrl = () => {
   if (typeof window !== "undefined") {
-    if (window.location.hostname === "localhost") {
-      return "http://127.0.0.1:8000";
-    }
+    // Dynamically determine backend URL based on current hostname
+    // This allows access via localhost, 127.0.0.1, or LAN IP (e.g. 192.168.x.x)
     return `http://${window.location.hostname}:8000`;
   }
   return "http://127.0.0.1:8000";

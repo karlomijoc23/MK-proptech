@@ -90,3 +90,7 @@ uvicorn.log
 frontend.log
 backend/uvicorn.log
 backend/uploads/
+*.db
+*.log
+debug_*.txt
+test_output.txt

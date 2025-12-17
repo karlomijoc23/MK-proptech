@@ -838,7 +838,7 @@ const UgovorForm = ({ ugovor, onSuccess, onCancel }) => {
                           </div>
                           <Button variant="ghost" size="sm" asChild>
                             <a
-                              href={`${process.env.REACT_APP_API_URL || "http://localhost:8000"}/api/v1/dokumenti/${doc.id}/download`}
+                              href={`${api.getBackendUrl()}/api/v1/dokumenti/${doc.id}/download`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

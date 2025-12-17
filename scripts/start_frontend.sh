@@ -22,7 +22,7 @@ fi
 
 "${YARN_CMD[@]}" install --silent --frozen-lockfile --check-files
 export REACT_APP_DEV_AUTH_TOKEN="${REACT_APP_DEV_AUTH_TOKEN:-token123}"
-BROWSER=none nohup "${YARN_CMD[@]}" start > "$LOG_FILE" 2>&1 &
+HOST=0.0.0.0 BROWSER=none nohup "${YARN_CMD[@]}" start > "$LOG_FILE" 2>&1 &
 PID=$!
 echo $PID > "$PID_FILE"
 echo "Frontend started with PID $PID (logs: $LOG_FILE)"
